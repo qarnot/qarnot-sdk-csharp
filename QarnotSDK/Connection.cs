@@ -2,10 +2,6 @@ using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Formatting;
-using System.Threading.Tasks;
-using System.Security.Cryptography.X509Certificates;
-using System.Net.Security;
-using System.Net;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -16,9 +12,10 @@ namespace qarnotsdk
     {
         internal HttpClient _client;
         internal JsonMediaTypeFormatter _formatter;
-        public Connection (string uri, string auth)
+
+        public Connection (string uri, string auth, HttpClientHandler httpClientHandler = null)
         {
-            _client = new HttpClient ();
+            _client = httpClientHandler == null ? new HttpClient ():new HttpClient(httpClientHandler);
             _client.BaseAddress = new Uri (uri);
             _client.DefaultRequestHeaders.Clear ();
             _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
