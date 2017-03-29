@@ -65,7 +65,8 @@ namespace qarnotsdk
                 }
                 await Task.WhenAll (tasks);
             } catch (Exception ex) {
-                Console.WriteLine (ex.Message);
+                //Console.WriteLine (ex.Message);
+                throw ex;
             }
         }
 
