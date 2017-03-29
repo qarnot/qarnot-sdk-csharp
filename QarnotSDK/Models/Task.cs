@@ -34,6 +34,8 @@ namespace qarnotsdk
 
         public string State { get { return _taskApi != null ? _taskApi.State : null; } set { ; } }
 
+        public Guid Uuid { get { return _taskApi.Uuid; } }
+
         internal QTask ()
         {
             Resources = new List<QDisk> ();
@@ -198,7 +200,7 @@ namespace qarnotsdk
             while (true) {
                 try {
                     SnapshotAsync (ct).Wait ();
-                } catch (Exception ex) {
+                } catch (Exception) {
                     break;
                 }
                 if (SnapshotResultsAvailable != null)
