@@ -125,15 +125,16 @@ namespace qarnotsdk
             var response = await _api._client.PostAsync<TaskApi> ("tasks", _taskApi, _api._formatter, cancellationToken);
 
             Utils.LookForErrorAndThrow (_api._client, response);
-            Console.WriteLine ("The Task creation response is : " + response.IsSuccessStatusCode + " : " + response.StatusCode);
+            //Console.WriteLine ("The Task creation response is : " + response.IsSuccessStatusCode + " : " + response.StatusCode);
             _taskUri = response.Headers.Location.OriginalString.Substring (1);
             await ManageTaskAsync (cancellationToken, outDir);           
         }
 
         private async Task ManageTaskAsync(CancellationToken cancellationToken, string outDir) {
-            Console.WriteLine (_taskUri);
-        var taskSuccess = await AsyncCompletion (_taskUri, cancellationToken);
-            Console.WriteLine ("Task is successful ? : " + taskSuccess);
+            //Console.WriteLine (_taskUri);
+
+            var taskSuccess = await AsyncCompletion (_taskUri, cancellationToken);
+            //Console.WriteLine ("Task is successful ? : " + taskSuccess);
             var response = await _api._client.GetAsync (_taskUri); // get task
 
             Utils.LookForErrorAndThrow (_api._client, response);
@@ -154,7 +155,7 @@ namespace qarnotsdk
                         }
                         await Task.WhenAll (tasks);
                     } catch (Exception ex) {
-                            Console.WriteLine (ex.Message);
+                            //Console.WriteLine (ex.Message);
                             throw ex;
                     }
                 } else {
@@ -296,7 +297,7 @@ namespace qarnotsdk
                             throw new TaskCanceledException ();
                         }
                         if (cachedResultsCount != ta.ResultsCount) {
-                            Console.WriteLine ("Task state : " + ta.State);
+                            //Console.WriteLine ("Task state : " + ta.State);
                             return ta.State == "Submitted";
                         }
                         cachedResultsCount = ta.ResultsCount;

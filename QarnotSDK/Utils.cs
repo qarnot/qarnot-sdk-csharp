@@ -24,7 +24,7 @@ namespace qarnotsdk
 
             if (!Directory.Exists (Path.GetDirectoryName (outFile)))
                 Directory.CreateDirectory (Path.GetDirectoryName (outFile));
-            Console.WriteLine ("Downloading : " + fileUri + " to : " + outFile);
+            //Console.WriteLine ("Downloading : " + fileUri + " to : " + outFile);
             using (var fileStream = new FileStream (outFile, FileMode.Create, FileAccess.Write, FileShare.ReadWrite)) {
                 using (var httpStream = await response.Content.ReadAsStreamAsync ()) {
                     httpStream.CopyTo (fileStream);
