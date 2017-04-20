@@ -36,6 +36,8 @@ namespace qarnotsdk
 
         public Guid Uuid { get { return _taskApi.Uuid; } }
 
+        public string Name { get { return _taskApi.Name; } }
+
         internal QTask ()
         {
             Resources = new List<QDisk> ();

@@ -39,12 +39,6 @@ namespace qarnotsdk
                 _downloadSource.Cancel ();
         }
 
-        public void Download(string outdir)
-        {
-            _downloadSource = new CancellationTokenSource ();
-            DownloadAsync (outdir, _downloadSource.Token).Wait ();
-        }
-
         public async Task DownloadAsync(string outdir)
         {
             _downloadSource = new CancellationTokenSource ();
@@ -70,34 +64,35 @@ namespace qarnotsdk
             }
         }
 
-
-        private async Task Upload(string diskUri, KeyValuePair<string, string> item, CancellationToken cancellationToken)
+        private async Task UploadAsync(string diskUri, Stream sourceStream, string remoteName, CancellationToken cancellationToken)
         {
             var requestContent = new MultipartFormDataContent ();
-            var fileContent = new ByteArrayContent (File.ReadAllBytes (item.Key));
+            var fileContent = new StreamContent(sourceStream);
             fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse ("application/octet-stream");
-            fileContent.Headers.ContentDisposition = ContentDispositionHeaderValue.Parse ("attachment; filename=" + Path.GetFileName (item.Key));
-            requestContent.Add (fileContent, Path.GetFileNameWithoutExtension (item.Key), Path.GetFileName (item.Key));
-            var response = await _client.PostAsync (diskUri + Path.GetDirectoryName(item.Value), requestContent, cancellationToken);
+            fileContent.Headers.ContentDisposition = ContentDispositionHeaderValue.Parse ("attachment; filename=" + Path.GetFileName (remoteName));
+            requestContent.Add (fileContent, Path.GetFileNameWithoutExtension (remoteName), Path.GetFileName (remoteName));
+            var response = await _client.PostAsync (diskUri + Path.GetDirectoryName(remoteName), requestContent, cancellationToken);
 
             if (!response.IsSuccessStatusCode) {
                 Utils.LookForErrorAndThrow (_client, response);
             }
         }
 
-
-        public void AddFile(string filePath, string remote=null)
+        public async Task AddFileAsync(string filePath, string remote=null)
         {
             if (!File.Exists (filePath))
                 throw new IOException ("No such file " + filePath);
-            var kv = new KeyValuePair<string, string> (filePath, remote != null ? remote : Path.GetFileName (filePath));
-            var u = Upload (_diskUri, kv, new CancellationToken());
-            u.Wait ();
+
+            var remoteName = remote ?? Path.GetFileName (filePath);
+            using (var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read)) {
+                await UploadAsync(_diskUri, fs, remoteName, new CancellationToken());
+            }
         }
 
-        public void Delete()
-        {
-            DeleteAsync ().Wait ();
+        public async Task AddBytesAsync(string filename, byte[] data) {
+            using (var fs = new MemoryStream(data)) {
+                await UploadAsync(_diskUri, fs, filename, new CancellationToken());
+            }
         }
 
         private async Task DeleteAsync()
@@ -105,6 +100,29 @@ namespace qarnotsdk
             var response = await _client.DeleteAsync (_diskUri);
             response.EnsureSuccessStatusCode ();
         }
+
+        #region Async wrappers
+        public void Download(string outdir) {
+            _downloadSource = new CancellationTokenSource();
+            DownloadAsync(outdir, _downloadSource.Token).Wait();
+        }
+
+        private void Upload(string diskUri, Stream sourceStream, string remoteName, CancellationToken cancellationToken) {
+            UploadAsync(diskUri, sourceStream, remoteName, new CancellationToken()).Wait();
+        }
+
+        public void AddFile(string filePath, string remote = null) {
+            AddFileAsync(filePath, remote).Wait();
+        }
+
+        public void AddBytes(string filename, byte[] data) {
+            AddBytesAsync(filename, data).Wait();
+        }
+
+        public void Delete() {
+            DeleteAsync().Wait();
+        }
+        #endregion
     }
 
     internal class DiskApi
