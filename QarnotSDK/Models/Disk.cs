@@ -93,6 +93,32 @@ namespace qarnotsdk
             Utils.LookForErrorAndThrow (_client, response);
         }
 
+        public async Task<Stream> GetStreamAsync(string remotePath) {
+            string fileUri = _diskUri + "/" + remotePath;
+
+            var response = await _client.GetAsync(
+                fileUri,
+                HttpCompletionOption.ResponseHeadersRead);
+            Utils.LookForErrorAndThrow(_client, response);
+
+            return await response.Content.ReadAsStreamAsync();
+        }
+
+        public async Task GetFileAsync(string remotePath, string filePath) {
+            try {
+                using (var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.ReadWrite)) {
+                    using (var httpStream = await GetStreamAsync(remotePath)) {
+                        await httpStream.CopyToAsync(fileStream);
+                        await fileStream.FlushAsync();
+                    }
+                }
+            } catch(Exception ex) {
+                // Cleanup in case of error
+                File.Delete(filePath);
+                throw ex;
+            }
+        }
+
         public async Task AddFileAsync(string filePath, string remote=null)
         {
             if (!File.Exists (filePath))
