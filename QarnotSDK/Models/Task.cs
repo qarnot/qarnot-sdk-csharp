@@ -24,11 +24,7 @@ namespace qarnotsdk
 
         public List<QDisk> Resources { get; set; }
 
-        public QDisk Results { get { return _api.RetrieveDisk(new Guid(_taskApi.ResultDisk)); } set { _taskApi.ResultDisk = value.Uuid.ToString(); } }
-
-        public delegate void SnapshotResultsAvailableEventHandler (QTask sender);
-
-        public event SnapshotResultsAvailableEventHandler SnapshotResultsAvailable;
+        public QDisk Results { get; set; }
 
         public QTaskStatus Status { get { return _taskApi != null ? _taskApi.Status : null; } set{ ; }  }
 
@@ -37,6 +33,10 @@ namespace qarnotsdk
         public Guid Uuid { get { return _taskApi.Uuid; } }
 
         public string Name { get { return _taskApi.Name; } }
+
+        public delegate void SnapshotResultsAvailableEventHandler(QTask sender);
+
+        public event SnapshotResultsAvailableEventHandler SnapshotResultsAvailable;
 
         internal QTask ()
         {
@@ -70,66 +70,104 @@ namespace qarnotsdk
             _taskApi.Constants.Add (new TaskApi.KeyValXml (key, value));
         }
 
-        public void Resume(string outDir)
-        {
-            _resumeSource = new CancellationTokenSource ();
-            ResumeAsync (outDir).Wait ();
-        }
-
-        public async Task ResumeAsync(string outDir)
-        {
-            _resumeSource = new CancellationTokenSource ();
-            await ResumeAsync (outDir, _resumeSource.Token);
-        }
-
-        public async Task ResumeAsync(string outDir, CancellationToken cancellationToken)
-        {
-            await ManageTaskAsync (cancellationToken, outDir);
-        }
-
-        public void Cancel()
-        {
-            if (_snapshotSource != null) {
-                _snapshotSource.Cancel ();
-            }
-            if (_submitSource != null) {
-                _submitSource.Cancel ();
-            }
-            if (_resumeSource != null) {
-                _resumeSource.Cancel ();
-            }
-        }
-
-        public void Submit(string outDir)
-        {
-            _submitSource = new CancellationTokenSource ();
-            SubmitAsync (outDir, _submitSource.Token).Wait ();
-        }
-
-        public async Task SubmitAsync(string outDir)
-        {
-            _submitSource = new CancellationTokenSource ();
-            await SubmitAsync (outDir, _submitSource.Token);
-        }
-
-        public async Task SubmitAsync(string outDir, CancellationToken cancellationToken)
+        public async Task SubmitAsync()
         {
             if (_existingTask) {
                 return;
             }
 
-            _outDir = outDir;
             _taskApi.ResourceDisks = new List<string> ();
             foreach (var item in Resources) {
                 _taskApi.ResourceDisks.Add (item.Uuid.ToString ());
             }
+            if (Results != null) {
+                _taskApi.ResultDisk = Results.Uuid.ToString();
+            }
 
-            var response = await _api._client.PostAsync<TaskApi> ("tasks", _taskApi, _api._formatter, cancellationToken);
+            var response = await _api._client.PostAsJsonAsync<TaskApi> ("tasks", _taskApi);
+            Utils.LookForErrorAndThrow(_api._client, response);
 
-            Utils.LookForErrorAndThrow (_api._client, response);
-            //Console.WriteLine ("The Task creation response is : " + response.IsSuccessStatusCode + " : " + response.StatusCode);
             _taskUri = response.Headers.Location.OriginalString.Substring (1);
-            await ManageTaskAsync (cancellationToken, outDir);           
+
+            // Update the task Uuid
+            var result = await response.Content.ReadAsAsync<TaskApi>();
+            _taskApi.Uuid = result.Uuid;
+
+            // Retrieve the task status once to update the other fields (result disk uuid etc..)
+            await UpdateStatusAsync();
+        }
+
+        public async Task UpdateStatusAsync() {
+            var response = await _api._client.GetAsync(_taskUri); // get task status
+            Utils.LookForErrorAndThrow(_api._client, response);
+
+            var result = await response.Content.ReadAsAsync<TaskApi>();
+            _taskApi = result;
+
+            if (Results == null) {
+                Results = await _api.RetrieveDiskAsync(new Guid(_taskApi.ResultDisk));
+            }
+        }
+
+        public async Task DeleteAsync()
+        {
+            var response = await _api._client.DeleteAsync(_taskUri);
+            Utils.LookForErrorAndThrow(_api._client, response);
+        }
+
+        public void Resume(string outDir) {
+            _resumeSource = new CancellationTokenSource();
+            ResumeAsync(outDir).Wait();
+        }
+
+        public async Task ResumeAsync(string outDir) {
+            _resumeSource = new CancellationTokenSource();
+            await ResumeAsync(outDir, _resumeSource.Token);
+        }
+
+        public async Task ResumeAsync(string outDir, CancellationToken cancellationToken) {
+            await ManageTaskAsync(cancellationToken, outDir);
+        }
+
+        public void Cancel() {
+            if (_snapshotSource != null) {
+                _snapshotSource.Cancel();
+            }
+            if (_submitSource != null) {
+                _submitSource.Cancel();
+            }
+            if (_resumeSource != null) {
+                _resumeSource.Cancel();
+            }
+        }
+
+        public void Run(string outDir) {
+            _submitSource = new CancellationTokenSource();
+            RunAsync(outDir, _submitSource.Token).Wait();
+        }
+
+        public async Task RunAsync(string outDir) {
+            _submitSource = new CancellationTokenSource();
+            await RunAsync(outDir, _submitSource.Token);
+        }
+
+        public async Task RunAsync(string outDir, CancellationToken cancellationToken) {
+            if (_existingTask) {
+                return;
+            }
+
+            _outDir = outDir;
+            _taskApi.ResourceDisks = new List<string>();
+            foreach (var item in Resources) {
+                _taskApi.ResourceDisks.Add(item.Uuid.ToString());
+            }
+
+            var response = await _api._client.PostAsJsonAsync<TaskApi>("tasks", _taskApi, cancellationToken);
+
+            Utils.LookForErrorAndThrow(_api._client, response);
+            //Console.WriteLine ("The Task creation response is : " + response.IsSuccessStatusCode + " : " + response.StatusCode);
+            _taskUri = response.Headers.Location.OriginalString.Substring(1);
+            await ManageTaskAsync(cancellationToken, outDir);
         }
 
         private async Task ManageTaskAsync(CancellationToken cancellationToken, string outDir) {
@@ -167,7 +205,7 @@ namespace qarnotsdk
             } else {
                 //task failed
                 throw new TaskFailedException ();
-            }        
+            }
         }
 
         public void Snapshot()
@@ -182,7 +220,7 @@ namespace qarnotsdk
         {
             Snapshot s = new qarnotsdk.Snapshot ();
             s.Interval = Convert.ToInt32 (interval);
-            var response = _api._client.PostAsync<Snapshot> (_taskUri + "/snapshot/periodic", s, _api._formatter);
+            var response = _api._client.PostAsJsonAsync<Snapshot> (_taskUri + "/snapshot/periodic", s);
             response.Wait ();
             if (response.Result.IsSuccessStatusCode)
                 SnapshotHandler ();
@@ -218,7 +256,7 @@ namespace qarnotsdk
             var response = await _api._client.GetAsync (_taskUri);
             if (response.IsSuccessStatusCode) {
                 TaskApi ta = await response.Content.ReadAsAsync<TaskApi> (cancellationToken);
-                bool readyToDownload = await AsyncWaitSnapshot (_taskUri, ta.ResultsCount, cancellationToken);
+                bool readyToDownload = await WaitSnapshotAsync(_taskUri, ta.ResultsCount, cancellationToken);
                 if (readyToDownload) {
                     response = await _api._client.GetAsync (_taskUri);
                     if (response.IsSuccessStatusCode) {
@@ -286,7 +324,7 @@ namespace qarnotsdk
             }
         }
 
-        private async Task<bool> AsyncWaitSnapshot(string taskuri, uint baseCachedResultCount, CancellationToken cancellationToken)
+        private async Task<bool> WaitSnapshotAsync(string taskuri, uint baseCachedResultCount, CancellationToken cancellationToken)
         {
             uint cachedResultsCount = baseCachedResultCount;
             try {

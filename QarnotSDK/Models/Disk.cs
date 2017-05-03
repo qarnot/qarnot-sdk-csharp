@@ -15,10 +15,17 @@ namespace qarnotsdk
         private readonly string _diskUri;
         private CancellationTokenSource _downloadSource = null;
 
-        public string Description { get { return _diskApi.Description; } protected internal set { ; } }
-        public DateTime CreationDate { get { return _diskApi.CreationDate; }  protected internal set { ; } }
+        public string Description { get { return _diskApi.Description; } }
 
         public Guid Uuid { get { return _diskApi.Uuid; } }
+
+        public int FileCount { get { return _diskApi.FileCount;  } }
+
+        public long UsedSpaceBytes { get { return _diskApi.UsedSpaceBytes; } }
+
+        public DateTime CreationDate { get { return _diskApi.CreationDate; } }
+
+        public bool Locked { get { return _diskApi.Locked; } }
 
         internal QDisk (HttpClient client, DiskApi diskApi)
         {
@@ -37,6 +44,16 @@ namespace qarnotsdk
         {
             if (_downloadSource != null)
                 _downloadSource.Cancel ();
+        }
+
+        public async Task UpdateAsync() {
+            string uri = "disks/" + _diskApi.Uuid.ToString();
+            var response = await _client.GetAsync(uri); //create disk
+            Utils.LookForErrorAndThrow(_client, response);
+
+            // Retrieve the guid from the response and assign it to the DiskApi
+            var result = await response.Content.ReadAsAsync<DiskApi>();
+            _diskApi = result;
         }
 
         public async Task DownloadAsync(string outdir)
@@ -71,11 +88,9 @@ namespace qarnotsdk
             fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse ("application/octet-stream");
             fileContent.Headers.ContentDisposition = ContentDispositionHeaderValue.Parse ("attachment; filename=" + Path.GetFileName (remoteName));
             requestContent.Add (fileContent, Path.GetFileNameWithoutExtension (remoteName), Path.GetFileName (remoteName));
-            var response = await _client.PostAsync (diskUri + Path.GetDirectoryName(remoteName), requestContent, cancellationToken);
 
-            if (!response.IsSuccessStatusCode) {
-                Utils.LookForErrorAndThrow (_client, response);
-            }
+            var response = await _client.PostAsync (diskUri + Path.GetDirectoryName(remoteName), requestContent, cancellationToken);
+            Utils.LookForErrorAndThrow (_client, response);
         }
 
         public async Task AddFileAsync(string filePath, string remote=null)
@@ -95,7 +110,7 @@ namespace qarnotsdk
             }
         }
 
-        private async Task DeleteAsync()
+        public async Task DeleteAsync()
         {
             var response = await _client.DeleteAsync (_diskUri);
             response.EnsureSuccessStatusCode ();

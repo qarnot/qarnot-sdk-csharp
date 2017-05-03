@@ -12,7 +12,6 @@ namespace qarnotsdk
     public class Connection
     {
         internal HttpClient _client;
-        internal JsonMediaTypeFormatter _formatter;
 
         public Connection (string uri, string auth, HttpClientHandler httpClientHandler = null)
         {
@@ -21,12 +20,6 @@ namespace qarnotsdk
             _client.DefaultRequestHeaders.Clear ();
             _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue (auth);
-            _formatter = new JsonMediaTypeFormatter();
-            _formatter.SerializerSettings = new JsonSerializerSettings
-            {
-                Formatting = Formatting.Indented,
-                ContractResolver = new CamelCasePropertyNamesContractResolver()
-            };
         }
 
         public QTask CreateTask(string name, string profile, uint frameCount)
@@ -37,7 +30,7 @@ namespace qarnotsdk
 
         public async Task<QDisk> CreateDiskAsync(string description) {
             var dapi = new DiskApi(description, false);
-            var response = await _client.PostAsync<DiskApi>("disks", dapi, _formatter); //create disk
+            var response = await _client.PostAsJsonAsync<DiskApi>("disks", dapi); //create disk
             Utils.LookForErrorAndThrow(_client, response);
 
             // Retrieve the guid from the response and assign it to the DiskApi
@@ -71,6 +64,15 @@ namespace qarnotsdk
             return ret.Find(x => x.Description == diskName);
         }
 
+        public async Task<QDisk> RetrieveDiskAsync(Guid guid) {
+            var response = await _client.GetAsync("disks/" + guid.ToString());
+            if (response.IsSuccessStatusCode) {
+                var r = await response.Content.ReadAsAsync<DiskApi>();
+                return new QDisk(_client, r);
+            }
+            return null;
+        }
+
         public async Task<List<QDisk>> RetrieveDisksAsync()
         {
             var ret = new List<QDisk>();
@@ -100,17 +102,7 @@ namespace qarnotsdk
         }
 
         public QDisk RetrieveDisk(Guid guid) {
-            var ttask = _client.GetAsync("disks/" + guid.ToString());
-
-            ttask.Wait();
-            var response = ttask.Result;
-            if (response.IsSuccessStatusCode) {
-                var ttask2 = response.Content.ReadAsAsync<DiskApi>();
-                ttask2.Wait();
-                var r = ttask2.Result;
-                return new QDisk(_client, r);
-            }
-            return null;
+            return RetrieveDiskAsync(guid).Result;
         }
         #endregion
     }
