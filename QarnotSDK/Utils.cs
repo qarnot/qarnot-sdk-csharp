@@ -6,6 +6,14 @@ using System.IO;
 
 namespace qarnotsdk
 {
+    public class QarnotApiException : Exception {
+        public QarnotApiException(string error, Exception inner) : base(error, inner) { }
+    }
+
+    public class QarnotApiResourceNotFoundException : QarnotApiException {
+        public QarnotApiResourceNotFoundException(string error, Exception inner) : base(error, inner) { }
+    }
+
     internal static class Utils
     {
         internal static async Task Download(HttpClient client, string disk, string filePath, string outDir, CancellationToken cancellationToken)
@@ -17,7 +25,7 @@ namespace qarnotsdk
                 cancellationToken);
 
             if (!response.IsSuccessStatusCode) {
-                LookForErrorAndThrow (client, response);
+                await LookForErrorAndThrow (client, response);
             }
 
             string outFile = outDir + "/" + filePath;
@@ -33,23 +41,38 @@ namespace qarnotsdk
             }
         }
 
-        internal static async void LookForErrorAndThrow(HttpClient client, HttpResponseMessage response)
+        internal static async Task LookForErrorAndThrow(HttpClient client, HttpResponseMessage response)
         {
             if (!response.IsSuccessStatusCode) {
+                //System.Diagnostics.StackTrace t = new System.Diagnostics.StackTrace();
+                //Console.WriteLine (t.ToString());
+
+                // First try to retrieve the error returned by the API
                 Error e;
                 try {
-                    e = await response.Content.ReadAsAsync<Error> ();
-                  } catch (Exception ex) {
-                    response.EnsureSuccessStatusCode ();
-                    throw ex;
+                    e = await response.Content.ReadAsAsync<Error>();
+                } catch (Exception ex) {
+                    e = new Error();
+                    e.Message = ex.Message;
                 }
-                System.Diagnostics.StackTrace t = new System.Diagnostics.StackTrace();
-                Console.WriteLine (t.ToString());
-                throw new Exception (e.Message);
+
+                // Then retrieve the http error returned by the HttpClient
+                Exception inner = null;
+                try {
+                    response.EnsureSuccessStatusCode();
+                } catch(Exception ex) {
+                    inner = ex;
+                }
+
+                // Throw a custom error
+                switch (response.StatusCode) {
+                    case System.Net.HttpStatusCode.NotFound:
+                        throw new QarnotApiResourceNotFoundException(e.Message, inner);
+                    default:
+                        throw new QarnotApiException(e.Message, inner);
+                }
             }
         }
-
-       
     }
 }
 

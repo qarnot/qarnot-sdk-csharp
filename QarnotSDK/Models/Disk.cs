@@ -49,7 +49,7 @@ namespace qarnotsdk
         public async Task UpdateAsync() {
             string uri = "disks/" + _diskApi.Uuid.ToString();
             var response = await _client.GetAsync(uri); //create disk
-            Utils.LookForErrorAndThrow(_client, response);
+            await Utils.LookForErrorAndThrow(_client, response);
 
             // Retrieve the guid from the response and assign it to the DiskApi
             var result = await response.Content.ReadAsAsync<DiskApi>();
@@ -66,7 +66,7 @@ namespace qarnotsdk
         {
             string resDiskUri = "disks/tree/" + _diskApi.Uuid.ToString ();
             var response = await _client.GetAsync (resDiskUri);
-            Utils.LookForErrorAndThrow (_client, response);
+            await Utils.LookForErrorAndThrow (_client, response);
             List<MyFile> resFiles = await response.Content.ReadAsAsync<List<MyFile>> (cancellationToken);
             var tasks = new Task[resFiles.Count];
             uint index = 0;
@@ -90,7 +90,7 @@ namespace qarnotsdk
             requestContent.Add (fileContent, Path.GetFileNameWithoutExtension (remoteName), Path.GetFileName (remoteName));
 
             var response = await _client.PostAsync (diskUri + Path.GetDirectoryName(remoteName), requestContent, cancellationToken);
-            Utils.LookForErrorAndThrow (_client, response);
+            await Utils.LookForErrorAndThrow (_client, response);
         }
 
         public async Task<Stream> GetStreamAsync(string remotePath) {
@@ -99,7 +99,7 @@ namespace qarnotsdk
             var response = await _client.GetAsync(
                 fileUri,
                 HttpCompletionOption.ResponseHeadersRead);
-            Utils.LookForErrorAndThrow(_client, response);
+            await Utils.LookForErrorAndThrow(_client, response);
 
             return await response.Content.ReadAsStreamAsync();
         }

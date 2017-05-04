@@ -31,7 +31,7 @@ namespace qarnotsdk
         public async Task<QDisk> CreateDiskAsync(string description) {
             var dapi = new DiskApi(description, false);
             var response = await _client.PostAsJsonAsync<DiskApi>("disks", dapi); //create disk
-            Utils.LookForErrorAndThrow(_client, response);
+            await Utils.LookForErrorAndThrow(_client, response);
 
             // Retrieve the guid from the response and assign it to the DiskApi
             var result = await response.Content.ReadAsAsync<DiskApi>();

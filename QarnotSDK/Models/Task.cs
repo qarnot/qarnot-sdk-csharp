@@ -85,7 +85,7 @@ namespace qarnotsdk
             }
 
             var response = await _api._client.PostAsJsonAsync<TaskApi> ("tasks", _taskApi);
-            Utils.LookForErrorAndThrow(_api._client, response);
+            await Utils.LookForErrorAndThrow(_api._client, response);
 
             _taskUri = response.Headers.Location.OriginalString.Substring (1);
 
@@ -99,7 +99,7 @@ namespace qarnotsdk
 
         public async Task UpdateStatusAsync() {
             var response = await _api._client.GetAsync(_taskUri); // get task status
-            Utils.LookForErrorAndThrow(_api._client, response);
+            await Utils.LookForErrorAndThrow(_api._client, response);
 
             var result = await response.Content.ReadAsAsync<TaskApi>();
             _taskApi = result;
@@ -112,7 +112,7 @@ namespace qarnotsdk
         public async Task DeleteAsync()
         {
             var response = await _api._client.DeleteAsync(_taskUri);
-            Utils.LookForErrorAndThrow(_api._client, response);
+            await Utils.LookForErrorAndThrow(_api._client, response);
         }
 
         public void Resume(string outDir) {
@@ -164,7 +164,7 @@ namespace qarnotsdk
 
             var response = await _api._client.PostAsJsonAsync<TaskApi>("tasks", _taskApi, cancellationToken);
 
-            Utils.LookForErrorAndThrow(_api._client, response);
+            await Utils.LookForErrorAndThrow(_api._client, response);
             //Console.WriteLine ("The Task creation response is : " + response.IsSuccessStatusCode + " : " + response.StatusCode);
             _taskUri = response.Headers.Location.OriginalString.Substring(1);
             await ManageTaskAsync(cancellationToken, outDir);
@@ -177,7 +177,7 @@ namespace qarnotsdk
             //Console.WriteLine ("Task is successful ? : " + taskSuccess);
             var response = await _api._client.GetAsync (_taskUri); // get task
 
-            Utils.LookForErrorAndThrow (_api._client, response);
+            await Utils.LookForErrorAndThrow (_api._client, response);
 
             TaskApi ta = await response.Content.ReadAsAsync<TaskApi> (cancellationToken);
             _taskApi = ta;
@@ -200,7 +200,7 @@ namespace qarnotsdk
                     }
                 } else {
                     // result disk files list retrieval failed
-                    Utils.LookForErrorAndThrow (_api._client, response);
+                    await Utils.LookForErrorAndThrow (_api._client, response);
                 }
             } else {
                 //task failed
