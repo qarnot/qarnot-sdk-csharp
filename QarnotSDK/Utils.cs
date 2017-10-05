@@ -4,16 +4,8 @@ using System.Net.Http;
 using System.Threading;
 using System.IO;
 
-namespace qarnotsdk
+namespace QarnotSDK
 {
-    public class QarnotApiException : Exception {
-        public QarnotApiException(string error, Exception inner) : base(error, inner) { }
-    }
-
-    public class QarnotApiResourceNotFoundException : QarnotApiException {
-        public QarnotApiResourceNotFoundException(string error, Exception inner) : base(error, inner) { }
-    }
-
     internal static class Utils
     {
         internal static async Task Download(HttpClient client, string disk, string filePath, string outDir, CancellationToken cancellationToken)
@@ -62,6 +54,11 @@ namespace qarnotsdk
                     response.EnsureSuccessStatusCode();
                 } catch(Exception ex) {
                     inner = ex;
+                }
+
+                if (e == null) {
+                    if (inner != null) e = new Error(inner.Message);
+                    else e = new Error("Unknown");
                 }
 
                 // Throw a custom error

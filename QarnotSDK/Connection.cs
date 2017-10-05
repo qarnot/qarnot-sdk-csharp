@@ -7,14 +7,19 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace qarnotsdk
+namespace QarnotSDK
 {
     public class Connection
     {
         internal HttpClient _client;
 
+        public bool HasShortnameFeature { get; set; }
+        public bool HasDiskShortnameFeature { get; set; }
+
         public Connection (string uri, string auth, HttpClientHandler httpClientHandler = null)
         {
+            HasShortnameFeature = false;
+            HasDiskShortnameFeature = false;
             _client = httpClientHandler == null ? new HttpClient ():new HttpClient(httpClientHandler);
             _client.BaseAddress = new Uri (uri);
             _client.DefaultRequestHeaders.Clear ();
@@ -22,26 +27,26 @@ namespace qarnotsdk
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue (auth);
         }
 
-        public QTask CreateTask(string name, string profile, uint frameCount)
-        {
-            var task = new QTask (this, name, profile, frameCount);
+        #region CreateX
+        public QPool CreatePool(string name, string profile = null, uint initialNodeCount = 0) {
+            var pool = new QPool(this, name, profile, initialNodeCount);
+            return pool;
+        }
+
+        public QTask CreateTask(string name, string profile, uint frameCount) {
+            var task = new QTask(this, name, profile, frameCount);
             return task;
         }
 
-        public async Task<QDisk> CreateDiskAsync(string description) {
-            var dapi = new DiskApi(description, false);
-            var response = await _client.PostAsJsonAsync<DiskApi>("disks", dapi); //create disk
-            await Utils.LookForErrorAndThrow(_client, response);
-
-            // Retrieve the guid from the response and assign it to the DiskApi
-            var result = await response.Content.ReadAsAsync<DiskApi>();
-            dapi.Uuid = result.Uuid;
-            return new QDisk(_client, dapi);
+        public QDisk CreateDisk(string name) {
+            var disk = new QDisk(this, name);
+            return disk;
         }
+        #endregion
 
-        public async Task<List<QTask>> RetrieveTasksAsync()
-        {
-            List<QTask> ret = new List<QTask> ();
+        #region RetrieveXAsync
+        public async Task<List<QTask>> RetrieveTasksAsync() {
+            var ret = new List<QTask>();
 
             var response = await _client.GetAsync("tasks");
             if (response.IsSuccessStatusCode) {
@@ -54,43 +59,55 @@ namespace qarnotsdk
             return ret;
         }
 
+        public async Task<List<QPool>> RetrievePoolsAsync() {
+            var ret = new List<QPool>();
+
+            var response = await _client.GetAsync("pools");
+            if (response.IsSuccessStatusCode) {
+                var list = await response.Content.ReadAsAsync<List<PoolApi>>();
+
+                foreach (var item in list) {
+                    ret.Add(new QPool(this, item));
+                }
+            }
+            return ret;
+        }
+
+        public async Task<List<QDisk>> RetrieveDisksAsync() {
+            var ret = new List<QDisk>();
+
+            var response = await _client.GetAsync("disks");
+            if (response.IsSuccessStatusCode) {
+                var list = await response.Content.ReadAsAsync<List<DiskApi>>();
+
+                foreach (var item in list) {
+                    ret.Add(new QDisk(this, item));
+                }
+            }
+            return ret;
+        }
+        #endregion
+
+        #region RetrieveXByNameAsync
         public async Task<QTask> RetrieveTaskByNameAsync(string taskName) {
             var ret = await RetrieveTasksAsync();
             return ret.Find(x => x.Name == taskName);
+        }
+
+        public async Task<QPool> RetrievePoolByNameAsync(string poolName) {
+            var ret = await RetrievePoolsAsync();
+            return ret.Find(x => x.Name == poolName);
         }
 
         public async Task<QDisk> RetrieveDiskByNameAsync(string diskName) {
             var ret = await RetrieveDisksAsync();
             return ret.Find(x => x.Description == diskName);
         }
-
-        public async Task<QDisk> RetrieveDiskAsync(Guid guid) {
-            var response = await _client.GetAsync("disks/" + guid.ToString());
-            if (response.IsSuccessStatusCode) {
-                var r = await response.Content.ReadAsAsync<DiskApi>();
-                return new QDisk(_client, r);
-            }
-            return null;
-        }
-
-        public async Task<List<QDisk>> RetrieveDisksAsync()
-        {
-            var ret = new List<QDisk>();
-
-            var response = await _client.GetAsync("disks");
-            if (response.IsSuccessStatusCode) {
-                var qapiDiskList = await response.Content.ReadAsAsync<List<DiskApi>>();
-
-                foreach (var item in qapiDiskList) {
-                    ret.Add(new QDisk(_client, item));
-                }
-            }
-            return ret;
-        }
+        #endregion
 
         #region Async wrappers
-        public QDisk CreateDisk(string description) {
-            return CreateDiskAsync(description).Result;
+        public List<QPool> RetrievePools() {
+            return RetrievePoolsAsync().Result;
         }
 
         public List<QTask> RetrieveTasks() {
@@ -99,10 +116,6 @@ namespace qarnotsdk
 
         public List<QDisk> RetrieveDisks() {
             return RetrieveDisksAsync().Result;
-        }
-
-        public QDisk RetrieveDisk(Guid guid) {
-            return RetrieveDiskAsync(guid).Result;
         }
         #endregion
     }

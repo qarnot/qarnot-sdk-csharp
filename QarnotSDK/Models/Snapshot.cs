@@ -1,6 +1,6 @@
 using System;
 
-namespace qarnotsdk
+namespace QarnotSDK
 {
     public class Snapshot
     {

@@ -1,36 +1,31 @@
-using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.IO;
-using System.Globalization;
-using System.Net.Http.Headers;
 using System.Threading;
+using System;
 
-namespace qarnotsdk
-{
-    public class QTask
-    {
+namespace QarnotSDK {
+    public class QTask {
         private readonly Connection _api;
         private TaskApi _taskApi;
+        private string _outDir = null;
+        private string _uri = null;
         private CancellationTokenSource _submitSource = null;
         private CancellationTokenSource _snapshotSource = null;
         private CancellationTokenSource _resumeSource = null;
-        private string _outDir = null;
-        private string _taskUri = null;
-        private bool _existingTask = false;
-
-        private Dictionary<string, string> _files;
 
         public List<QDisk> Resources { get; set; }
 
         public QDisk Results { get; set; }
 
-        public QTaskStatus Status { get { return _taskApi != null ? _taskApi.Status : null; } set{ ; }  }
+        public QTaskStatus Status { get { return _taskApi != null ? _taskApi.Status : null; } }
 
-        public string State { get { return _taskApi != null ? _taskApi.State : null; } set { ; } }
+        public string State { get { return _taskApi != null ? _taskApi.State : null; } }
 
         public Guid Uuid { get { return _taskApi.Uuid; } }
+
+        public string Shortname { get { return _api.HasShortnameFeature ? _taskApi.Shortname : _taskApi.Name; } }
 
         public string Name { get { return _taskApi.Name; } }
 
@@ -38,82 +33,270 @@ namespace qarnotsdk
 
         public event SnapshotResultsAvailableEventHandler SnapshotResultsAvailable;
 
-        internal QTask ()
-        {
-            Resources = new List<QDisk> ();
+        internal QTask() {
+            Resources = new List<QDisk>();
         }
 
-        internal QTask (Connection api, string name, string profile, uint instanceCount)
-        {
+        public QTask(Connection api, string name, string profile = null, uint instanceCount = 0) {
             _api = api;
-            _taskApi = new TaskApi ();
+            _taskApi = new TaskApi();
             _taskApi.Name = name;
             _taskApi.Profile = profile;
-            _taskApi.FrameCount = instanceCount;
-            _files = new Dictionary<string, string> ();
-            Resources = new List<QDisk> ();
-            _existingTask = false;
+            _taskApi.InstanceCount = instanceCount;
+            Resources = new List<QDisk>();
+
+            if (_api.HasShortnameFeature) {
+                _taskApi.Shortname = name;
+                _uri = "tasks/" + name;
+            }
         }
 
-        internal QTask (Connection qapi, TaskApi taskApi)
-        {
+        public QTask(Connection api, string name, QPool pool, uint instanceCount = 0) {
+            _api = api;
+            _taskApi = new TaskApi();
+            _taskApi.Name = name;
+            _taskApi.Profile = null;
+            _taskApi.PoolUuid = pool.Uuid.ToString();
+            _taskApi.InstanceCount = instanceCount;
+            Resources = new List<QDisk>();
+
+            if (_api.HasShortnameFeature) {
+                _taskApi.Shortname = name;
+                _uri = "tasks/" + name;
+            }
+        }
+
+        public QTask(Connection api, Guid guid) : this(api, guid.ToString()) {
+            _uri = "tasks/" + guid.ToString();
+        }
+
+        internal QTask(Connection qapi, TaskApi taskApi) {
             _api = qapi;
             _taskApi = taskApi;
-            _existingTask = true;
-            _taskUri = "tasks/" + _taskApi.Uuid.ToString ();
+            _uri = "tasks/" + _taskApi.Uuid.ToString();
         }
 
-        #region public methods
-
-        public void AddConstant(string key, string value)
-        {
-            _taskApi.Constants.Add (new TaskApi.KeyValXml (key, value));
-        }
-
-        public async Task SubmitAsync()
-        {
-            if (_existingTask) {
+        #region workaround
+        // Will be removed once the uniq custom id is implemented on the api side
+        internal async Task ApiWorkaround_EnsureUriAsync(bool mustExist) {
+            if (_api.HasShortnameFeature) {
+                // No workaround needed
                 return;
             }
 
-            _taskApi.ResourceDisks = new List<string> ();
-            foreach (var item in Resources) {
-                _taskApi.ResourceDisks.Add (item.Uuid.ToString ());
+            if (mustExist) {
+                // The task uri must exist, so if uri is null, fetch the task by name
+                if (_uri != null) {
+                    return; // ok
+                }
+
+                var result = await _api.RetrieveTaskByNameAsync(_taskApi.Name);
+                if (result == null) {
+                    throw new QarnotApiResourceNotFoundException("task " + _taskApi.Name + " doesn't exist", null);
+                }
+                _taskApi.Uuid = result.Uuid;
+                _uri = "tasks/" + _taskApi.Uuid.ToString();
+            } else {
+                // The task must NOT exist
+                if (_uri != null) {
+                    // We have an uri, check if it's still valid
+                    try {
+                        var response = await _api._client.GetAsync(_uri); // get task status
+                        await Utils.LookForErrorAndThrow(_api._client, response);
+                        // no error, the task still exists
+                        throw new QarnotApiResourceAlreadyExistsException("task " + _taskApi.Name + " already exists", null);
+                    } catch (QarnotApiResourceNotFoundException) {
+                        // OK, not running
+                    }
+                } else {
+                    // We don't have any uri, check if the task name exists
+                    var result = await _api.RetrieveTaskByNameAsync(_taskApi.Name);
+                    if (result != null) {
+                        throw new QarnotApiResourceAlreadyExistsException("task " + _taskApi.Name + " already exists", null);
+                    }
+                }
+                _taskApi.Uuid = new Guid();
+                _uri = null;
             }
+        }
+        #endregion
+
+        #region public methods
+        public void AddConstant(string key, string value) {
+            _taskApi.Constants.Add(new KeyValHelper(key, value));
+        }
+
+        public async Task SubmitAsync(string profile = null, uint instanceCount = 0, bool autoCreateResultDisk = true) {
+            await ApiWorkaround_EnsureUriAsync(false);
+
             if (Results != null) {
-                _taskApi.ResultDisk = Results.Uuid.ToString();
+                if (_api.HasDiskShortnameFeature) {
+                    _taskApi.ResultDisk = Results.Shortname;
+                } else {
+                    if (Results.Uuid == Guid.Empty) {
+                        if (!autoCreateResultDisk) await Results.UpdateAsync();
+                        else await Results.CreateAsync(true);
+                    }
+                    _taskApi.ResultDisk = Results.Uuid.ToString();
+                }
+            }
+            _taskApi.ResourceDisks = new List<string>();
+            foreach (var item in Resources) {
+                if (_api.HasDiskShortnameFeature) {
+                    _taskApi.ResourceDisks.Add(item.Shortname);
+                } else {
+                    if (item.Uuid == Guid.Empty) await item.UpdateAsync();
+                    _taskApi.ResourceDisks.Add(item.Uuid.ToString());
+                }
             }
 
-            var response = await _api._client.PostAsJsonAsync<TaskApi> ("tasks", _taskApi);
-            await Utils.LookForErrorAndThrow(_api._client, response);
+            if (profile != null) {
+                _taskApi.Profile = profile;
+            }
+            if (instanceCount > 0) {
+                _taskApi.InstanceCount = instanceCount;
+            }
 
-            _taskUri = response.Headers.Location.OriginalString.Substring (1);
+            var response = await _api._client.PostAsJsonAsync<TaskApi>("tasks", _taskApi);
+            await Utils.LookForErrorAndThrow(_api._client, response);
 
             // Update the task Uuid
             var result = await response.Content.ReadAsAsync<TaskApi>();
             _taskApi.Uuid = result.Uuid;
+            _uri = "tasks/" + _taskApi.Uuid.ToString();
 
             // Retrieve the task status once to update the other fields (result disk uuid etc..)
             await UpdateStatusAsync();
         }
 
-        public async Task UpdateStatusAsync() {
-            var response = await _api._client.GetAsync(_taskUri); // get task status
+        public async Task<string> FreshStdoutAsync() {
+            using (MemoryStream ms = new MemoryStream()) {
+                await CopyFreshStdoutToAsync(ms);
+                ms.Position = 0;
+                using (var reader = new StreamReader(ms)) {
+                    return reader.ReadToEnd();
+                }
+            }
+        }
+
+        public async Task CopyFreshStdoutToAsync(Stream s) {
+            await ApiWorkaround_EnsureUriAsync(true);
+
+            var response = await _api._client.PostAsync(_uri + "/stdout", null);
+            await Utils.LookForErrorAndThrow(_api._client, response);
+
+            await response.Content.CopyToAsync(s);
+        }
+
+        public async Task<string> StdoutAsync() {
+            using (MemoryStream ms = new MemoryStream()) {
+                await CopyStdoutToAsync(ms);
+                ms.Position = 0;
+                using (var reader = new StreamReader(ms)) {
+                    return reader.ReadToEnd();
+                }
+            }
+        }
+
+        public async Task CopyStdoutToAsync(Stream s) {
+            await ApiWorkaround_EnsureUriAsync(true);
+
+            var response = await _api._client.GetAsync(_uri + "/stdout");
+            await Utils.LookForErrorAndThrow(_api._client, response);
+
+            await response.Content.CopyToAsync(s);
+        }
+
+        public async Task<string> FreshStderrAsync() {
+            using (MemoryStream ms = new MemoryStream()) {
+                await CopyFreshStderrToAsync(ms);
+                ms.Position = 0;
+                using (var reader = new StreamReader(ms)) {
+                    return reader.ReadToEnd();
+                }
+            }
+        }
+
+        public async Task CopyFreshStderrToAsync(Stream s) {
+            await ApiWorkaround_EnsureUriAsync(true);
+
+            var response = await _api._client.PostAsync(_uri + "/stderr", null);
+            await Utils.LookForErrorAndThrow(_api._client, response);
+
+            await response.Content.CopyToAsync(s);
+        }
+
+        public async Task<string> StderrAsync() {
+            using (MemoryStream ms = new MemoryStream()) {
+                await CopyStdoutToAsync(ms);
+                ms.Position = 0;
+                using (var reader = new StreamReader(ms)) {
+                    return reader.ReadToEnd();
+                }
+            }
+        }
+
+        public async Task CopyStderrToAsync(Stream s) {
+            await ApiWorkaround_EnsureUriAsync(true);
+
+            var response = await _api._client.GetAsync(_uri + "/stderr");
+            await Utils.LookForErrorAndThrow(_api._client, response);
+
+            await response.Content.CopyToAsync(s);
+        }
+
+        public async Task UpdateStatusAsync(bool updateDisksInfo = true) {
+            await ApiWorkaround_EnsureUriAsync(true);
+
+            var response = await _api._client.GetAsync(_uri); // get task status
             await Utils.LookForErrorAndThrow(_api._client, response);
 
             var result = await response.Content.ReadAsAsync<TaskApi>();
             _taskApi = result;
 
-            if (Results == null) {
-                Results = await _api.RetrieveDiskAsync(new Guid(_taskApi.ResultDisk));
+            if (Resources.Count != _taskApi.ResourceDisks.Count) {
+                Resources.Clear();
+                foreach (var r in _taskApi.ResourceDisks) {
+                    Resources.Add(new QDisk(_api, new Guid(r)));
+                }
+            }
+
+            if (Results == null && _taskApi.ResultDisk != null) {
+                Results = new QDisk(_api, new Guid(_taskApi.ResultDisk));
+            }
+
+            if (updateDisksInfo) {
+                foreach (var r in Resources) {
+                    await r.UpdateAsync();
+                }
+                if (Results != null) {
+                    await Results.UpdateAsync();
+                }
             }
         }
 
-        public async Task DeleteAsync()
-        {
-            var response = await _api._client.DeleteAsync(_taskUri);
+        public async Task DeleteAsync() {
+            await ApiWorkaround_EnsureUriAsync(true);
+
+            var response = await _api._client.DeleteAsync(_uri);
             await Utils.LookForErrorAndThrow(_api._client, response);
         }
+
+        public string GetPublicHostForApplicationPort(UInt16 port) {
+            if (Status != null && Status.RunningInstancesInfo != null) {
+                var instances = Status.RunningInstancesInfo.PerRunningInstanceInfo;
+                if (instances != null && instances.Count > 0) {
+                    foreach (var af in instances[0].ActiveForwards) {
+                        if (af.ApplicationPort == 3389) {
+                            return String.Format("{0}:{1}", af.ForwarderHost, af.ForwarderPort);
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        /////////////////////////////////////////////////////////////////////////
 
         public void Resume(string outDir) {
             _resumeSource = new CancellationTokenSource();
@@ -152,9 +335,10 @@ namespace qarnotsdk
         }
 
         public async Task RunAsync(string outDir, CancellationToken cancellationToken) {
+            /*
             if (_existingTask) {
                 return;
-            }
+            }*/
 
             _outDir = outDir;
             _taskApi.ResourceDisks = new List<string>();
@@ -165,113 +349,106 @@ namespace qarnotsdk
             var response = await _api._client.PostAsJsonAsync<TaskApi>("tasks", _taskApi, cancellationToken);
 
             await Utils.LookForErrorAndThrow(_api._client, response);
-            //Console.WriteLine ("The Task creation response is : " + response.IsSuccessStatusCode + " : " + response.StatusCode);
-            _taskUri = response.Headers.Location.OriginalString.Substring(1);
+
+            _uri = response.Headers.Location.OriginalString.Substring(1);
             await ManageTaskAsync(cancellationToken, outDir);
         }
 
         private async Task ManageTaskAsync(CancellationToken cancellationToken, string outDir) {
-            //Console.WriteLine (_taskUri);
+            var taskSuccess = await AsyncCompletion(_uri, cancellationToken);
 
-            var taskSuccess = await AsyncCompletion (_taskUri, cancellationToken);
-            //Console.WriteLine ("Task is successful ? : " + taskSuccess);
-            var response = await _api._client.GetAsync (_taskUri); // get task
+            var response = await _api._client.GetAsync(_uri); // get task
 
-            await Utils.LookForErrorAndThrow (_api._client, response);
+            await Utils.LookForErrorAndThrow(_api._client, response);
 
-            TaskApi ta = await response.Content.ReadAsAsync<TaskApi> (cancellationToken);
+            TaskApi ta = await response.Content.ReadAsAsync<TaskApi>(cancellationToken);
             _taskApi = ta;
             string resDiskUri = "disks/tree/" + ta.ResultDisk;
             if (taskSuccess) {
-                response = await _api._client.GetAsync (resDiskUri);
+                response = await _api._client.GetAsync(resDiskUri);
                 if (response.IsSuccessStatusCode) {
-                    List<MyFile> resFiles = await response.Content.ReadAsAsync<List<MyFile>> (cancellationToken);
+                    List<QFile> resFiles = await response.Content.ReadAsAsync<List<QFile>>(cancellationToken);
                     Task[] tasks = new Task[resFiles.Count];
                     uint index = 0;
                     resDiskUri = "disks/" + ta.ResultDisk;
                     try {
                         foreach (var item in resFiles) {
-                            tasks [index++] = Utils.Download (_api._client, resDiskUri, item.Name, outDir, cancellationToken);
+                            tasks[index++] = Utils.Download(_api._client, resDiskUri, item.Name, outDir, cancellationToken);
                         }
-                        await Task.WhenAll (tasks);
+                        await Task.WhenAll(tasks);
                     } catch (Exception ex) {
-                            //Console.WriteLine (ex.Message);
-                            throw ex;
+                        //Console.WriteLine (ex.Message);
+                        throw ex;
                     }
                 } else {
                     // result disk files list retrieval failed
-                    await Utils.LookForErrorAndThrow (_api._client, response);
+                    await Utils.LookForErrorAndThrow(_api._client, response);
                 }
             } else {
                 //task failed
-                throw new TaskFailedException ();
+                throw new TaskFailedException();
             }
         }
 
-        public void Snapshot()
-        {
-            var response = _api._client.PostAsync (_taskUri + "/snapshot", null);
-            response.Wait ();
+        public void Snapshot() {
+            var response = _api._client.PostAsync(_uri + "/snapshot", null);
+            response.Wait();
             if (response.Result.IsSuccessStatusCode)
-                SnapshotHandler ();
+                SnapshotHandler();
         }
 
-        public void Snapshot(uint interval)
-        {
-            Snapshot s = new qarnotsdk.Snapshot ();
-            s.Interval = Convert.ToInt32 (interval);
-            var response = _api._client.PostAsJsonAsync<Snapshot> (_taskUri + "/snapshot/periodic", s);
-            response.Wait ();
+        public void Snapshot(uint interval) {
+            Snapshot s = new QarnotSDK.Snapshot();
+            s.Interval = Convert.ToInt32(interval);
+            var response = _api._client.PostAsJsonAsync<Snapshot>(_uri + "/snapshot/periodic", s);
+            response.Wait();
             if (response.Result.IsSuccessStatusCode)
-                SnapshotHandler ();
+                SnapshotHandler();
         }
 
-        private void SnapshotHandler()
-        {
+        private void SnapshotHandler() {
             if (_snapshotSource != null)
-                _snapshotSource.Cancel ();
-            _snapshotSource = new CancellationTokenSource ();
-            ThreadPool.QueueUserWorkItem (new WaitCallback (SnapshotCallback), _snapshotSource.Token);
+                _snapshotSource.Cancel();
+            _snapshotSource = new CancellationTokenSource();
+            ThreadPool.QueueUserWorkItem(new WaitCallback(SnapshotCallback), _snapshotSource.Token);
         }
 
-        private void SnapshotCallback(object o)
-        {
+        private void SnapshotCallback(object o) {
             CancellationToken ct = (CancellationToken)o;
 
             while (true) {
                 try {
-                    SnapshotAsync (ct).Wait ();
+                    SnapshotAsync(ct).Wait();
                 } catch (Exception) {
                     break;
                 }
                 if (SnapshotResultsAvailable != null)
-                    SnapshotResultsAvailable (this);
+                    SnapshotResultsAvailable(this);
                 if (ct.IsCancellationRequested)
                     break;
             }
         }
 
-        private async Task SnapshotAsync(CancellationToken cancellationToken)
-        {
-            var response = await _api._client.GetAsync (_taskUri);
+        private async Task SnapshotAsync(CancellationToken cancellationToken) {
+            var response = await _api._client.GetAsync(_uri);
             if (response.IsSuccessStatusCode) {
-                TaskApi ta = await response.Content.ReadAsAsync<TaskApi> (cancellationToken);
-                bool readyToDownload = await WaitSnapshotAsync(_taskUri, ta.ResultsCount, cancellationToken);
+                TaskApi ta = await response.Content.ReadAsAsync<TaskApi>(cancellationToken);
+                bool readyToDownload = await WaitSnapshotAsync(_uri, ta.ResultsCount, cancellationToken);
                 if (readyToDownload) {
-                    response = await _api._client.GetAsync (_taskUri);
+                    response = await _api._client.GetAsync(_uri);
                     if (response.IsSuccessStatusCode) {
-                        ta = await response.Content.ReadAsAsync<TaskApi> (cancellationToken);
+                        ta = await response.Content.ReadAsAsync<TaskApi>(cancellationToken);
                         string resDiskUri = "disks/tree/" + ta.ResultDisk;
-                        response = await _api._client.GetAsync (resDiskUri);
+                        response = await _api._client.GetAsync(resDiskUri);
                         if (response.IsSuccessStatusCode) {
-                            List<MyFile> resFiles = await response.Content.ReadAsAsync<List<MyFile>> (cancellationToken);
+                            List<QFile> resFiles = await response.Content.ReadAsAsync<List<QFile>>(cancellationToken);
                             var tasks = new Task[resFiles.Count];
                             uint index = 0;
                             resDiskUri = "disks/" + ta.ResultDisk;
                             foreach (var item in resFiles) {
-                                tasks [index++] = Utils.Download (_api._client, resDiskUri, item.Name, _outDir, cancellationToken);
+                                tasks[index++] = Utils.Download(_api._client, resDiskUri, item.Name, _outDir, cancellationToken);
                             }
-                            await Task.WhenAll (tasks);
+                            await Task.WhenAll(tasks);
                         }
                     }
                 }
@@ -281,60 +458,55 @@ namespace qarnotsdk
         #endregion
 
         #region background methods
-
-
-
-        private async Task<bool> AsyncCompletion(string taskUri, CancellationToken cancellationToken)
-        {
+        private async Task<bool> AsyncCompletion(string taskUri, CancellationToken cancellationToken) {
             uint cachedResultsCount = 0;
             try {
                 while (true) {
-                    var response = await _api._client.GetAsync (taskUri);
+                    var response = await _api._client.GetAsync(taskUri);
                     if (response.IsSuccessStatusCode) {
-                        TaskApi ta = await response.Content.ReadAsAsync<TaskApi> (cancellationToken);
+                        TaskApi ta = await response.Content.ReadAsAsync<TaskApi>(cancellationToken);
                         _taskApi = ta;
                         if (cancellationToken.IsCancellationRequested) {
-                            throw new TaskCanceledException ();
+                            throw new TaskCanceledException();
                         }
 
                         switch (ta.State) {
-                        case "Cancelled":
-                            return false;
-                        case "Failure":
-                            return false;
-                        case "Success":
-                            Console.WriteLine ("Task success !!");
-                            if (cachedResultsCount == ta.ResultsCount) {
-                                await Task.Delay (1000, cancellationToken);
+                            case "Cancelled":
+                                return false;
+                            case "Failure":
+                                return false;
+                            case "Success":
+                                //Console.WriteLine("Task success !!");
+                                if (cachedResultsCount == ta.ResultsCount) {
+                                    await Task.Delay(1000, cancellationToken);
+                                    break;
+                                }
+                                return true;
+                            default:
+                                await Task.Delay(1000, cancellationToken);
                                 break;
-                            }
-                            return true;
-                        default:
-                            await Task.Delay (1000, cancellationToken);
-                            break;
                         }
                         cachedResultsCount = ta.ResultsCount;
                     } else
                         return false;
                 }
             } catch (TaskCanceledException ex) {
-                var response = await _api._client.DeleteAsync (taskUri); //stop
-                response = await _api._client.DeleteAsync (taskUri); //delete
+                var response = await _api._client.DeleteAsync(taskUri); //stop
+                response = await _api._client.DeleteAsync(taskUri); //delete
                 throw ex;
             }
         }
 
-        private async Task<bool> WaitSnapshotAsync(string taskuri, uint baseCachedResultCount, CancellationToken cancellationToken)
-        {
+        private async Task<bool> WaitSnapshotAsync(string taskuri, uint baseCachedResultCount, CancellationToken cancellationToken) {
             uint cachedResultsCount = baseCachedResultCount;
             try {
                 while (true) {
-                    var response = await _api._client.GetAsync (taskuri);
+                    var response = await _api._client.GetAsync(taskuri);
                     if (response.IsSuccessStatusCode) {
-                        TaskApi ta = await response.Content.ReadAsAsync<TaskApi> (cancellationToken);
+                        TaskApi ta = await response.Content.ReadAsAsync<TaskApi>(cancellationToken);
                         _taskApi = ta;
                         if (cancellationToken.IsCancellationRequested) {
-                            throw new TaskCanceledException ();
+                            throw new TaskCanceledException();
                         }
                         if (cachedResultsCount != ta.ResultsCount) {
                             //Console.WriteLine ("Task state : " + ta.State);
@@ -344,7 +516,7 @@ namespace qarnotsdk
                     } else {
                         return false;
                     }
-                    await Task.Delay (1000, cancellationToken);
+                    await Task.Delay(1000, cancellationToken);
                 }
             } catch (TaskCanceledException ex) {
                 throw ex;
@@ -352,46 +524,58 @@ namespace qarnotsdk
             #endregion
         }
 
-        public string TaskApiDebug()
-        {
-            return _taskApi.ToString ();
+        public string TaskApiDebug() {
+            return _taskApi.ToString();
         }
     }
 
-    [Serializable]
-    public class TaskFailedException : Exception
-    {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="T:MyException"/> class
-        /// </summary>
-        public TaskFailedException ()
-        {
+    public class QTaskStatusActiveForwards {
+        public UInt16 ApplicationPort { get; set; }
+        public UInt16 ForwarderPort { get; set; }
+        public string ForwarderHost { get; set; }
+        public QTaskStatusActiveForwards() {
         }
+    }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="T:MyException"/> class
-        /// </summary>
-        /// <param name="message">A <see cref="T:System.String"/> that describes the exception. </param>
-        public TaskFailedException (string message) : base (message)
-        {
+    public class QTaskStatusPerRunningInstanceInfo {
+        public string Phase { get; set; }
+        public UInt32 InstanceId { get; set; }
+        public float MaxFrequencyGHz { get; set; }
+        public float CurrentFrequencyGHz { get; set; }
+        public float CpuUsage { get; set; }
+        public float MaxMemoryMB { get; set; }
+        public float CurrentMemoryMB { get; set; }
+        public float NetworkInKbps { get; set; }
+        public float NetworkOutKbps { get; set; }
+        public float Progress { get; set; }
+        public float ExecutionTimeSec { get; set; }
+        public float ExecutionTimeGHz { get; set; }
+        public string CpuModel { get; set; }
+        public float MemoryUsage { get; set; }
+        public List<QTaskStatusActiveForwards> ActiveForwards { get; set; }
+
+        public QTaskStatusPerRunningInstanceInfo() {
+            ActiveForwards = new List<QTaskStatusActiveForwards>();
         }
+    }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="T:MyException"/> class
-        /// </summary>
-        /// <param name="message">A <see cref="T:System.String"/> that describes the exception. </param>
-        /// <param name="inner">The exception that is the cause of the current exception. </param>
-        public TaskFailedException (string message, Exception inner) : base (message, inner)
-        {
-        }
+    public class QTaskStatusRunningInstancesInfo {
+        public DateTime Timestamp { get; set; }
+        public float AverageFrequencyGHz { get; set; }
+        public float MaxFrequencyGHz { get; set; }
+        public float MinFrequencyGHz { get; set; }
+        public float AverageMaxFrequencyGHz { get; set; }
+        public float AverageCpuUsage { get; set; }
+        public float ClusterPowerIndicator { get; set; }
+        public float AverageMemoryUsage { get; set; }
+        public float AverageNetworkInKbps { get; set; }
+        public float AverageNetworkOutKbps { get; set; }
+        public float TotalNetworkInKbps { get; set; }
+        public float TotalNetworkOutKbps { get; set; }
+        public List<QTaskStatusPerRunningInstanceInfo> PerRunningInstanceInfo { get; set; }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="T:MyException"/> class
-        /// </summary>
-        /// <param name="context">The contextual information about the source or destination.</param>
-        /// <param name="info">The object that holds the serialized object data.</param>
-        protected TaskFailedException (System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) : base (info, context)
-        {
+        public QTaskStatusRunningInstancesInfo() {
+            PerRunningInstanceInfo = new List<QTaskStatusPerRunningInstanceInfo>();
         }
     }
 
@@ -406,65 +590,35 @@ namespace qarnotsdk
         public string SucceededRange { get; set; }
         public string ExecutedRange { get; set; }
         public string FailedRange { get; set; }
+        public QTaskStatusRunningInstancesInfo RunningInstancesInfo { get; set; }
+
         public QTaskStatus() {
         }
     }
 
-    internal class TaskApi
-    {public override string ToString ()
-        {
-            return string.Format ("[TaskApi: Name={0}, Profile={1}, FrameCount={2}, ResultDisk={3}, State={4}, SnapshotInterval={5}, ResultsCount={6}, CreationDate={7}, Uuid={8}]", Name, Profile, FrameCount, ResultDisk, State, SnapshotInterval, ResultsCount, CreationDate, Uuid);
+    internal class TaskApi {
+        public override string ToString() {
+            return string.Format("[TaskApi: Name={0}, Profile={1}, InstanceCount={2}, ResultDisk={3}, State={4}, SnapshotInterval={5}, ResultsCount={6}, CreationDate={7}, Uuid={8}]", Name, Profile, InstanceCount, ResultDisk, State, SnapshotInterval, ResultsCount, CreationDate, Uuid);
         }
-        
 
         public string Name { get; set; }
-
         public string Profile { get; set; }
-
-        public uint FrameCount { get; set; }
-
+        public string PoolUuid { get; set; }
+        public uint InstanceCount { get; set; }
         public List<string> ResourceDisks { get; set; }
-
         public string ResultDisk { get; set; }
-
         public string State { get; set; }
-
         public int SnapshotInterval { get; set; }
-
         public uint ResultsCount { get; set; }
-
-        public DateTime CreationDate { get ; set; }
-
-        public List<KeyValXml> Constants { get; set; }
-
+        public DateTime CreationDate { get; set; }
+        public List<KeyValHelper> Constants { get; set; }
         public Guid Uuid { get; set; }
-
+        public string Shortname { get; set; }
         public QTaskStatus Status { get; set; }
 
-        public TaskApi ()
-        {
-            Constants = new List<KeyValXml> ();
-            ResourceDisks = new List<String> ();
-        }
-
- 
-
-        internal class KeyValXml
-        {
-            public string Key { get; set; }
-
-            public string Value { get; set; }
-
-            public KeyValXml (string key, string value)
-            {
-                Key = key;
-                Value = value;
-            }
-
-            public KeyValXml ()
-            {
-
-            }
+        public TaskApi() {
+            Constants = new List<KeyValHelper>();
+            ResourceDisks = new List<String>();
         }
     }
 }
