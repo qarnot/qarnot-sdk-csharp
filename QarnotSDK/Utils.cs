@@ -8,7 +8,7 @@ namespace QarnotSDK
 {
     internal static class Utils
     {
-        internal static async Task Download(HttpClient client, string disk, string filePath, string outDir, CancellationToken cancellationToken)
+        internal static async Task DownloadAsync(HttpClient client, string disk, string filePath, string outDir, CancellationToken cancellationToken)
         {
             string fileUri = disk + "/" + filePath;
             var response = await client.GetAsync (
@@ -17,7 +17,7 @@ namespace QarnotSDK
                 cancellationToken);
 
             if (!response.IsSuccessStatusCode) {
-                await LookForErrorAndThrow (client, response);
+                await LookForErrorAndThrowAsync (client, response);
             }
 
             string outFile = outDir + "/" + filePath;
@@ -33,7 +33,7 @@ namespace QarnotSDK
             }
         }
 
-        internal static async Task LookForErrorAndThrow(HttpClient client, HttpResponseMessage response)
+        internal static async Task LookForErrorAndThrowAsync(HttpClient client, HttpResponseMessage response)
         {
             if (!response.IsSuccessStatusCode) {
                 //System.Diagnostics.StackTrace t = new System.Diagnostics.StackTrace();
