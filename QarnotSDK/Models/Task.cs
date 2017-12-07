@@ -102,7 +102,7 @@ namespace QarnotSDK {
                     // We have an uri, check if it's still valid
                     try {
                         var response = await _api._client.GetAsync(_uri); // get task status
-                        await Utils.LookForErrorAndThrow(_api._client, response);
+                        await Utils.LookForErrorAndThrowAsync(_api._client, response);
                         // no error, the task still exists
                         throw new QarnotApiResourceAlreadyExistsException("task " + _taskApi.Name + " already exists", null);
                     } catch (QarnotApiResourceNotFoundException) {
@@ -158,7 +158,7 @@ namespace QarnotSDK {
             }
 
             var response = await _api._client.PostAsJsonAsync<TaskApi>("tasks", _taskApi);
-            await Utils.LookForErrorAndThrow(_api._client, response);
+            await Utils.LookForErrorAndThrowAsync(_api._client, response);
 
             // Update the task Uuid
             var result = await response.Content.ReadAsAsync<TaskApi>();
@@ -183,7 +183,7 @@ namespace QarnotSDK {
             await ApiWorkaround_EnsureUriAsync(true);
 
             var response = await _api._client.PostAsync(_uri + "/stdout", null);
-            await Utils.LookForErrorAndThrow(_api._client, response);
+            await Utils.LookForErrorAndThrowAsync(_api._client, response);
 
             await response.Content.CopyToAsync(s);
         }
@@ -202,7 +202,7 @@ namespace QarnotSDK {
             await ApiWorkaround_EnsureUriAsync(true);
 
             var response = await _api._client.GetAsync(_uri + "/stdout");
-            await Utils.LookForErrorAndThrow(_api._client, response);
+            await Utils.LookForErrorAndThrowAsync(_api._client, response);
 
             await response.Content.CopyToAsync(s);
         }
@@ -221,7 +221,7 @@ namespace QarnotSDK {
             await ApiWorkaround_EnsureUriAsync(true);
 
             var response = await _api._client.PostAsync(_uri + "/stderr", null);
-            await Utils.LookForErrorAndThrow(_api._client, response);
+            await Utils.LookForErrorAndThrowAsync(_api._client, response);
 
             await response.Content.CopyToAsync(s);
         }
@@ -240,7 +240,7 @@ namespace QarnotSDK {
             await ApiWorkaround_EnsureUriAsync(true);
 
             var response = await _api._client.GetAsync(_uri + "/stderr");
-            await Utils.LookForErrorAndThrow(_api._client, response);
+            await Utils.LookForErrorAndThrowAsync(_api._client, response);
 
             await response.Content.CopyToAsync(s);
         }
@@ -249,7 +249,7 @@ namespace QarnotSDK {
             await ApiWorkaround_EnsureUriAsync(true);
 
             var response = await _api._client.GetAsync(_uri); // get task status
-            await Utils.LookForErrorAndThrow(_api._client, response);
+            await Utils.LookForErrorAndThrowAsync(_api._client, response);
 
             var result = await response.Content.ReadAsAsync<TaskApi>();
             _taskApi = result;
@@ -279,7 +279,7 @@ namespace QarnotSDK {
             await ApiWorkaround_EnsureUriAsync(true);
 
             var response = await _api._client.DeleteAsync(_uri);
-            await Utils.LookForErrorAndThrow(_api._client, response);
+            await Utils.LookForErrorAndThrowAsync(_api._client, response);
         }
 
         public string GetPublicHostForApplicationPort(UInt16 port) {
@@ -348,7 +348,7 @@ namespace QarnotSDK {
 
             var response = await _api._client.PostAsJsonAsync<TaskApi>("tasks", _taskApi, cancellationToken);
 
-            await Utils.LookForErrorAndThrow(_api._client, response);
+            await Utils.LookForErrorAndThrowAsync(_api._client, response);
 
             _uri = response.Headers.Location.OriginalString.Substring(1);
             await ManageTaskAsync(cancellationToken, outDir);
@@ -359,7 +359,7 @@ namespace QarnotSDK {
 
             var response = await _api._client.GetAsync(_uri); // get task
 
-            await Utils.LookForErrorAndThrow(_api._client, response);
+            await Utils.LookForErrorAndThrowAsync(_api._client, response);
 
             TaskApi ta = await response.Content.ReadAsAsync<TaskApi>(cancellationToken);
             _taskApi = ta;
@@ -373,7 +373,7 @@ namespace QarnotSDK {
                     resDiskUri = "disks/" + ta.ResultDisk;
                     try {
                         foreach (var item in resFiles) {
-                            tasks[index++] = Utils.Download(_api._client, resDiskUri, item.Name, outDir, cancellationToken);
+                            tasks[index++] = Utils.DownloadAsync(_api._client, resDiskUri, item.Name, outDir, cancellationToken);
                         }
                         await Task.WhenAll(tasks);
                     } catch (Exception ex) {
@@ -382,7 +382,7 @@ namespace QarnotSDK {
                     }
                 } else {
                     // result disk files list retrieval failed
-                    await Utils.LookForErrorAndThrow(_api._client, response);
+                    await Utils.LookForErrorAndThrowAsync(_api._client, response);
                 }
             } else {
                 //task failed
@@ -446,7 +446,7 @@ namespace QarnotSDK {
                             uint index = 0;
                             resDiskUri = "disks/" + ta.ResultDisk;
                             foreach (var item in resFiles) {
-                                tasks[index++] = Utils.Download(_api._client, resDiskUri, item.Name, _outDir, cancellationToken);
+                                tasks[index++] = Utils.DownloadAsync(_api._client, resDiskUri, item.Name, _outDir, cancellationToken);
                             }
                             await Task.WhenAll(tasks);
                         }

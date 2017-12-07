@@ -75,7 +75,7 @@ namespace QarnotSDK
                     // We have an uri, check if it's still valid
                     try {
                         var response = await _api._client.GetAsync(_uri); // get disk status
-                        await Utils.LookForErrorAndThrow(_api._client, response);
+                        await Utils.LookForErrorAndThrowAsync(_api._client, response);
                         // no error, the disk still exists
                         throw new QarnotApiResourceAlreadyExistsException("disk " + _diskApi.Description + " already exists", null);
                     } catch (QarnotApiResourceNotFoundException) {
@@ -103,7 +103,7 @@ namespace QarnotSDK
             await ApiWorkaround_EnsureUriAsync(true);
 
             var response = await _api._client.GetAsync(_uri);
-            await Utils.LookForErrorAndThrow(_api._client, response);
+            await Utils.LookForErrorAndThrowAsync(_api._client, response);
 
             // Retrieve the guid from the response and assign it to the DiskApi
             var result = await response.Content.ReadAsAsync<DiskApi>();
@@ -120,13 +120,13 @@ namespace QarnotSDK
 
             string resDiskUri = "disks/tree/" + _diskApi.Uuid.ToString();
             var response = await _api._client.GetAsync(resDiskUri);
-            await Utils.LookForErrorAndThrow(_api._client, response);
+            await Utils.LookForErrorAndThrowAsync(_api._client, response);
             List<QFile> resFiles = await response.Content.ReadAsAsync<List<QFile>>(cancellationToken);
             var tasks = new Task[resFiles.Count];
             uint index = 0;
             try {
                 foreach (var item in resFiles) {
-                    tasks[index++] = Utils.Download(_api._client, _uri, item.Name, outDir, cancellationToken);
+                    tasks[index++] = Utils.DownloadAsync(_api._client, _uri, item.Name, outDir, cancellationToken);
                 }
                 await Task.WhenAll(tasks);
             } catch (Exception ex) {
@@ -145,7 +145,7 @@ namespace QarnotSDK
             requestContent.Add(fileContent, Path.GetFileNameWithoutExtension(remoteName), Path.GetFileName(remoteName));
 
             var response = await _api._client.PostAsync(_uri + "/" + Path.GetDirectoryName(remoteName), requestContent, cancellationToken);
-            await Utils.LookForErrorAndThrow(_api._client, response);
+            await Utils.LookForErrorAndThrowAsync(_api._client, response);
         }
 
         public async Task<Stream> GetStreamAsync(string remotePath) {
@@ -156,7 +156,7 @@ namespace QarnotSDK
             var response = await _api._client.GetAsync(
                 fileUri,
                 HttpCompletionOption.ResponseHeadersRead);
-            await Utils.LookForErrorAndThrow(_api._client, response);
+            await Utils.LookForErrorAndThrowAsync(_api._client, response);
 
             return await response.Content.ReadAsStreamAsync();
         }
@@ -206,7 +206,7 @@ namespace QarnotSDK
             await ApiWorkaround_EnsureUriAsync(false);
 
             var response = await _api._client.PostAsJsonAsync<DiskApi>("disks", _diskApi);
-            await Utils.LookForErrorAndThrow(_api._client, response);
+            await Utils.LookForErrorAndThrowAsync(_api._client, response);
 
             // Update the task Uuid
             var result = await response.Content.ReadAsAsync<DiskApi>();
@@ -219,7 +219,7 @@ namespace QarnotSDK
 
             var lockApi = new LockApi(lockState);
             var response = await _api._client.PutAsJsonAsync<LockApi>(_uri, lockApi);
-            await Utils.LookForErrorAndThrow(_api._client, response);
+            await Utils.LookForErrorAndThrowAsync(_api._client, response);
 
             _diskApi.Locked = lockState;
         }

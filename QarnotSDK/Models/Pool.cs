@@ -75,7 +75,7 @@ namespace QarnotSDK
                     // We have an uri, check if it's still valid
                     try {
                         var response = await _api._client.GetAsync(_uri); // get pool status
-                        await Utils.LookForErrorAndThrow(_api._client, response);
+                        await Utils.LookForErrorAndThrowAsync(_api._client, response);
                         // no error, the pool still exists
                         throw new QarnotApiResourceAlreadyExistsException("pool " + _poolApi.Name + " already exists", null);
                     } catch(QarnotApiResourceNotFoundException) {
@@ -133,7 +133,7 @@ namespace QarnotSDK
             }
 
             var response = await _api._client.PostAsJsonAsync<PoolApi> ("pools", _poolApi);
-            await Utils.LookForErrorAndThrow(_api._client, response);
+            await Utils.LookForErrorAndThrowAsync(_api._client, response);
 
             // Update the task Uuid
             var result = await response.Content.ReadAsAsync<TaskApi>();
@@ -148,7 +148,7 @@ namespace QarnotSDK
             await ApiWorkaround_EnsureUriAsync(true);
 
             var response = await _api._client.GetAsync(_uri); // get pool status
-            await Utils.LookForErrorAndThrow(_api._client, response);
+            await Utils.LookForErrorAndThrowAsync(_api._client, response);
 
             var result = await response.Content.ReadAsAsync<PoolApi>();
             _poolApi = result;
@@ -179,7 +179,7 @@ namespace QarnotSDK
             await ApiWorkaround_EnsureUriAsync(true);
 
             var response = await _api._client.DeleteAsync(_uri);
-            await Utils.LookForErrorAndThrow(_api._client, response);
+            await Utils.LookForErrorAndThrowAsync(_api._client, response);
         }
 
         #endregion
