@@ -1,7 +1,13 @@
-
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QarnotSDK", "QarnotSDK\QarnotSDK.csproj", "{9493E290-404B-4D05-8286-B50048BBB05E}"
+EndProject
+Project("{7CF6DF6D-3B04-46F8-A40B-537D21BCA0B4}") = "Documentation", "Documentation\Documentation.shfbproj", "{DF1C1E1F-A9E3-47B4-8B51-8507D836FE9E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9493E290-404B-4D05-8286-B50048BBB05E} = {9493E290-404B-4D05-8286-B50048BBB05E}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,5 +19,11 @@ Global
 		{9493E290-404B-4D05-8286-B50048BBB05E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9493E290-404B-4D05-8286-B50048BBB05E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9493E290-404B-4D05-8286-B50048BBB05E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DF1C1E1F-A9E3-47B4-8B51-8507D836FE9E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF1C1E1F-A9E3-47B4-8B51-8507D836FE9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF1C1E1F-A9E3-47B4-8B51-8507D836FE9E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 EndGlobal

@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topic id="cf44530a-c067-4769-8d3f-0041dcead501" revisionNumber="1">
+	<developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+		<introduction>
+			<para>Version 1.0.0 was released on 2017/12/08.
+			</para>
+		</introduction>
+
+		<section>
+			<title>Changes in This Release</title>
+			<content>
+
+				<list class="bullet">
+					<listItem>
+						<para>Add documentation.</para>
+          </listItem>
+          <listItem>
+            <para>Add Disk synchronization methods.</para>
+          </listItem>
+          <listItem>
+            <para>Update Disk method names.</para>
+          </listItem>
+          <listItem>
+            <para>Add non-async blocking methods around the async methods.</para>
+          </listItem>
+          <listItem>
+            <para>Add tasks snapshots / resources update methods.</para>
+					</listItem>
+				</list>
+
+			</content>
+		</section>
+
+		<relatedTopics>
+			<link xlink:href="5a2b1823-fb0c-44e8-bc11-fa90814c959d" />
+		</relatedTopics>
+
+	</developerConceptualDocument>
+</topic>

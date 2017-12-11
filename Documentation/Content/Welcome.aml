@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<topic id="433f2dfb-da3d-4c43-92ac-17b99ec2b5b2" revisionNumber="1">
+	<developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+		<introduction>
+			<para>QarnotSDK is a C# assembly designed to interact with Qarnot cloud computing service. It allows users to launch, manage and monitor payloads running on distributed computing nodes deployed in Qarnot’s digital heaters.
+
+You can find samples and detailed information on <externalLink>
+    <linkText>http://computing.qarnot.com</linkText>
+    <linkUri>http://computing.qarnot.com</linkUri>
+</externalLink>.</para>
+		</introduction>
+
+		<section>
+			<title>Getting Started</title>
+			<content>
+        <listItem>
+            Get your own Qarnot token at <externalLink>
+              <linkText>http://account.qarnot.com</linkText>
+              <linkUri>http://account.qarnot.com</linkUri>
+            </externalLink>
+        </listItem>
+        <listItem>Create a new Connection object using your Qarnot token: new QarnotSDK.Connection("QARNOT_TOKEN_HERE")</listItem>
+        <listItem>Create a new QTask object and submit it.</listItem>
+      </content>
+		</section>
+
+		<relatedTopics>
+			<link xlink:href="5a2b1823-fb0c-44e8-bc11-fa90814c959d" />
+		</relatedTopics>
+	</developerConceptualDocument>
+</topic>
