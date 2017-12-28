@@ -14,45 +14,15 @@ namespace QarnotSDK {
         ExecutableFile = 3
     }
 
-    /// <summary>
-    /// Represents an entry (file or folder) in a QDisk.
-    /// </summary>
-    public class QFile {
+    internal class FileApi {
         public long Size { get; set; }
         public string Name { get; set; }
-        public string CreationDate { get; set; }
+        public string CreationDate { get; set; } // ISO 8601
         public FileFlags FileFlags { get; set; }
         public string Sha1sum { get; set; }
 
-        public string GetNormalizedName() {
-            var n = Name;
-            if (n.EndsWith("/")) {
-                n = n.Substring(0, n.Length - 1);
-            }
-            if (n.StartsWith("/")) {
-                n = n.Substring(1);
-            }
-            return n;
+        public FileApi() {
         }
-
-        public QFile() {
-        }
-
-        /*
-        public QFile(string path, int prefixlen, bool isdir) {
-            if (isdir)
-                Size = 0;
-            else
-                Size = new FileInfo(path).Length;
-            CreationDate = File.GetCreationTime(path).ToString("o", System.Globalization.CultureInfo.InvariantCulture); // ISO 8601
-            Name = path.Substring(prefixlen);
-
-            if (isdir)
-                FileFlags = FileFlags.Directory;
-            else
-                FileFlags = FileFlags.File;
-        }
-        */
     }
 
     internal class LockApi {

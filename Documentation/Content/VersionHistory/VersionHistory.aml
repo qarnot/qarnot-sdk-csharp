@@ -12,10 +12,13 @@ life of the project.</para>
 				<para>Select a version below to see a description of its changes.</para>
 
 				<list class="bullet">
+          <listItem>
+            <para><link xlink:href="2a2ae707-16b6-4db2-b9b4-fa48acd2068b" /></para>
+          </listItem>
 					<listItem>
 						<para><link xlink:href="cf44530a-c067-4769-8d3f-0041dcead501" /></para>
 					</listItem>
-				</list>
+        </list>
 
 			</content>
 		</section>

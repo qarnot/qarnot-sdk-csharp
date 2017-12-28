@@ -5,19 +5,77 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text;
 using System.Security.Cryptography;
 
 namespace QarnotSDK
 {
     /// <summary>
+    /// Represents an entry (file or folder) in a disk.
+    /// </summary>
+    public class QDiskEntry : QAbstractStorageEntry {
+        /// <summary>
+        /// Creation date of this entry.
+        /// </summary>
+        public DateTime CreationDate { get; protected set; }
+
+        /// <summary>
+        /// Computes the digest of a local file and compares it to the digest of this disk entry.
+        /// </summary>
+        /// <param name="localFilePath">The local file to compare to.</param>
+        /// <param name="cancellationToken">A token to cancel the request.</param>
+        /// <returns></returns>
+        public override async Task<bool> EqualsLocalFileDigestAsync(string localFilePath, CancellationToken cancellationToken = default(CancellationToken)) {
+            var readBuffer = new byte[ReadBufferSize];
+            SHA1 sha1 = SHA1.Create();
+            using (var fs = new FileStream(localFilePath, FileMode.Open, FileAccess.Read)) {
+                long fileSize = fs.Length;
+                long offset = 0;
+                while (true) {
+                    // Which size we can read
+                    int toRead = ReadBufferSize;
+                    // Don't read after the EOF
+                    if (toRead > fileSize - offset)
+                        toRead = (int)(fileSize - offset);
+
+                    int read = await fs.ReadAsync(readBuffer, 0, toRead);
+                    if (read <= 0) throw new IOException(); // Should not happen
+
+                    offset += read;
+
+                    if (offset >= fileSize) {
+                        sha1.TransformFinalBlock(readBuffer, 0, read);
+                        var hexDigest = BitConverter.ToString(sha1.Hash).Replace("-", "").ToLower();
+                        return hexDigest.Equals(Digest);
+                    } else {
+                        int x = sha1.TransformBlock(readBuffer, 0, read, null, 0);
+                        if (x != read)
+                            throw new IOException("SHA1 TransformBlock error");
+                    }
+                }
+            }
+        }
+
+        internal QDiskEntry(string path, FileApi api) {
+            Size = api.Size;
+            Name = path == null ? api.Name : (path + api.Name);
+            FileFlags = api.FileFlags;
+            Digest = api.Sha1sum != null ? api.Sha1sum.ToLower() : "";
+            try { CreationDate = DateTime.Parse(api.CreationDate, System.Globalization.CultureInfo.InvariantCulture); } catch { };
+        }
+    }
+
+    /// <summary>
     /// This class manages the Qarnot disks.
     /// </summary>
-    public partial class QDisk {
+    public partial class QDisk : QAbstractStorage {
         private readonly Connection _api;
         private DiskApi _diskApi;
         private string _uri;
 
+        /// <summary>
+        /// The disk Uuid.
+        /// </summary>
+        public override string UniqueId { get { return _diskApi.Uuid.ToString(); } }
         /// <summary>
         /// The inner Connection object.
         /// </summary>
@@ -29,7 +87,7 @@ namespace QarnotSDK
         /// <summary>
         /// The disk shortname identifier. The shortname is provided by the user. It has to be unique.
         /// </summary>
-        public string Shortname { get { return _api.HasDiskShortnameFeature ? _diskApi.Shortname : _diskApi.Description; } }
+        public override string Shortname { get { return _api.HasDiskShortnameFeature ? _diskApi.Shortname : _diskApi.Description; } }
         /// <summary>
         /// The disk description.
         /// </summary>
@@ -38,16 +96,16 @@ namespace QarnotSDK
         /// Number of files in this disk.
         /// Use Update or UpdateAsync to refresh.
         /// </summary>
-        public int FileCount { get { return _diskApi.FileCount; } }
+        public override int FileCount { get { return _diskApi.FileCount; } }
         /// <summary>
         /// Size of this disk in bytes.
         /// Use Update or UpdateAsync to refresh.
         /// </summary>
-        public long UsedSpaceBytes { get { return _diskApi.UsedSpaceBytes; } }
+        public override long UsedSpaceBytes { get { return _diskApi.UsedSpaceBytes; } }
         /// <summary>
         /// The disk creation date
         /// </summary>
-        public DateTime CreationDate { get { return _diskApi.CreationDate; } }
+        public override DateTime CreationDate { get { return _diskApi.CreationDate.ToLocalTime(); } }
         /// <summary>
         /// The locked state of this disk, use Lock or LockAsync to lock/unlock the disk
         /// Use Update or UpdateAsync to refresh.
@@ -58,7 +116,7 @@ namespace QarnotSDK
         /// Create a disk object.
         /// </summary>
         /// <param name="connection">The inner connection object.</param>
-        /// <param name="name">The disk shortname.</param>
+        /// <param name="shortname">The disk shortname.</param>
         public QDisk(Connection connection, string shortname) {
             _api = connection;
             _diskApi = new DiskApi();
@@ -131,19 +189,20 @@ namespace QarnotSDK
 
         /// <summary>
         /// Create the disk.
+        /// Note: if the disk already exists, no exception is thrown.
         /// </summary>
-        /// <param name="dontFailIfExists">Don't throw an exception if the disk already exists.</param>
+        /// <param name="cancellationToken">A token to cancel the request.</param>
         /// <returns></returns>
-        public async Task CreateAsync(bool dontFailIfExists = false) {
-            await CreateAsync(new CancellationToken(), dontFailIfExists);
+        public override async Task CreateAsync(CancellationToken cancellationToken = default(CancellationToken)) {
+            await CreateAsync(true, default(CancellationToken));
         }
         /// <summary>
         /// Create the disk.
         /// </summary>
+        /// <param name="dontFailIfExists">If true, no exception is thrown if the disk already exists.</param>
         /// <param name="cancellationToken">A token to cancel the request.</param>
-        /// <param name="dontFailIfExists">Don't throw an exception if the disk already exist.</param>
         /// <returns></returns>
-        public async Task CreateAsync(CancellationToken cancellationToken, bool dontFailIfExists = false) {
+        public async Task CreateAsync(bool dontFailIfExists, CancellationToken cancellationToken = default(CancellationToken)) {
             if (dontFailIfExists) {
                 // Check if the disk exists and return immediately
                 try {
@@ -171,7 +230,7 @@ namespace QarnotSDK
         /// <param name="lockState">True to lock the disk, false to unlock it.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public async Task LockAsync(bool lockState, CancellationToken cancellationToken = new CancellationToken()) {
+        public async Task LockAsync(bool lockState, CancellationToken cancellationToken = default(CancellationToken)) {
             await ApiWorkaround_EnsureUriAsync(true, cancellationToken);
 
             if (_api.IsReadOnly) throw new Exception("Can't change disks lock state, this connection is configured in read-only mode");
@@ -187,7 +246,7 @@ namespace QarnotSDK
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public async Task DeleteAsync(CancellationToken cancellationToken = new CancellationToken()) {
+        public override async Task DeleteAsync(CancellationToken cancellationToken = default(CancellationToken)) {
             await ApiWorkaround_EnsureUriAsync(true, cancellationToken);
 
             if (_api.IsReadOnly) throw new Exception("Can't delete disks, this connection is configured in read-only mode");
@@ -200,7 +259,7 @@ namespace QarnotSDK
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public async Task UpdateAsync(CancellationToken cancellationToken = new CancellationToken()) {
+        public override async Task UpdateAsync(CancellationToken cancellationToken = default(CancellationToken)) {
             await ApiWorkaround_EnsureUriAsync(true, cancellationToken);
 
             var response = await _api._client.GetAsync(_uri, cancellationToken);
@@ -219,7 +278,7 @@ namespace QarnotSDK
         /// <param name="remoteFile">The destination file name in this disk.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public async Task UploadStreamAsync(Stream sourceStream, string remoteFile, CancellationToken cancellationToken = new CancellationToken()) {
+        public override async Task UploadStreamAsync(Stream sourceStream, string remoteFile, CancellationToken cancellationToken = default(CancellationToken)) {
             await ApiWorkaround_EnsureUriAsync(true, cancellationToken);
 
             var requestContent = new MultipartFormDataContent();
@@ -239,7 +298,7 @@ namespace QarnotSDK
         /// <param name="remoteFile">The source file name in this disk.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>A stream with the file's data.</returns>
-        public async Task<Stream> DownloadStreamAsync(string remoteFile, CancellationToken cancellationToken = new CancellationToken()) {
+        public override async Task<Stream> DownloadStreamAsync(string remoteFile, CancellationToken cancellationToken = default(CancellationToken)) {
             await ApiWorkaround_EnsureUriAsync(true, cancellationToken);
 
             string fileUri = _uri + "/" + remoteFile;
@@ -253,314 +312,12 @@ namespace QarnotSDK
         }
 
         /// <summary>
-        /// Upload a local file to a file in this disk.
-        /// </summary>
-        /// <param name="localFile">The source local file name.</param>
-        /// <param name="remoteFile">The destination file name in this disk.</param>
-        /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        /// <returns></returns>
-        public async Task UploadFileAsync(string localFile, string remoteFile = null, CancellationToken cancellationToken = new CancellationToken()) {
-            if (!File.Exists(localFile))
-                throw new IOException("No such file " + localFile);
-
-            var remoteName = String.IsNullOrEmpty(remoteFile) ? Path.GetFileName(localFile): remoteFile;
-            using (var fileStream = new FileStream(localFile, FileMode.Open, FileAccess.Read)) {
-                await UploadStreamAsync(fileStream, remoteName, cancellationToken);
-            }
-        }
-
-        /// <summary>
-        /// Download a file from this disk to a local file.
-        /// </summary>
-        /// <param name="remoteFile">The source file name in this disk.</param>
-        /// <param name="localFile">The destination local file name.</param>
-        /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        /// <returns></returns>
-        public async Task DownloadFileAsync(string remoteFile, string localFile, CancellationToken cancellationToken = new CancellationToken()) {
-            try {
-                using (var fileStream = new FileStream(localFile, FileMode.Create, FileAccess.Write, FileShare.ReadWrite)) {
-                    using (var httpStream = await DownloadStreamAsync(remoteFile, cancellationToken)) {
-                        await httpStream.CopyToAsync(fileStream);
-                        await fileStream.FlushAsync();
-                    }
-                }
-            } catch (Exception ex) {
-                // Cleanup in case of error
-                File.Delete(localFile);
-                throw ex;
-            }
-        }
-
-        /// <summary>
-        /// Write a string to a file in this disk.
-        /// </summary>
-        /// <param name="content">The content to write.</param>
-        /// <param name="remoteFile">The destination file name in this disk.</param>
-        /// <param name="encoding">The encoding to use to write the string. UTF8 by default.</param>
-        /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        /// <returns></returns>
-        public async Task UploadStringAsync(string content, string remoteFile, Encoding encoding = null, CancellationToken cancellationToken = new CancellationToken()) {
-            if (encoding == null) encoding = Encoding.UTF8;
-            using (var stream = new MemoryStream(encoding.GetBytes(content))) {
-                await UploadStreamAsync(stream, remoteFile, cancellationToken);
-            }
-        }
-
-        /// <summary>
-        /// Get the text content of a file in this disk.
-        /// </summary>
-        /// <param name="remoteFile">The source file name in this disk.</param>
-        /// <param name="encoding">The encoding to use to read the string. UTF8 by default.</param>
-        /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        /// <returns></returns>
-        public async Task<string> DownloadStringAsync(string remoteFile, Encoding encoding = null, CancellationToken cancellationToken = new CancellationToken()) {
-            if (encoding == null) encoding = Encoding.UTF8;
-            using (var stream = new StreamReader(await DownloadStreamAsync(remoteFile, cancellationToken), encoding)) {
-                return await stream.ReadToEndAsync();
-            }
-        }
-
-        /// <summary>
-        /// Write binary data to a file in this disk.
-        /// </summary>
-        /// <param name="data">The binary buffer to write.</param>
-        /// <param name="remoteFile">The destination file name in this disk.</param>
-        /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        /// <returns></returns>
-        public async Task UploadBytesAsync(byte[] data, string remoteFile, CancellationToken cancellationToken = new CancellationToken()) {
-            using (var stream = new MemoryStream(data)) {
-                await UploadStreamAsync(stream, remoteFile, cancellationToken);
-            }
-        }
-
-        /// <summary>
-        /// Upload a folder to a folder in this disk.
-        /// </summary>
-        /// <param name="localFolderPath">The source folder path.</param>
-        /// <param name="remoteFolderPath">The destination folder path in this disk.</param>
-        /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        /// <returns></returns>
-        public async Task UploadFolderAsync(string localFolderPath, string remoteFolderPath = null, CancellationToken cancellationToken = new CancellationToken()) {
-            if (!Directory.Exists(localFolderPath))
-                throw new IOException("No such folder " + localFolderPath);
-
-            var remoteName = String.IsNullOrEmpty(remoteFolderPath) ? Path.GetFileName(localFolderPath) : remoteFolderPath;
-            await SyncLocalToRemoteAsync(localFolderPath, true, remoteName);
-        }
-
-        /// <summary>
-        /// Download a folder in this disk to a local folder.
-        /// </summary>
-        /// <param name="remoteFolderPath">The source folder path in this disk.</param>
-        /// <param name="localFolderPath">The destination folder path.</param>
-        /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        /// <returns></returns>
-        public async Task DownloadFolderAsync(string remoteFolderPath, string localFolderPath, CancellationToken cancellationToken = new CancellationToken()) {
-            await SyncRemoteToLocalAsync(localFolderPath, cancellationToken, true, remoteFolderPath);
-        }
-
-        /// <summary>
-        /// Synchronize a remote folder to a local folder.
-        /// </summary>
-        /// <param name="localFolderPath">The local folder to overwrite.</param>
-        /// <param name="dontDelete">If false, the files that have been deleted in this disk will also be removed in the local folder. To avoid mistakes, this parameter is set to true by default.</param>
-        /// <param name="remoteFolderRelativePath">Optional, allows to sync only a sub-folder of this disks.</param>
-        /// <returns></returns>
-        public async Task SyncRemoteToLocalAsync(string localFolderPath, bool dontDelete = true, string remoteFolderRelativePath = "") {
-            await SyncRemoteToLocalAsync(localFolderPath, new CancellationToken(), dontDelete, remoteFolderRelativePath);
-        }
-        /// <summary>
-        /// Synchronize a remote folder to a local folder.
-        /// </summary>
-        /// <param name="localFolderPath">The local folder to overwrite.</param>
-        /// <param name="cancellationToken">A token to cancel the request.</param>
-        /// <param name="dontDelete">If false, the files that have been deleted in this disk will also be removed in the local folder. To avoid mistakes, this parameter is set to true by default.</param>
-        /// <param name="remoteFolderRelativePath">Optional, allows to sync only a sub-folder of this disks.</param>
-        /// <returns></returns>
-        public async Task SyncRemoteToLocalAsync(string localFolderPath, CancellationToken cancellationToken, bool dontDelete = true, string remoteFolderRelativePath = "") {
-            Directory.CreateDirectory(localFolderPath);
-
-            List<QFile> existingFiles;
-            try {
-                existingFiles = await ListEntriesAsync(remoteFolderRelativePath, cancellationToken);
-            } catch (QarnotSDK.QarnotApiResourceNotFoundException) {
-                // The remote folder doesn't exist, so we just have to create an empty file list.
-                existingFiles = new List<QFile>();
-            }
-
-            // Remove Directories that are not presents remotely or that are now a file
-            foreach (var file in Directory.EnumerateDirectories(localFolderPath)) {
-                var remotePath = Path.Combine(remoteFolderRelativePath, Path.GetFileName(file));
-                bool bFound = false;
-
-                foreach (var qfile in existingFiles) {
-                    if (qfile.GetNormalizedName().Equals(remotePath)) {
-                        if (qfile.FileFlags == FileFlags.Directory) {
-                            bFound = true;
-                        }
-                        break;
-                    }
-                }
-
-                if (!bFound) {
-                    if (!dontDelete) Directory.Delete(file, true);
-                }
-            }
-
-            // Sync files
-            var sha1 = SHA1.Create();
-            foreach (var file in Directory.EnumerateFiles(localFolderPath)) {
-                var fileName = Path.GetFileName(file);
-                var remotePath = Path.Combine(remoteFolderRelativePath, Path.GetFileName(file));
-                bool bFound = false;
-
-                var info = new FileInfo(file);
-
-                foreach (var qfile in existingFiles) {
-                    if (qfile.GetNormalizedName().Equals(fileName)) {
-                        if (qfile.FileFlags != FileFlags.Directory) {
-                            // File already exists, now check size
-                            if (qfile.Size == info.Length) {
-                                // Size is same, now check the Sha1
-                                byte[] digest;
-                                using (var fs = new FileStream(file, FileMode.Open, FileAccess.Read)) {
-                                    digest = sha1.ComputeHash(fs);
-                                }
-                                var hexDigest = BitConverter.ToString(digest).Replace("-", "");
-                                if (qfile.Sha1sum.Equals(hexDigest, StringComparison.InvariantCultureIgnoreCase)) {
-                                    // File are identical, no need to re-download
-                                    existingFiles.Remove(qfile);
-                                }
-                            }
-                            bFound = true;
-                        }
-
-                        // The file already exists, we can break here
-                        break;
-                    }
-                }
-
-                if (!bFound) {
-                    if (!dontDelete) File.Delete(file);
-                }
-            }
-
-            // Download remaining files
-            foreach (var toDownload in existingFiles) {
-                var remotePath = Path.Combine(remoteFolderRelativePath, Path.GetFileName(toDownload.GetNormalizedName()));
-                var localPath = Path.Combine(localFolderPath, Path.GetFileName(toDownload.GetNormalizedName()));
-
-                if (toDownload.FileFlags == FileFlags.Directory) {
-                    await SyncRemoteToLocalAsync(localPath, cancellationToken, dontDelete, remotePath);
-                } else {
-                    await DownloadFileAsync(remotePath, localPath, cancellationToken);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Synchronize a local folder to a remote folder.
-        /// </summary>
-        /// <param name="localFolderPath">The source local folder to upload.</param>
-        /// <param name="dontDelete">If false, the files that have been deleted in the local folder will also be removed from this disk. To avoid mistakes, this parameter is set to true by default.</param>
-        /// <param name="remoteFolderRelativePath">Optional, allows to sync to a sub-folder of this disks.</param>
-        /// <returns></returns>
-        public async Task SyncLocalToRemoteAsync(string localFolderPath, bool dontDelete = true, string remoteFolderRelativePath = "") {
-            await SyncLocalToRemoteAsync(localFolderPath, new CancellationToken(), dontDelete, remoteFolderRelativePath);
-        }
-        /// <summary>
-        /// Synchronize a local folder to a remote folder.
-        /// </summary>
-        /// <param name="localFolderPath">The source local folder to upload.</param>
-        /// <param name="cancellationToken">A token to cancel the request.</param>
-        /// <param name="dontDelete">If false, the files that have been deleted in the local folder will also be removed from this disk. To avoid mistakes, this parameter is set to true by default.</param>
-        /// <param name="remoteFolderRelativePath">Optional, allows to sync to a sub-folder of this disks.</param>
-        /// <returns></returns>
-        public async Task SyncLocalToRemoteAsync(string localFolderPath, CancellationToken cancellationToken, bool dontDelete = true, string remoteFolderRelativePath = "") {
-            List<QFile> existingFiles;
-            try {
-                existingFiles = await ListEntriesAsync(remoteFolderRelativePath, cancellationToken);
-            } catch(QarnotSDK.QarnotApiResourceNotFoundException) {
-                // The remote folder doesn't exist, so we just have to create an empty file list.
-                existingFiles = new List<QFile>();
-            }
-
-            // Sync files
-            var sha1 = SHA1.Create();
-            foreach (var file in Directory.EnumerateFiles(localFolderPath)) {
-                var fileName = Path.GetFileName(file);
-                var remotePath = Path.Combine(remoteFolderRelativePath, Path.GetFileName(file));
-
-                var info = new FileInfo(file);
-
-                bool bUpload = true;
-                foreach (var qfile in existingFiles) {
-                    if (qfile.GetNormalizedName().Equals(fileName)) {
-                        if (qfile.FileFlags == FileFlags.Directory) {
-                            // Exists, but it's a directory. Remove it
-                            if (!dontDelete) await DeleteEntryAsync(remotePath, cancellationToken);
-                        } else {
-                            // File already exists, now check size
-                            if (qfile.Size == info.Length) {
-                                // Size is same, now check the Sha1
-                                byte[] digest;
-                                using (var fs = new FileStream(file, FileMode.Open, FileAccess.Read)) {
-                                    digest = sha1.ComputeHash(fs);
-                                }
-                                var hexDigest = BitConverter.ToString(digest).Replace("-", "");
-                                if (qfile.Sha1sum.Equals(hexDigest, StringComparison.InvariantCultureIgnoreCase)) {
-                                    // File are identical, no need to re-upload
-                                    bUpload = false;
-                                }
-                            }
-                        }
-
-                        // The file already exists, we can break here
-                        existingFiles.Remove(qfile);
-                        break;
-                    }
-                }
-
-                if (bUpload) {
-                    await UploadFileAsync(file, remotePath, cancellationToken);
-                }
-            }
-
-            // Sync folders
-            foreach (var file in Directory.EnumerateDirectories(localFolderPath)) {
-                var remotePath = Path.Combine(remoteFolderRelativePath, Path.GetFileName(file));
-
-                // Remove the folder from the existing files
-                foreach (var qfile in existingFiles) {
-                    if (qfile.GetNormalizedName().Equals(remotePath)) {
-                        existingFiles.Remove(qfile);
-
-                        if (qfile.FileFlags != FileFlags.Directory) {
-                            // Exists, but it's not a directory, we have to remove it first
-                            if (!dontDelete) await DeleteEntryAsync(remotePath, cancellationToken);
-                        }
-
-                        break;
-                    }
-                }
-
-                await SyncLocalToRemoteAsync(file, cancellationToken, dontDelete, remotePath);
-            }
-
-            // Remove remaining files
-            foreach (var toRemove in existingFiles) {
-                var remotePath = Path.Combine(remoteFolderRelativePath, Path.GetFileName(toRemove.GetNormalizedName()));
-                if (!dontDelete) await DeleteEntryAsync(remotePath, cancellationToken);
-            }
-        }
-
-        /// <summary>
         /// Delete a file or folder in this disk.
         /// </summary>
         /// <param name="remotePath">The entry to remove.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public async Task DeleteEntryAsync(string remotePath, CancellationToken cancellationToken = new CancellationToken()) {
+        public override async Task DeleteEntryAsync(string remotePath, CancellationToken cancellationToken = default(CancellationToken)) {
             await ApiWorkaround_EnsureUriAsync(true, cancellationToken);
 
             if (_api.IsReadOnly) throw new Exception("Can't delete disks, this connection is configured in read-only mode");
@@ -573,8 +330,8 @@ namespace QarnotSDK
         /// </summary>
         /// <param name="remoteFolder">The folder to list.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        /// <returns>A list of QFile</returns>
-        public async Task<List<QFile>> ListEntriesAsync(string remoteFolder, CancellationToken cancellationToken = new CancellationToken()) {
+        /// <returns>A list of QAbstractStorageEntry</returns>
+        public override async Task<List<QAbstractStorageEntry>> ListEntriesAsync(string remoteFolder, CancellationToken cancellationToken = default(CancellationToken)) {
             await ApiWorkaround_EnsureUriAsync(true, cancellationToken);
 
             string treeUri = "disks/list/" + _diskApi.Uuid.ToString() + "/" + remoteFolder;
@@ -582,16 +339,20 @@ namespace QarnotSDK
 
             await Utils.LookForErrorAndThrowAsync(_api._client, response);
 
-            return await response.Content.ReadAsAsync<List<QFile>>(cancellationToken);
+            var ret = new List<QAbstractStorageEntry>();
+            foreach(var f in await response.Content.ReadAsAsync<List<FileApi>>(cancellationToken)) {
+                ret.Add(new QDiskEntry(remoteFolder, f));
+            }
+            return ret;
         }
 
         /// <summary>
         /// Return all the entries this disk contains.
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        /// <returns>A list of QFile</returns>
+        /// <returns>A list of QAbstractStorageEntry</returns>
         [System.Obsolete("use ListEntriesAsync() instead")]
-        public async Task<List<QFile>> TreeAsync(CancellationToken cancellationToken = new CancellationToken()) {
+        public async Task<List<QAbstractStorageEntry>> TreeAsync(CancellationToken cancellationToken = default(CancellationToken)) {
             await ApiWorkaround_EnsureUriAsync(true, cancellationToken);
 
             string treeUri = "disks/tree/" + _diskApi.Uuid.ToString();
@@ -599,9 +360,12 @@ namespace QarnotSDK
 
             await Utils.LookForErrorAndThrowAsync(_api._client, response);
 
-            return await response.Content.ReadAsAsync<List<QFile>>(cancellationToken);
+            var ret = new List<QAbstractStorageEntry>();
+            foreach (var f in await response.Content.ReadAsAsync<List<FileApi>>(cancellationToken)) {
+                ret.Add(new QDiskEntry(null, f));
+            }
+            return ret;
         }
         #endregion
     }
 }
-
