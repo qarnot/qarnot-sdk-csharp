@@ -125,7 +125,9 @@ namespace QarnotSDK {
         public string PoolUuid { get; set; }
         public uint InstanceCount { get; set; }
         public List<string> ResourceDisks { get; set; }
+        public List<string> ResourceBuckets { get; set; }
         public string ResultDisk { get; set; }
+        public string ResultBucket { get; set; }
         public string State { get; set; }
         public List<QTaskError> Errors { get; set; }
         public int SnapshotInterval { get; set; }
@@ -137,10 +139,15 @@ namespace QarnotSDK {
         public QTaskStatus Status { get; set; }
         public string AdvancedRanges { get; set; }
         public List<QTaskCompletedInstance> CompletedInstances { get; set; }
+        public string SnapshotWhitelist { get; set; }
+        public string SnapshotBlacklist { get; set; }
+        public string ResultsWhitelist { get; set; }
+        public string ResultsBlacklist { get; set; }
 
         public TaskApi() {
             Constants = new List<KeyValHelper>();
             ResourceDisks = new List<String>();
+            ResourceBuckets = new List<String>();
             Errors = new List<QTaskError>();
             CompletedInstances = new List<QTaskCompletedInstance>();
         }

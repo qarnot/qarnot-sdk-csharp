@@ -14,5 +14,10 @@
         <HelpKeyword index="K" term="version, 1.0.0.0" />
       </HelpKeywords>
     </Topic>
+    <Topic id="2a2ae707-16b6-4db2-b9b4-fa48acd2068b" visible="True" title="Version 1.1.0">
+      <HelpKeywords>
+        <HelpKeyword index="K" term="version, 1.1.0.0" />
+      </HelpKeywords>
+    </Topic>
   </Topic>
 </Topics>

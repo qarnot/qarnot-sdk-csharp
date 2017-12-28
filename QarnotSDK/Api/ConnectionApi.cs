@@ -2,6 +2,19 @@ using System.Collections.Generic;
 
 namespace QarnotSDK {
     /// <summary>
+    /// Represents the Api settings.
+    /// </summary>
+    public class ApiSettings {
+        /// <summary>
+        /// Bucket storage endpoint Uri.
+        /// </summary>
+        public string Storage;
+
+        internal ApiSettings() {
+        }
+    }
+
+    /// <summary>
     /// Represents the quotas and disks information.
     /// </summary>
     public class UserInformation {

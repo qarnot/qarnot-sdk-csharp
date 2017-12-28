@@ -107,6 +107,7 @@ namespace QarnotSDK {
         public string Profile { get; set; }
         public uint InstanceCount { get; set; }
         public List<string> ResourceDisks { get; set; }
+        public List<string> ResourceBuckets { get; set; }
         public string ResultDisk { get; set; }
         public string State { get; set; }
         public int SnapshotInterval { get; set; }
@@ -120,6 +121,7 @@ namespace QarnotSDK {
         public PoolApi() {
             Constants = new List<KeyValHelper>();
             ResourceDisks = new List<String>();
+            ResourceBuckets = new List<String>();
         }
     }
 }

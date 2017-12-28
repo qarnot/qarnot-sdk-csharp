@@ -98,7 +98,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public void Abort(CancellationToken cancellationToken = new CancellationToken()) {
+        public void Abort(CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 AbortAsync(cancellationToken).Wait();
             } catch (AggregateException ex) {
@@ -166,7 +166,7 @@ namespace QarnotSDK {
         /// Note: There is no way to know when the files are effectively transfered. This information is available on the compute node only.
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        public void UpdateResources(CancellationToken cancellationToken = new CancellationToken()) {
+        public void UpdateResources(CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 UpdateResourcesAsync(cancellationToken).Wait();
             } catch (AggregateException ex) {
@@ -180,7 +180,7 @@ namespace QarnotSDK {
         /// task ResultsCount or by checking the result disk.
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        public void Snapshot(CancellationToken cancellationToken = new CancellationToken()) {
+        public void Snapshot(CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 SnapshotAsync(cancellationToken).Wait();
             } catch (AggregateException ex) {
@@ -193,7 +193,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="interval">Interval in seconds between two snapshots.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        public void SnapshotPeriodic(uint interval, CancellationToken cancellationToken = new CancellationToken()) {
+        public void SnapshotPeriodic(uint interval, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 SnapshotPeriodicAsync(interval, cancellationToken).Wait();
             } catch (AggregateException ex) {
@@ -209,7 +209,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="destinationStream">The destination stream.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        public void CopyStdoutTo(Stream destinationStream, CancellationToken cancellationToken = new CancellationToken()) {
+        public void CopyStdoutTo(Stream destinationStream, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 CopyStdoutToAsync(destinationStream, cancellationToken).Wait();
             } catch (AggregateException ex) {
@@ -223,7 +223,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="destinationStream">The destination stream.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        public void CopyStderrTo(Stream destinationStream, CancellationToken cancellationToken = new CancellationToken()) {
+        public void CopyStderrTo(Stream destinationStream, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 CopyStderrToAsync(destinationStream, cancellationToken).Wait();
             } catch (AggregateException ex) {
@@ -236,7 +236,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="destinationStream">The destination stream.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        public void CopyFreshStdoutTo(Stream destinationStream, CancellationToken cancellationToken = new CancellationToken()) {
+        public void CopyFreshStdoutTo(Stream destinationStream, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 CopyFreshStdoutToAsync(destinationStream, cancellationToken).Wait();
             } catch (AggregateException ex) {
@@ -249,7 +249,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="destinationStream">The destination stream.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        public void CopyFreshStderrTo(Stream destinationStream, CancellationToken cancellationToken = new CancellationToken()) {
+        public void CopyFreshStderrTo(Stream destinationStream, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 CopyFreshStderrToAsync(destinationStream, cancellationToken).Wait();
             } catch (AggregateException ex) {
@@ -263,7 +263,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>The task standard output.</returns>
-        public string Stdout(CancellationToken cancellationToken = new CancellationToken()) {
+        public string Stdout(CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 return StdoutAsync(cancellationToken).Result;
             } catch (AggregateException ex) {
@@ -277,7 +277,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>The task standard error.</returns>
-        public string Stderr(CancellationToken cancellationToken = new CancellationToken()) {
+        public string Stderr(CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 return StderrAsync(cancellationToken).Result;
             } catch (AggregateException ex) {
@@ -290,7 +290,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>The task fresh standard output.</returns>
-        public string FreshStdout(CancellationToken cancellationToken = new CancellationToken()) {
+        public string FreshStdout(CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 return FreshStdoutAsync(cancellationToken).Result;
             } catch (AggregateException ex) {
@@ -303,7 +303,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>The task fresh standard error.</returns>
-        public string FreshStderr(CancellationToken cancellationToken = new CancellationToken()) {
+        public string FreshStderr(CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 return FreshStderrAsync(cancellationToken).Result;
             } catch(AggregateException ex) {

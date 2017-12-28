@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topic id="2a2ae707-16b6-4db2-b9b4-fa48acd2068b" revisionNumber="1">
+  <developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <introduction>
+      <para>
+        Version 1.1.0 was released on 2017/12/28.
+      </para>
+    </introduction>
+
+    <section>
+      <title>Changes in This Release</title>
+      <content>
+
+        <list class="bullet">
+          <listItem>
+            <para>Add Buckets support.</para>
+          </listItem>
+          <listItem>
+            <para>Add a method to retrieve the ApiSettings.</para>
+          </listItem>
+          <listItem>
+            <para>Add Task ResultsWhitelist / ResultsBlacklist.</para>
+          </listItem>
+          <listItem>
+            <para>Add Task SnapshotWhitelist / SnapshotBlacklist.</para>
+          </listItem>
+          <listItem>
+            <para>Add a dependency to Amazon and Amazon.S3 packages.</para>
+          </listItem>
+          <listItem>
+            <para>Rename QFile to QDiskEntry.</para>
+          </listItem>
+          <listItem>
+            <para>Update QDiskEntry.CreationDate to return a localized date.</para>
+          </listItem>
+          <listItem>
+            <para>Update QDiskEntry.Name to return a full path in all cases.</para>
+          </listItem>
+          <listItem>
+            <para>Update the default value of the cancellationToken parameters to default(CancellationToken).</para>
+          </listItem>
+        </list>
+
+      </content>
+    </section>
+
+    <relatedTopics>
+      <link xlink:href="5a2b1823-fb0c-44e8-bc11-fa90814c959d" />
+    </relatedTopics>
+
+  </developerConceptualDocument>
+</topic>

@@ -5,7 +5,8 @@ using System.IO;
 using System.Threading;
 using System;
 
-// TODO: Ceph buckets
+// TODO: Tags
+// TODO: Commit changes made to a task
 
 namespace QarnotSDK {
     /// <summary>
@@ -84,16 +85,39 @@ namespace QarnotSDK {
         /// The task profile.
         /// </summary>
         public string Profile { get { return _taskApi.Profile; } }
+
+        /// <summary>
+        /// Qarnot resources disks or buckets bound to this task.
+        /// Can be set only before the task submission.
+        /// </summary>
+        public List<QAbstractStorage> Resources { get; set; }
         /// <summary>
         /// Qarnot resources disks bound to this task.
         /// Can be set only before the task submission.
         /// </summary>
-        public List<QDisk> Resources { get; set; }
+        public IEnumerable<QDisk> ResourcesDisks { get { return GetResources<QDisk>(); } }
+        /// <summary>
+        /// Qarnot resources buckets bound to this task.
+        /// Can be set only before the task submission.
+        /// </summary>
+        public IEnumerable<QBucket> ResourcesBuckets { get { return GetResources<QBucket>(); } }
+
+        /// <summary>
+        /// Qarnot result disk or bucket bound to this task.
+        /// Can be set only before the task submission.
+        /// </summary>
+        public QAbstractStorage Results { get; set; }
         /// <summary>
         /// Qarnot result disk bound to this task.
         /// Can be set only before the task submission.
         /// </summary>
-        public QDisk Results { get; set; }
+        public QDisk ResultsDisk { get { return GetResults<QDisk>(); } }
+        /// <summary>
+        /// Qarnot result bucket bound to this task.
+        /// Can be set only before the task submission.
+        /// </summary>
+        public QBucket ResultsBucket { get { return GetResults<QBucket>(); } }
+
         /// <summary>
         /// Retrieve the task state (see QTaskStates).
         /// Available only after the submission. Use UpdateStatus or UpdateStatusAsync to refresh.
@@ -155,6 +179,28 @@ namespace QarnotSDK {
         }
 
         /// <summary>
+        /// The results include only the files matching that regular expression.
+        /// Must be set before the submission.
+        /// </summary>
+        public string ResultsWhitelist { get { return _taskApi.ResultsWhitelist; } set { _taskApi.ResultsWhitelist = value; } }
+        /// <summary>
+        /// The results exclude all the files matching that regular expression.
+        /// Must be set before the submission.
+        /// </summary>
+        public string ResultsBlacklist { get { return _taskApi.ResultsBlacklist; } set { _taskApi.ResultsBlacklist = value; } }
+
+        /// <summary>
+        /// The snapshots include only the files matching that regular expression.
+        /// Must be set before the submission.
+        /// </summary>
+        public string SnapshotWhitelist { get { return _taskApi.SnapshotWhitelist; } set { _taskApi.SnapshotWhitelist = value; } }
+        /// <summary>
+        /// The snapshots exclude all the files matching that regular expression.
+        /// Must be set before the submission.
+        /// </summary>
+        public string SnapshotBlacklist { get { return _taskApi.SnapshotBlacklist; } set { _taskApi.SnapshotBlacklist = value; } }
+
+        /// <summary>
         /// Create a new task outside of a pool.
         /// </summary>
         /// <param name="connection">The inner connection object.</param>
@@ -165,7 +211,7 @@ namespace QarnotSDK {
             _taskApi = new TaskApi();
             _taskApi.Name = shortname;
             _taskApi.Profile = profile;
-            Resources = new List<QDisk>();
+            Resources = new List<QAbstractStorage>();
 
             if (_api.HasShortnameFeature) {
                 _taskApi.Shortname = shortname;
@@ -230,14 +276,14 @@ namespace QarnotSDK {
         }
 
         internal QTask() {
-            Resources = new List<QDisk>();
+            Resources = new List<QAbstractStorage>();
         }
 
         internal QTask(Connection qapi, TaskApi taskApi) {
             _api = qapi;
             _taskApi = taskApi;
             _uri = "tasks/" + _taskApi.Uuid.ToString();
-            if (Resources == null) Resources = new List<QDisk>();
+            if (Resources == null) Resources = new List<QAbstractStorage>();
             if (_taskApi.AdvancedRanges != null) _advancedRange = new AdvancedRanges(_taskApi.AdvancedRanges);
             else _advancedRange = null;
         }
@@ -323,7 +369,7 @@ namespace QarnotSDK {
         /// <param name="autoCreateResultDisk">Set to true to ensure that the result disk specified exists. If set to false and the result disk doesn't exist, this will result in an exception.</param>
         /// <returns></returns>
         public async Task SubmitAsync(string profile = null, bool autoCreateResultDisk = true) {
-            await SubmitAsync(new CancellationToken(), profile, 0, autoCreateResultDisk);
+            await SubmitAsync(default(CancellationToken), profile, 0, autoCreateResultDisk);
         }
 
         /// <summary>
@@ -334,7 +380,7 @@ namespace QarnotSDK {
         /// <param name="autoCreateResultDisk">Set to true to ensure that the result disk specified exists. If set to false and the result disk doesn't exist, this will result in an exception.</param>
         /// <returns></returns>
         public async Task SubmitAsync(string profile, uint instanceCount = 0, bool autoCreateResultDisk = true) {
-            await SubmitAsync(new CancellationToken(), profile, instanceCount, autoCreateResultDisk);
+            await SubmitAsync(default(CancellationToken), profile, instanceCount, autoCreateResultDisk);
         }
 
         /// <summary>
@@ -345,7 +391,7 @@ namespace QarnotSDK {
         /// <param name="autoCreateResultDisk">Set to true to ensure that the result disk specified exists. If set to false and the result disk doesn't exist, this will result in an exception.</param>
         /// <returns></returns>
         public async Task SubmitAsync(string profile, AdvancedRanges range, bool autoCreateResultDisk = true) {
-            await SubmitAsync(new CancellationToken(), profile, range, autoCreateResultDisk);
+            await SubmitAsync(default(CancellationToken), profile, range, autoCreateResultDisk);
         }
 
         /// <summary>
@@ -400,25 +446,50 @@ namespace QarnotSDK {
 
             // Is a result disk defined?
             if (Results != null) {
-                if (_api.HasDiskShortnameFeature) {
-                    _taskApi.ResultDisk = Results.Shortname;
-                } else {
-                    if (Results.Uuid == Guid.Empty) {
-                        if (!autoCreateResultDisk) await Results.UpdateAsync(cancellationToken);
-                        else await Results.CreateAsync(cancellationToken, true);
+                var resultsQDisk = Results as QDisk;
+                if (resultsQDisk != null) {
+                    if (_api.HasDiskShortnameFeature) {
+                        _taskApi.ResultDisk = resultsQDisk.Shortname;
+                    } else {
+                        if (resultsQDisk.Uuid == Guid.Empty) {
+                            if (!autoCreateResultDisk) await resultsQDisk.UpdateAsync(cancellationToken);
+                            else await resultsQDisk.CreateAsync(true, cancellationToken);
+                        }
+                        _taskApi.ResultDisk = resultsQDisk.Uuid.ToString();
+                        _taskApi.ResultBucket = null;
                     }
-                    _taskApi.ResultDisk = Results.Uuid.ToString();
+                } else {
+                    var resultsQBucket = Results as QBucket;
+                    if (resultsQBucket != null) {
+                        _taskApi.ResultBucket = resultsQBucket.Shortname;
+                        _taskApi.ResultDisk = null;
+                    } else {
+                        throw new Exception("Unknown IQStorage implementation");
+                    }
                 }
             }
 
             // Build the resource disk list
             _taskApi.ResourceDisks = new List<string>();
             foreach (var item in Resources) {
-                if (_api.HasDiskShortnameFeature) {
-                    _taskApi.ResourceDisks.Add(item.Shortname);
+                var resQDisk = item as QDisk;
+                if (resQDisk != null) {
+                    if (_api.HasDiskShortnameFeature) {
+                        _taskApi.ResourceDisks.Add(item.Shortname);
+                        _taskApi.ResourceBuckets.Clear();
+                    } else {
+                        if (resQDisk.Uuid == Guid.Empty) await resQDisk.UpdateAsync(cancellationToken);
+                        _taskApi.ResourceDisks.Add(resQDisk.Uuid.ToString());
+                        _taskApi.ResourceBuckets.Clear();
+                    }
                 } else {
-                    if (item.Uuid == Guid.Empty) await item.UpdateAsync(cancellationToken);
-                    _taskApi.ResourceDisks.Add(item.Uuid.ToString());
+                    var resQBucket = item as QBucket;
+                    if (resQBucket != null) {
+                        _taskApi.ResourceBuckets.Add(resQBucket.Shortname);
+                        _taskApi.ResourceDisks.Clear();
+                    } else {
+                        throw new Exception("Unknown IQStorage implementation");
+                    }
                 }
             }
 
@@ -441,7 +512,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public async Task AbortAsync(CancellationToken cancellationToken = new CancellationToken()) {
+        public async Task AbortAsync(CancellationToken cancellationToken = default(CancellationToken)) {
             await ApiWorkaround_EnsureUriAsync(true, cancellationToken);
 
             if (_api.IsReadOnly) throw new Exception("Can't delete tasks, this connection is configured in read-only mode");
@@ -456,7 +527,7 @@ namespace QarnotSDK {
         /// <param name="failIfDoesntExist">If set to true and the task doesn't exist, an exception is thrown. Default is false.</param>
         /// <returns></returns>
         public async Task DeleteAsync(bool failIfDoesntExist = false) {
-            await DeleteAsync(new CancellationToken(), failIfDoesntExist);
+            await DeleteAsync(default(CancellationToken), failIfDoesntExist);
         }
 
         /// <summary>
@@ -484,7 +555,7 @@ namespace QarnotSDK {
         /// <param name="updateDisksInfo">If set to true, the resources and results disk objects are also updated.</param>
         /// <returns></returns>
         public async Task UpdateStatusAsync(bool updateDisksInfo = true) {
-            await UpdateStatusAsync(new CancellationToken(), updateDisksInfo);
+            await UpdateStatusAsync(default(CancellationToken), updateDisksInfo);
         }
 
         /// <summary>
@@ -536,7 +607,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public async Task UpdateResourcesAsync(CancellationToken cancellationToken = new CancellationToken()) {
+        public async Task UpdateResourcesAsync(CancellationToken cancellationToken = default(CancellationToken)) {
             await ApiWorkaround_EnsureUriAsync(true, cancellationToken);
 
             if (_api.IsReadOnly) throw new Exception("Can't update resources, this connection is configured in read-only mode");
@@ -552,7 +623,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public async Task SnapshotAsync(CancellationToken cancellationToken = new CancellationToken()) {
+        public async Task SnapshotAsync(CancellationToken cancellationToken = default(CancellationToken)) {
             await ApiWorkaround_EnsureUriAsync(true, cancellationToken);
 
             if (_api.IsReadOnly) throw new Exception("Can't request a snapshot, this connection is configured in read-only mode");
@@ -566,7 +637,7 @@ namespace QarnotSDK {
         /// <param name="interval">Interval in seconds between two snapshots.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public async Task SnapshotPeriodicAsync(uint interval, CancellationToken cancellationToken = new CancellationToken()) {
+        public async Task SnapshotPeriodicAsync(uint interval, CancellationToken cancellationToken = default(CancellationToken)) {
             await ApiWorkaround_EnsureUriAsync(true, cancellationToken);
 
             Snapshot s = new QarnotSDK.Snapshot();
@@ -585,7 +656,7 @@ namespace QarnotSDK {
         /// <param name="destinationStream">The destination stream.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public async Task CopyStdoutToAsync(Stream destinationStream, CancellationToken cancellationToken = new CancellationToken()) {
+        public async Task CopyStdoutToAsync(Stream destinationStream, CancellationToken cancellationToken = default(CancellationToken)) {
             await ApiWorkaround_EnsureUriAsync(true, cancellationToken);
 
             var response = await _api._client.GetAsync(_uri + "/stdout", cancellationToken);
@@ -601,7 +672,7 @@ namespace QarnotSDK {
         /// <param name="destinationStream">The destination stream.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public async Task CopyStderrToAsync(Stream destinationStream, CancellationToken cancellationToken = new CancellationToken()) {
+        public async Task CopyStderrToAsync(Stream destinationStream, CancellationToken cancellationToken = default(CancellationToken)) {
             await ApiWorkaround_EnsureUriAsync(true, cancellationToken);
 
             var response = await _api._client.GetAsync(_uri + "/stderr", cancellationToken);
@@ -616,7 +687,7 @@ namespace QarnotSDK {
         /// <param name="destinationStream">The destination stream.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public async Task CopyFreshStdoutToAsync(Stream destinationStream, CancellationToken cancellationToken = new CancellationToken()) {
+        public async Task CopyFreshStdoutToAsync(Stream destinationStream, CancellationToken cancellationToken = default(CancellationToken)) {
             await ApiWorkaround_EnsureUriAsync(true, cancellationToken);
 
             if (_api.IsReadOnly) throw new Exception("Can't retrieve fresh standard output, this connection is configured in read-only mode");
@@ -632,7 +703,7 @@ namespace QarnotSDK {
         /// <param name="destinationStream">The destination stream.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public async Task CopyFreshStderrToAsync(Stream destinationStream, CancellationToken cancellationToken = new CancellationToken()) {
+        public async Task CopyFreshStderrToAsync(Stream destinationStream, CancellationToken cancellationToken = default(CancellationToken)) {
             await ApiWorkaround_EnsureUriAsync(true, cancellationToken);
 
             if (_api.IsReadOnly) throw new Exception("Can't retrieve fresh standard error, this connection is configured in read-only mode");
@@ -648,7 +719,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>The task standard output.</returns>
-        public async Task<string> StdoutAsync(CancellationToken cancellationToken = new CancellationToken()) {
+        public async Task<string> StdoutAsync(CancellationToken cancellationToken = default(CancellationToken)) {
             using (MemoryStream ms = new MemoryStream()) {
                 await CopyStdoutToAsync(ms, cancellationToken);
                 ms.Position = 0;
@@ -664,7 +735,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>The task standard error.</returns>
-        public async Task<string> StderrAsync(CancellationToken cancellationToken = new CancellationToken()) {
+        public async Task<string> StderrAsync(CancellationToken cancellationToken = default(CancellationToken)) {
             using (MemoryStream ms = new MemoryStream()) {
                 await CopyStderrToAsync(ms, cancellationToken);
                 ms.Position = 0;
@@ -679,7 +750,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>The task fresh standard output.</returns>
-        public async Task<string> FreshStdoutAsync(CancellationToken cancellationToken = new CancellationToken()) {
+        public async Task<string> FreshStdoutAsync(CancellationToken cancellationToken = default(CancellationToken)) {
             using (MemoryStream ms = new MemoryStream()) {
                 await CopyFreshStdoutToAsync(ms, cancellationToken);
                 ms.Position = 0;
@@ -694,7 +765,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>The task fresh standard error.</returns>
-        public async Task<string> FreshStderrAsync(CancellationToken cancellationToken = new CancellationToken()) {
+        public async Task<string> FreshStderrAsync(CancellationToken cancellationToken = default(CancellationToken)) {
             using (MemoryStream ms = new MemoryStream()) {
                 await CopyFreshStderrToAsync(ms, cancellationToken);
                 ms.Position = 0;
@@ -708,7 +779,7 @@ namespace QarnotSDK {
         #region helpers
         /// <summary>
         /// Return the public host and port to establish an inbound connection to the master compute node (instance 0) running your task.
-        /// Note: your profile have to define one or more inbound connection to support that feature. For exemple, the profile "docker-network-ssh"
+        /// Note: your profile have to define one or more inbound connection to support that feature. For example, the profile "docker-network-ssh"
         ///  defines a redirection to the ssh port 22. If you need inbound connections on a specific port, you can make a request to the support team.
         /// </summary>
         /// <param name="port">The port you want to access on the master compute node (instance 0).</param>
@@ -732,7 +803,7 @@ namespace QarnotSDK {
 
         /// <summary>
         /// Enumeration on the task instance ids.
-        /// Usefull if an advanced range is used.
+        /// Useful if an advanced range is used.
         /// </summary>
         public IEnumerable<UInt32> Instances {
             get {
@@ -748,7 +819,7 @@ namespace QarnotSDK {
 
         /// <summary>
         /// Get the status of an instance given its instance id.
-        /// Note: the status of an instance could be retrieved in the CompletedInstances or
+        /// Note: the status of an instance could also be retrieved in the Status.CompletedInstances or
         ///  Status.RunningInstancesInfo.PerRunningInstanceInfo structures. This method provides an
         ///  unified way to retrieve those information.
         /// </summary>
@@ -771,6 +842,16 @@ namespace QarnotSDK {
             }
             return null;
         }
+
+        private IEnumerable<T> GetResources<T>() where T : QAbstractStorage {
+            foreach (var d in Resources) {
+                if (d is T) yield return ((T)d);
+            }
+        }
+        private T GetResults<T>() where T : QAbstractStorage {
+            if (Results is T) return (T)Results;
+            return default(T);
+        }
         #endregion
     }
 
@@ -785,7 +866,7 @@ namespace QarnotSDK {
         public float ExecutionTimeGHz { get; private set; }
         public float WallTimeSec { get; private set; }
         public QTaskStatusPerRunningInstanceInfo RunningInstanceInfo {get; private set; }
-        public QTaskCompletedInstance CompeltedInstanceInfo { get; private set; }
+        public QTaskCompletedInstance CompletedInstanceInfo { get; private set; }
 
         internal QTaskInstanceStatus(QTaskStatusPerRunningInstanceInfo i) {
             // Phase is lowercase, convert the first letter to uppercase
@@ -796,7 +877,7 @@ namespace QarnotSDK {
             ExecutionTimeSec = i.ExecutionTimeSec;
             WallTimeSec = 0;
             RunningInstanceInfo = i;
-            CompeltedInstanceInfo = null;
+            CompletedInstanceInfo = null;
         }
         internal QTaskInstanceStatus(QTaskCompletedInstance i) {
             State = i.State;
@@ -806,7 +887,7 @@ namespace QarnotSDK {
             ExecutionTimeSec = i.ExecTimeSec;
             WallTimeSec = i.WallTimeSec;
             RunningInstanceInfo = null;
-            CompeltedInstanceInfo = i;
+            CompletedInstanceInfo = i;
         }
     }
 }
