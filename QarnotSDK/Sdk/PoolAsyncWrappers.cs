@@ -42,7 +42,7 @@ namespace QarnotSDK
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public void Stop(CancellationToken cancellationToken = new CancellationToken()) {
+        public void Stop(CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 StopAsync(cancellationToken).Wait();
             } catch (AggregateException ex) {
