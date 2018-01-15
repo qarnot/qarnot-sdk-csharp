@@ -48,13 +48,27 @@ namespace QarnotSDK {
         }
 
         /// <summary>
-        /// Retrieve the list of buckets.
+        /// Retrieve the buckets list with each bucket file count and used space.
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>A list of buckets.</returns>
         public List<QBucket> RetrieveBuckets(CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 return RetrieveBucketsAsync(cancellationToken).Result;
+            } catch (AggregateException ex) {
+                throw ex.InnerException;
+            }
+        }
+
+        /// <summary>
+        /// Retrieve the buckets list.
+        /// </summary>
+        /// <param name="retrieveBucketStats">If set to true, the file count and used space of each bucket is also retrieved. If set to false, it is faster but only the bucket names are returned.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A list of buckets.</returns>
+        public List<QBucket> RetrieveBuckets(bool retrieveBucketStats, CancellationToken cancellationToken = default(CancellationToken)) {
+            try {
+                return RetrieveBucketsAsync(retrieveBucketStats, cancellationToken).Result;
             } catch (AggregateException ex) {
                 throw ex.InnerException;
             }
@@ -81,6 +95,21 @@ namespace QarnotSDK {
         public UserInformation RetrieveUserInformation(CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 return RetrieveUserInformationAsync(cancellationToken).Result;
+            } catch (AggregateException ex) {
+                throw ex.InnerException;
+            }
+        }
+
+        /// <summary>
+        /// Retrieve the user quotas and disks information for your account.
+        /// Note: BucketCount field is retrieved with a second request to the bucket Api.
+        /// </summary>
+        /// <param name="retrieveBucketCount">If set to false, the BucketCount field is not filled but the request is faster.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>The quotas and disks information without BucketCount.</returns>
+        public UserInformation RetrieveUserInformation(bool retrieveBucketCount, CancellationToken cancellationToken = default(CancellationToken)) {
+            try {
+                return RetrieveUserInformationAsync(retrieveBucketCount, cancellationToken).Result;
             } catch (AggregateException ex) {
                 throw ex.InnerException;
             }

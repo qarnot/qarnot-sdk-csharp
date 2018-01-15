@@ -74,6 +74,10 @@ namespace QarnotSDK {
     /// </summary>
     public abstract partial class QAbstractStorage {
         /// <summary>
+        /// The inner Connection object.
+        /// </summary>
+        public abstract Connection Connection { get; }
+        /// <summary>
         /// A storage unique identifier.
         /// Note: For a bucket, the unique id is the bucket name.
         ///  For a disk, the unique id is the disk Uuid.

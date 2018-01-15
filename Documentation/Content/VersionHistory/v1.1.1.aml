@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topic id="8adf8be4-6224-42f0-ad76-a5988a732e3a" revisionNumber="1">
+  <developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <introduction>
+      <para>
+        Version 1.1.1 was released on 2018/01/15.
+      </para>
+    </introduction>
+
+    <section>
+      <title>Changes in This Release</title>
+      <content>
+
+        <list class="bullet">
+          <listItem>
+            <para>Update the UserInformation class to match changes in the Rest Api.</para>
+          </listItem>
+          <listItem>
+            <para>Change some xApi class public constructors to internal.</para>
+          </listItem>
+          <listItem>
+            <para>Add a property to retrieve the connection object from a Storage object.</para>
+          </listItem>
+          <listItem>
+            <para>Add missing comments in the documentation.</para>
+          </listItem>
+          <listItem>
+            <para>Don't fail to retrieve the bucket list if we can't retrieve the information from one bucket.</para>
+          </listItem>
+          <listItem>
+            <para>Allow to retrieve only the bucket list without calling UpdateAsync() on each buckets.</para>
+          </listItem>
+          <listItem>
+            <para>Fix RetrievePools and RetrieveTasks: the resources information where missing until the next call to UpdateStatus().</para>
+          </listItem>
+        </list>
+
+      </content>
+    </section>
+    
+    <relatedTopics>
+      <link xlink:href="5a2b1823-fb0c-44e8-bc11-fa90814c959d" />
+    </relatedTopics>
+
+  </developerConceptualDocument>
+</topic>

@@ -264,8 +264,8 @@ namespace QarnotSDK
         internal async Task<Amazon.S3.AmazonS3Client> GetS3ClientAsync(CancellationToken cancellationToken) {
             // Check if we need to retrieve the StorageAccessKey (account email)
             if (String.IsNullOrEmpty(StorageAccessKey)) {
-                var u = await RetrieveUserInformationAsync(cancellationToken);
-                StorageAccessKey = u.Email;
+                // RetrieveUserInformationAsync will set the StorageAccessKey
+                await RetrieveUserInformationAsync(false, cancellationToken);
             }
             if (StorageUri == null) {
                 var s = await RetrieveApiSettingsAsync(cancellationToken);
@@ -292,11 +292,21 @@ namespace QarnotSDK
         }
 
         /// <summary>
-        /// Retrieve the buckets list.
+        /// Retrieve the buckets list with each bucket file count and used space.
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        /// <returns>A list of disks.</returns>
+        /// <returns>A list of buckets.</returns>
         public async Task<List<QBucket>> RetrieveBucketsAsync(CancellationToken cancellationToken = default(CancellationToken)) {
+            return await RetrieveBucketsAsync(true, cancellationToken);
+        }
+
+        /// <summary>
+        /// Retrieve the buckets list.
+        /// </summary>
+        /// <param name="retrieveBucketStats">If set to true, the file count and used space of each bucket is also retrieved. If set to false, it is faster but only the bucket names are returned.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A list of buckets.</returns>
+        public async Task<List<QBucket>> RetrieveBucketsAsync(bool retrieveBucketStats, CancellationToken cancellationToken = default(CancellationToken)) {
             using (var s3Client = await GetS3ClientAsync(cancellationToken)) {
                 var s3Response = await s3Client.ListBucketsAsync(cancellationToken);
 
@@ -306,10 +316,14 @@ namespace QarnotSDK
                 var tasks = new List<Task>();
                 foreach (var item in s3Response.Buckets) {
                     var b = new QBucket(this, item);
-                    tasks.Add(b.UpdateAsync(cancellationToken));
+                    if (retrieveBucketStats) tasks.Add(b.UpdateAsync(cancellationToken));
                     ret.Add(b);
                 }
-                await Task.WhenAll(tasks);
+                try {
+                    if (retrieveBucketStats) await Task.WhenAll(tasks);
+                } catch {
+                    // Discard silently UpdateAsync exceptions
+                }
 
                 return ret;
             }
@@ -347,11 +361,32 @@ namespace QarnotSDK
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>The quotas and disks information.</returns>
         public async Task<UserInformation> RetrieveUserInformationAsync(CancellationToken cancellationToken = default(CancellationToken)) {
+            return await RetrieveUserInformationAsync(true, cancellationToken);
+        }
+
+        /// <summary>
+        /// Retrieve the user quotas and disks information for your account.
+        /// Note: BucketCount field is retrieved with a second request to the bucket Api.
+        /// </summary>
+        /// <param name="retrieveBucketCount">If set to false, the BucketCount field is not filled but the request is faster.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>The quotas and disks information without BucketCount.</returns>
+        public async Task<UserInformation> RetrieveUserInformationAsync(bool retrieveBucketCount, CancellationToken cancellationToken = default(CancellationToken)) {
             var response = await _client.GetAsync("info", cancellationToken);
 
             await Utils.LookForErrorAndThrowAsync(_client, response);
+            var u = await response.Content.ReadAsAsync<UserInformation>(cancellationToken);
 
-            return await response.Content.ReadAsAsync<UserInformation>(cancellationToken);
+            // Cache the user access key, for further calls to the bucket Api.
+            if (String.IsNullOrEmpty(StorageAccessKey)) {
+                StorageAccessKey = u.Email;
+            }
+
+            if (retrieveBucketCount) {
+                u.BucketCount = (await RetrieveBucketsAsync(false, cancellationToken)).Count;
+            }
+
+            return u;
         }
 
         /// <summary>
