@@ -133,9 +133,9 @@ namespace QarnotSDK
 
         internal QPool(Connection qapi, PoolApi poolApi) {
             _api = qapi;
-            _poolApi = poolApi;
-            _uri = "pools/" + _poolApi.Uuid.ToString();
+            _uri = "pools/" + poolApi.Uuid.ToString();
             if (Resources == null) Resources = new List<QAbstractStorage>();
+            SyncFromApiObject(poolApi);
         }
 
         #region workaround
@@ -296,6 +296,17 @@ namespace QarnotSDK
             await UpdateStatusAsync(default(CancellationToken), updateDisksInfo);
         }
 
+        private void SyncFromApiObject(PoolApi result) {
+            _poolApi = result;
+
+            if (Resources.Count != _poolApi.ResourceDisks.Count) {
+                Resources.Clear();
+                foreach (var r in _poolApi.ResourceDisks) {
+                    Resources.Add(new QDisk(_api, new Guid(r)));
+                }
+            }
+        }
+
         /// <summary>
         /// Update this pool state and status.
         /// </summary>
@@ -309,14 +320,7 @@ namespace QarnotSDK
             await Utils.LookForErrorAndThrowAsync(_api._client, response);
 
             var result = await response.Content.ReadAsAsync<PoolApi>(cancellationToken);
-            _poolApi = result;
-
-            if (Resources.Count != _poolApi.ResourceDisks.Count) {
-                Resources.Clear();
-                foreach(var r in _poolApi.ResourceDisks) {
-                    Resources.Add(new QDisk(_api, new Guid(r)));
-                }
-            }
+            SyncFromApiObject(result);
 
             if (updateDisksInfo) {
                 foreach(var r in Resources) {

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace QarnotSDK {
@@ -32,13 +33,41 @@ namespace QarnotSDK {
         /// </summary>
         public int DiskCount;
         /// <summary>
+        /// Maximum number of buckets the user is allowed to create.
+        /// </summary>
+        public int MaxBucket;
+        /// <summary>
+        /// Number of buckets owned by the user.
+        /// </summary>
+        public int BucketCount = -1;
+
+        /// <summary>
         /// Allowed quota in bytes for the user.
         /// </summary>
+        [Obsolete("use QuotaBytesDisk")]
         public long QuotaBytes;
         /// <summary>
         /// Currently used quota in bytes.
         /// </summary>
+        [Obsolete("use UsedQuotaBytesDisk")]
         public long UsedQuotaBytes;
+        /// <summary>
+        /// Allowed quota in bytes for the user.
+        /// </summary>
+        public long QuotaBytesDisk;
+        /// <summary>
+        /// Currently used quota in bytes.
+        /// </summary>
+        public long UsedQuotaBytesDisk;
+
+        /// <summary>
+        /// Allowed quota in bytes for the user.
+        /// </summary>
+        public long QuotaBytesBucket;
+        /// <summary>
+        /// Currently used quota in bytes.
+        /// </summary>
+        public long UsedQuotaBytesBucket;
 
         /// <summary>
         /// Maximum number of tasks the user is allowed to create.
@@ -60,6 +89,23 @@ namespace QarnotSDK {
         /// Maximum number of concurrent allowed instances.
         /// </summary>
         public int MaxInstances;
+
+        /// <summary>
+        /// Maximum number of pools the user is allowed to create.
+        /// </summary>
+        public int MaxPool;
+        /// <summary>
+        /// Total number of pools belonging to the user.
+        /// </summary>
+        public int PoolCount;
+        /// <summary>
+        /// Maximum number of running pools the user is allowed to create.
+        /// </summary>
+        public int MaxRunningPool;
+        /// <summary>
+        /// Number of pools currently submitted or running.
+        /// </summary>
+        public int RunningPoolCount;
 
         internal UserInformation() {
         }

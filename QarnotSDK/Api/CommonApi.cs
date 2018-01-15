@@ -6,12 +6,12 @@
 
         public string Value { get; set; }
 
-        public KeyValHelper(string key, string value) {
+        internal KeyValHelper(string key, string value) {
             Key = key;
             Value = value;
         }
 
-        public KeyValHelper() {
+        internal KeyValHelper() {
         }
     }
 
@@ -19,11 +19,11 @@
     internal class Error {
         public string Message { get; set; }
 
-        public Error(string msg) {
+        internal Error(string msg) {
             Message = msg;
         }
 
-        public Error() {
+        internal Error() {
         }
     }
 }

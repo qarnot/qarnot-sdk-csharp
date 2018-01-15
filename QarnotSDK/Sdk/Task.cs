@@ -281,11 +281,9 @@ namespace QarnotSDK {
 
         internal QTask(Connection qapi, TaskApi taskApi) {
             _api = qapi;
-            _taskApi = taskApi;
-            _uri = "tasks/" + _taskApi.Uuid.ToString();
+            _uri = "tasks/" + taskApi.Uuid.ToString();
             if (Resources == null) Resources = new List<QAbstractStorage>();
-            if (_taskApi.AdvancedRanges != null) _advancedRange = new AdvancedRanges(_taskApi.AdvancedRanges);
-            else _advancedRange = null;
+            SyncFromApiObject(taskApi);
         }
 
         #region workaround
@@ -558,19 +556,7 @@ namespace QarnotSDK {
             await UpdateStatusAsync(default(CancellationToken), updateDisksInfo);
         }
 
-        /// <summary>
-        /// Update this task state and status.
-        /// </summary>
-        /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        /// <param name="updateDisksInfo">If set to true, the resources and results disk objects are also updated.</param>
-        /// <returns></returns>
-        public async Task UpdateStatusAsync(CancellationToken cancellationToken, bool updateDisksInfo = true) {
-            await ApiWorkaround_EnsureUriAsync(true, cancellationToken);
-
-            var response = await _api._client.GetAsync(_uri, cancellationToken); // get task status
-            await Utils.LookForErrorAndThrowAsync(_api._client, response);
-
-            var result = await response.Content.ReadAsAsync<TaskApi>();
+        private void SyncFromApiObject(TaskApi result) {
             _taskApi = result;
             if (_taskApi.AdvancedRanges != null) _advancedRange = new AdvancedRanges(_taskApi.AdvancedRanges);
             else _advancedRange = null;
@@ -585,6 +571,22 @@ namespace QarnotSDK {
             if (Results == null && _taskApi.ResultDisk != null) {
                 Results = new QDisk(_api, new Guid(_taskApi.ResultDisk));
             }
+        }
+
+        /// <summary>
+        /// Update this task state and status.
+        /// </summary>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <param name="updateDisksInfo">If set to true, the resources and results disk objects are also updated.</param>
+        /// <returns></returns>
+        public async Task UpdateStatusAsync(CancellationToken cancellationToken, bool updateDisksInfo = true) {
+            await ApiWorkaround_EnsureUriAsync(true, cancellationToken);
+
+            var response = await _api._client.GetAsync(_uri, cancellationToken); // get task status
+            await Utils.LookForErrorAndThrowAsync(_api._client, response);
+
+            var result = await response.Content.ReadAsAsync<TaskApi>();
+            SyncFromApiObject(result);
 
             if (updateDisksInfo) {
                 foreach (var r in Resources) {
