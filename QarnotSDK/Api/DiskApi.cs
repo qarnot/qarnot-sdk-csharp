@@ -9,8 +9,17 @@ namespace QarnotSDK {
     [Flags]
     [JsonConverter(typeof(StringEnumConverter))]
     public enum FileFlags {
+        /// <summary>
+        /// A file
+        /// </summary>
         File = 1,
+        /// <summary>
+        /// A directory
+        /// </summary>
         Directory = 2,
+        /// <summary>
+        /// An executable file
+        /// </summary>
         ExecutableFile = 3
     }
 
@@ -21,7 +30,7 @@ namespace QarnotSDK {
         public FileFlags FileFlags { get; set; }
         public string Sha1sum { get; set; }
 
-        public FileApi() {
+        internal FileApi() {
         }
     }
 
@@ -29,7 +38,7 @@ namespace QarnotSDK {
         public bool Locked { get; set; }
 
         public LockApi() { }
-        public LockApi(bool locked) {
+        internal LockApi(bool locked) {
             Locked = locked;
         }
     }
@@ -47,7 +56,7 @@ namespace QarnotSDK {
         public DateTime CreationDate { get; set; }
         public bool Locked { get; set; }
 
-        public DiskApi() {
+        internal DiskApi() {
         }
     }
 }

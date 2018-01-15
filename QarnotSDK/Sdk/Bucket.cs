@@ -202,7 +202,10 @@ namespace QarnotSDK {
         /// The bucket name.
         /// </summary>
         public override string UniqueId { get { return Shortname; } }
-
+        /// <summary>
+        /// The inner Connection object.
+        /// </summary>
+        public override Connection Connection { get { return _api; } }
         /// <summary>
         /// The bucket name.
         /// </summary>
@@ -294,6 +297,7 @@ namespace QarnotSDK {
                     BucketName = Shortname,
                     Verb = Amazon.S3.HttpVerb.HEAD,
                     Expires = DateTime.Now.Add(TimeSpan.FromSeconds(60)),
+                    Protocol = _api.StorageUri.Scheme.Equals("http", StringComparison.InvariantCultureIgnoreCase) ? Amazon.S3.Protocol.HTTP : Amazon.S3.Protocol.HTTPS
                 };
 
                 var s3Response = s3Client.GetPreSignedURL(s3Request);
@@ -451,6 +455,7 @@ namespace QarnotSDK {
 
                     foreach (var obj in s3Response.S3Objects) {
                         // Files
+                        if (obj.Key.EndsWith("/")) continue;
                         files.Add(new QBucketEntry(obj, _api.StorageUploadPartSize, _api.StorageAvailablePartSizes));
                     }
 
