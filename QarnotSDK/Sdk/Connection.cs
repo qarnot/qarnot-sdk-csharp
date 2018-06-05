@@ -5,14 +5,14 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Threading;
 
-namespace QarnotSDK
-{
+namespace QarnotSDK {
     /// <summary>
     /// This class allows you to access the Qarnot compute API and construct other objects: QTask, QPool, QDisk.
     /// </summary>
     public partial class Connection {
         internal HttpClient _client;
         internal HttpClientHandler _httpClientHandler;
+        internal RetryHandler _retryHandler;
 
         /// <summary>
         /// Specify if the Api has the shortname feature to retrieve the tasks/pools by name.
@@ -75,6 +75,11 @@ namespace QarnotSDK
         public List<long> StorageAvailablePartSizes {
             get; set;
         } = new List<long>() { 0 };
+        /// <summary>
+        /// Maximum number of retries in case of transient error.
+        /// Default is 3 times.
+        /// </summary>
+        public int MaxRetry { get { return _retryHandler.MaxRetries; } set { _retryHandler.MaxRetries = value; } }
 
         /// <summary>
         /// Construct a new Connection object using your token.
@@ -108,8 +113,9 @@ namespace QarnotSDK
             StorageSecretKey = token;
             HasShortnameFeature = true;
             HasDiskShortnameFeature = false;
-            _httpClientHandler = httpClientHandler;
-            _client = _httpClientHandler == null ? new HttpClient() : new HttpClient(_httpClientHandler);
+            _httpClientHandler = httpClientHandler == null ? new HttpClientHandler():httpClientHandler;
+            _retryHandler = new RetryHandler(_httpClientHandler, 3);
+            _client = new HttpClient(_retryHandler);
             _client.BaseAddress = Uri;
             _client.DefaultRequestHeaders.Clear();
             _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -269,6 +275,7 @@ namespace QarnotSDK
             }
             if (StorageUri == null) {
                 var s = await RetrieveApiSettingsAsync(cancellationToken);
+                if (s.Storage == null) throw new Exception($"The API at {_client.BaseAddress} doesn't have a Ceph storage configured.");
                 StorageUri = new Uri(s.Storage);
             }
 
@@ -409,7 +416,7 @@ namespace QarnotSDK
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>A list of constants.</returns>
         public async Task<List<Constant>> RetrieveConstantsAsync(string profile, CancellationToken cancellationToken = default(CancellationToken)) {
-            var response = await _client.GetAsync("profiles/"+profile, cancellationToken);
+            var response = await _client.GetAsync("profiles/" + profile, cancellationToken);
 
             await Utils.LookForErrorAndThrowAsync(_client, response);
 
