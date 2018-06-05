@@ -37,7 +37,7 @@ namespace QarnotSDK {
                     case System.Net.HttpStatusCode.NotFound:
                         throw new QarnotApiResourceNotFoundException(e.Message, inner);
                     default:
-                        throw new QarnotApiException(e.Message, inner);
+                        throw new QarnotApiException(e.Message, inner, response);
                 }
             }
         }

@@ -66,6 +66,7 @@
     <Compile Include="Sdk\AbstractStorage.cs" />
     <Compile Include="Sdk\TaskAsyncWrappers.cs" />
     <Compile Include="Tools\Ranges.cs" />
+    <Compile Include="Tools\RetryHandler.cs" />
     <Compile Include="Tools\Utils.cs" />
     <Compile Include="Sdk\ConnectionAsyncWrappers.cs" />
     <Compile Include="Sdk\Disk.cs" />

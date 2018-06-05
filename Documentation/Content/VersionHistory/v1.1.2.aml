@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topic id="56375317-3515-4479-bc91-0003cca688c4" revisionNumber="1">
+  <developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <introduction>
+      <para>
+        Version 1.1.2 was released on 2018/06/05.
+      </para>
+    </introduction>
+
+    <section>
+      <title>Changes in This Release</title>
+      <content>
+
+        <list class="bullet">
+          <listItem>
+            <para>Add a retry logic for transient errors.</para>
+          </listItem>
+          <listItem>
+            <para>Add the HTTP response object to QarnotApiException to ease debugging.</para>
+          </listItem>
+        </list>
+
+      </content>
+    </section>
+
+    <relatedTopics>
+      <link xlink:href="5a2b1823-fb0c-44e8-bc11-fa90814c959d" />
+    </relatedTopics>
+
+  </developerConceptualDocument>
+</topic>
