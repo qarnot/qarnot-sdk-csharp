@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using System.Web;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Collections.Generic;
@@ -131,9 +133,10 @@ namespace QarnotSDK {
         /// <param name="name">The name of the pool</param>
         /// <param name="profile">The profile of the pool. If not specified, it must be given when the pool is started.</param>
         /// <param name="initialNodeCount">The number of nodes you want in the pool. If not specified, it must be given when the pool is started.</param>
+        /// <param name="shortname">optional unique friendly shortname of the pool.</param>
         /// <returns>A new pool.</returns>
-        public QPool CreatePool(string name, string profile = null, uint initialNodeCount = 0) {
-            var pool = new QPool(this, name, profile, initialNodeCount);
+        public QPool CreatePool(string name, string profile = null, uint initialNodeCount = 0, string shortname = default(string)) {
+            var pool = new QPool(this, name, profile, initialNodeCount, shortname);
             return pool;
         }
 
@@ -143,9 +146,10 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="name">The name of the task.</param>
         /// <param name="profile">The profile of the task. If not specified, it must be given when the task is submitted.</param>
+        /// <param name="shortname">optional unique friendly shortname of the task.</param>
         /// <returns>A new task.</returns>
-        public QTask CreateTask(string name, string profile = null) {
-            var task = new QTask(this, name, profile, 0);
+        public QTask CreateTask(string name, string profile = null, string shortname = default(string)) {
+            var task = new QTask(this, name, profile, 0, shortname);
             return task;
         }
 
@@ -156,9 +160,10 @@ namespace QarnotSDK {
         /// <param name="name">The name of the task.</param>
         /// <param name="profile">The profile of the task. If not specified, it must be given when the task is submitted.</param>
         /// <param name="instanceCount">How many times the task have to run. If not specified, it must be given when the task is submitted.</param>
+        /// <param name="shortname">optional unique friendly shortname of the task.</param>
         /// <returns>A new task.</returns>
-        public QTask CreateTask(string name, string profile, uint instanceCount = 0) {
-            var task = new QTask(this, name, profile, instanceCount);
+        public QTask CreateTask(string name, string profile, uint instanceCount = 0, string shortname = default(string)) {
+            var task = new QTask(this, name, profile, instanceCount, shortname);
             return task;
         }
 
@@ -169,9 +174,10 @@ namespace QarnotSDK {
         /// <param name="name">The name of the task.</param>
         /// <param name="profile">The profile of the task. If not specified, it must be given when the task is submitted.</param>
         /// <param name="range">Which instance ids of the task have to run. If not specified, it must be given when the task is submitted.</param>
+        /// <param name="shortname">optional unique friendly shortname of the task.</param>
         /// <returns>A new task.</returns>
-        public QTask CreateTask(string name, string profile, AdvancedRanges range) {
-            var task = new QTask(this, name, profile, range);
+        public QTask CreateTask(string name, string profile, AdvancedRanges range, string shortname = default(string)) {
+            var task = new QTask(this, name, profile, range, shortname);
             return task;
         }
 
@@ -182,9 +188,10 @@ namespace QarnotSDK {
         /// <param name="name">The name of the task.</param>
         /// <param name="pool">The pool where the task will run.</param>
         /// <param name="instanceCount">How many times the task have to run.</param>
+        /// <param name="shortname">optional unique friendly shortname of the task.</param>
         /// <returns>A new task.</returns>
-        public QTask CreateTask(string name, QPool pool, uint instanceCount) {
-            var task = new QTask(this, name, pool, instanceCount);
+        public QTask CreateTask(string name, QPool pool, uint instanceCount, string shortname = default(string)) {
+            var task = new QTask(this, name, pool, instanceCount, shortname);
             return task;
         }
 
@@ -195,9 +202,10 @@ namespace QarnotSDK {
         /// <param name="name">The name of the task.</param>
         /// <param name="pool">The pool where the task will run.</param>
         /// <param name="range">Which instance ids of the task have to run.</param>
+        /// <param name="shortname">optional unique friendly shortname of the task.</param>
         /// <returns>A new task.</returns>
-        public QTask CreateTask(string name, QPool pool, AdvancedRanges range) {
-            var task = new QTask(this, name, pool, range);
+        public QTask CreateTask(string name, QPool pool, AdvancedRanges range, string shortname = default(string)) {
+            var task = new QTask(this, name, pool, range, shortname);
             return task;
         }
 
@@ -216,17 +224,44 @@ namespace QarnotSDK {
         /// <summary>
         /// Retrieve the tasks list.
         /// </summary>
+        /// <param name="summary">Optional token to choose between full tasks and tasks summaries.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>A list of tasks.</returns>
-        public async Task<List<QTask>> RetrieveTasksAsync(CancellationToken cancellationToken = default(CancellationToken)) {
-            var response = await _client.GetAsync("tasks", cancellationToken);
+        public async Task<List<QTask>> RetrieveTasksAsync(bool summary = true, CancellationToken cancellationToken = default(CancellationToken)) {
+            var baseUri = summary ? "tasks/summaries" : "tasks";
+            var response = await _client.GetAsync(baseUri, cancellationToken);
 
             await Utils.LookForErrorAndThrowAsync(_client, response);
 
             var qapiTaskList = await response.Content.ReadAsAsync<List<TaskApi>>(cancellationToken);
             var ret = new List<QTask>();
             foreach (var item in qapiTaskList) {
-                ret.Add(new QTask(this, item));
+                ret.Add(new QTask(this, item, summary));
+            }
+            return ret;
+        }
+
+        /// <summary>
+        /// Retrieve the tasks list filtered by tags.
+        /// </summary>
+        /// <param name="tags">list of tags for task filtering.</param>
+        /// <param name="summary">Optional token to choose between full tasks and tasks summaries.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A list of tasks.</returns>
+        public async Task<List<QTask>> RetrieveTasksByTagsAsync(List<string> tags, bool summary = true, CancellationToken cancellationToken = default(CancellationToken)) {
+            if(tags == null || tags.Count == 0)
+                return RetrieveTasksAsync(summary, cancellationToken).Result;
+            var baseUri = summary ? "tasks/summaries?tag=" : "tasks/?tag=";
+
+            var uri = baseUri + string.Join(",", tags.Select(tag => HttpUtility.UrlEncode(tag)));
+            var response = await _client.GetAsync(uri, cancellationToken);
+
+            await Utils.LookForErrorAndThrowAsync(_client, response);
+
+            var qapiTaskList = await response.Content.ReadAsAsync<List<TaskApi>>(cancellationToken);
+            var ret = new List<QTask>();
+            foreach (var item in qapiTaskList) {
+                ret.Add(new QTask(this, item, summary));
             }
             return ret;
         }
@@ -234,17 +269,20 @@ namespace QarnotSDK {
         /// <summary>
         /// Retrieve the pools list.
         /// </summary>
+        /// <param name="summary">Optional token to choose between full pools and pool summaries.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>A list of pools.</returns>
-        public async Task<List<QPool>> RetrievePoolsAsync(CancellationToken cancellationToken = default(CancellationToken)) {
-            var response = await _client.GetAsync("pools", cancellationToken);
+        public async Task<List<QPool>> RetrievePoolsAsync(bool summary = true, CancellationToken cancellationToken = default(CancellationToken)) {
+            var baseUri = summary ? "pools/summaries" : "pools";
+
+            var response = await _client.GetAsync(baseUri, cancellationToken);
 
             await Utils.LookForErrorAndThrowAsync(_client, response);
 
             var list = await response.Content.ReadAsAsync<List<PoolApi>>(cancellationToken);
             var ret = new List<QPool>();
             foreach (var item in list) {
-                ret.Add(new QPool(this, item));
+                ret.Add(new QPool(this, item, summary));
             }
             return ret;
         }
@@ -433,7 +471,7 @@ namespace QarnotSDK {
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>The task object for that name or null if it hasn't been found.</returns>
         public async Task<QTask> RetrieveTaskByNameAsync(string name, CancellationToken cancellationToken = default(CancellationToken)) {
-            var ret = await RetrieveTasksAsync(cancellationToken);
+            var ret = await RetrieveTasksAsync(true, cancellationToken);
             return ret.Find(x => x.Name == name);
         }
 
@@ -444,7 +482,7 @@ namespace QarnotSDK {
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>The pool object for that name or null if it hasn't been found.</returns>
         public async Task<QPool> RetrievePoolByNameAsync(string name, CancellationToken cancellationToken = default(CancellationToken)) {
-            var ret = await RetrievePoolsAsync(cancellationToken);
+            var ret = await RetrievePoolsAsync(true, cancellationToken);
             return ret.Find(x => x.Name == name);
         }
 
@@ -457,6 +495,38 @@ namespace QarnotSDK {
         public async Task<QDisk> RetrieveDiskByNameAsync(string name, CancellationToken cancellationToken = default(CancellationToken)) {
             var ret = await RetrieveDisksAsync(cancellationToken);
             return ret.Find(x => x.Description == name);
+        }
+        #endregion
+
+        #region CreateXAsync
+        /// <summary>
+        /// Submit a list of task as a bulk.
+        /// </summary>
+        /// <param name="tasks">The task list to submit as a bulk.</param>
+        /// <param name="autoCreateResultDisk">Set to true to ensure that the result disk specified exists. If set to false and the result disk doesn't exist, this will result in an exception.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>void.</returns>
+        public async Task SubmitTasksAsync(List<QTask> tasks, bool autoCreateResultDisk = true, CancellationToken cancellationToken = default(CancellationToken)) {
+            await Task.WhenAll(tasks.Select(task => task.PreSubmitAsync(cancellationToken, autoCreateResultDisk)));
+            var response = await _client.PostAsJsonAsync<List<TaskApi>>("tasks", tasks.Select(t => t._taskApi).ToList(), cancellationToken);
+            await Utils.LookForErrorAndThrowAsync(_client, response);
+            var results = await response.Content.ReadAsAsync<List<QBulkTaskResponse>>(cancellationToken);
+
+            // The "contract" with the api is that response should come in the same order as submission
+            var errorMessage = String.Empty;
+            var postTasks = new List<Task>();
+            for (int i = 0; i < tasks.Count; i++) {
+                if (!results[i].IsSuccesResponse) {
+                    errorMessage += $"[{tasks[i].Name}] : {results[i].StatusCode}, {results[i].Message}\n";
+                }
+                postTasks.Add(tasks[i].PostSubmitAsync(new TaskApi() { Uuid = results[i].Uuid }, cancellationToken));
+            }
+            await Task.WhenAll(postTasks);
+
+            // Notify user that something went partially wrong.
+            if (!String.IsNullOrEmpty(errorMessage)) {
+                throw new Exception(errorMessage);
+            }
         }
         #endregion
     }
