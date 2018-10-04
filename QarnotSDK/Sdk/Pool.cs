@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
@@ -99,6 +100,10 @@ namespace QarnotSDK
         /// How many nodes this pool has.
         /// </summary>
         public uint NodeCount { get { return _poolApi.InstanceCount; } }
+        /// <summary>
+        /// The custom pool tag list.
+        /// </summary>
+        public List<String> Tags { get { return _poolApi.Tags; } }
 
         /// <summary>
         /// Create a new pool.
@@ -183,6 +188,14 @@ namespace QarnotSDK
         #endregion
 
         #region public methods
+        /// <summary>
+        /// Set the a list of tags for the pool.
+        /// </summary>
+        /// <param name="tags">Pool tags.</param>
+        public void SetTags(params String [] tags) {
+            _poolApi.Tags = tags.Distinct().ToList();
+        }
+
         /// <summary>
         /// Deprecated, use SetConstant.
         /// </summary>

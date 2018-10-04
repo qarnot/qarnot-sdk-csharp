@@ -188,12 +188,14 @@ namespace QarnotSDK {
         public uint ResultsCount { get; set; }
         public DateTime CreationDate { get; set; }
         public List<KeyValHelper> Constants { get; set; }
+        public List<String> Tags { get; set; }
         public Guid Uuid { get; set; }
         public string Shortname { get; set; }
         public QPoolStatus Status { get; set; }
 
         internal PoolApi() {
             Constants = new List<KeyValHelper>();
+            Tags = new List<String>();
             ResourceDisks = new List<String>();
             ResourceBuckets = new List<String>();
         }
