@@ -174,7 +174,7 @@ namespace QarnotSDK {
 
     internal class PoolApi {
         public override string ToString() {
-            return string.Format("[PoolApi: Name={0}, Profile={1}, InstanceCount={2}, ResultDisk={3}, State={4}, SnapshotInterval={5}, ResultsCount={6}, CreationDate={7}, Uuid={8}]", Name, Profile, InstanceCount, ResultDisk, State, SnapshotInterval, ResultsCount, CreationDate, Uuid);
+            return string.Format("[PoolApi: Name={0}, Profile={1}, InstanceCount={2}, State={3}, CreationDate={4}, Uuid={5}]", Name, Profile, InstanceCount, State, CreationDate, Uuid);
         }
 
         public string Name { get; set; }
@@ -182,20 +182,23 @@ namespace QarnotSDK {
         public uint InstanceCount { get; set; }
         public List<string> ResourceDisks { get; set; }
         public List<string> ResourceBuckets { get; set; }
-        public string ResultDisk { get; set; }
         public string State { get; set; }
-        public int SnapshotInterval { get; set; }
-        public uint ResultsCount { get; set; }
+        public List<QPoolError> Errors { get; set; }
         public DateTime CreationDate { get; set; }
         public List<KeyValHelper> Constants { get; set; }
+        public List<KeyValHelper> Constraints { get; set; }
+        public List<String> Tags { get; set; }
         public Guid Uuid { get; set; }
         public string Shortname { get; set; }
         public QPoolStatus Status { get; set; }
 
         internal PoolApi() {
             Constants = new List<KeyValHelper>();
+            Constraints = new List<KeyValHelper>();
+            Tags = new List<String>();
             ResourceDisks = new List<String>();
             ResourceBuckets = new List<String>();
+            Errors = new List<QPoolError>();
         }
     }
 }
