@@ -6,28 +6,64 @@ using System;
 
 namespace QarnotSDK {
     public partial class Connection {
+        #region CreateX
+        /// <summary>
+        /// Submit a list of task as a bulk.
+        /// </summary>
+        /// <param name="tasks">The task list to submit as a bulk.</param>
+        /// <param name="autoCreateResultDisk">Set to true to ensure that the result disk specified exists. If set to false and the result disk doesn't exist, this will result in an exception.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>void.</returns>
+        public void SubmitTasks(List<QTask> tasks, bool autoCreateResultDisk = true, CancellationToken cancellationToken = default(CancellationToken)) {
+            try {
+                SubmitTasksAsync(tasks, autoCreateResultDisk, cancellationToken).Wait();
+            } catch (AggregateException ex) {
+                throw ex.InnerException;
+            }
+        }
+        #endregion
+
+
         #region RetrieveX
         /// <summary>
         /// Retrieve the list of tasks.
         /// </summary>
+        /// <param name="summary">Optional token to choose between full tasks and tasks summaries.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>A list of tasks.</returns>
-        public List<QTask> RetrieveTasks(CancellationToken cancellationToken = default(CancellationToken)) {
+        public List<QTask> RetrieveTasks(bool summary = true, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
-                return RetrieveTasksAsync(cancellationToken).Result;
+                return RetrieveTasksAsync(summary, cancellationToken).Result;
             } catch (AggregateException ex) {
                 throw ex.InnerException;
             }
         }
 
         /// <summary>
+        /// Retrieve the list of tasks filtered by tags.
+        /// </summary>
+        /// <param name="tags">list of tags for task filtering.</param>
+        /// <param name="summary">Optional token to choose between full tasks and tasks summaries.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A list of tasks.</returns>
+        public List<QTask> RetrieveTasksByTags(List<string> tags, bool summary = true, CancellationToken cancellationToken = default(CancellationToken)) {
+            try {
+                return RetrieveTasksByTagsAsync(tags, summary, cancellationToken).Result;
+            } catch (AggregateException ex) {
+                throw ex.InnerException;
+            }
+        }
+
+
+        /// <summary>
         /// Retrieve the list of pools.
         /// </summary>
+        /// <param name="summary">Optional token to choose between full tasks and tasks summaries.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>A list of pools.</returns>
-        public List<QPool> RetrievePools(CancellationToken cancellationToken = default(CancellationToken)) {
+        public List<QPool> RetrievePools(bool summary = true, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
-                return RetrievePoolsAsync(cancellationToken).Result;
+                return RetrievePoolsAsync(summary, cancellationToken).Result;
             } catch (AggregateException ex) {
                 throw ex.InnerException;
             }

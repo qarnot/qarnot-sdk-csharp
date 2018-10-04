@@ -49,6 +49,7 @@
     <Reference Include="System.Net.Http">
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Web" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Api\ConnectionApi.cs" />
