@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using System.Web;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Collections.Generic;
@@ -220,6 +222,29 @@ namespace QarnotSDK {
         /// <returns>A list of tasks.</returns>
         public async Task<List<QTask>> RetrieveTasksAsync(CancellationToken cancellationToken = default(CancellationToken)) {
             var response = await _client.GetAsync("tasks", cancellationToken);
+
+            await Utils.LookForErrorAndThrowAsync(_client, response);
+
+            var qapiTaskList = await response.Content.ReadAsAsync<List<TaskApi>>(cancellationToken);
+            var ret = new List<QTask>();
+            foreach (var item in qapiTaskList) {
+                ret.Add(new QTask(this, item));
+            }
+            return ret;
+        }
+
+        /// <summary>
+        /// Retrieve the tasks list filtered by tags.
+        /// </summary>
+        /// <param name="tags">list of tags for task filtering.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A list of tasks.</returns>
+        public async Task<List<QTask>> RetrieveTasksByTagsAsync(List<string> tags, CancellationToken cancellationToken = default(CancellationToken)) {
+            if(tags == null || tags.Count == 0)
+                return RetrieveTasksAsync(cancellationToken).Result;
+
+            var uri = "tasks/?tag=" + string.Join(",", tags.Select(tag => HttpUtility.UrlEncode(tag)));
+            var response = await _client.GetAsync(uri, cancellationToken);
 
             await Utils.LookForErrorAndThrowAsync(_client, response);
 
