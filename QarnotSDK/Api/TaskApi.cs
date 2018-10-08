@@ -2,6 +2,42 @@ using System;
 using System.Collections.Generic;
 
 namespace QarnotSDK {
+
+    /// <summary>
+    /// Represents an error that occur during a task execution.
+    /// </summary>
+    public class QBulkTaskResponse {
+        /// <summary>
+        /// Task unique Guid
+        /// </summary>
+        public Guid Uuid { get; set; }
+        /// <summary>
+        /// Http Status Code describing the success of the resource creation(Task)
+        /// </summary>
+        public int StatusCode { get; set; }
+        /// <summary>
+        /// Human error message.
+        /// </summary>
+        public string Message { get; set; }
+        /// <summary>
+        /// Property to ensure that the submission succeeded.
+        /// (Ensure task guid is set and correct status code.)
+        /// </summary>
+        public bool IsSuccesResponse {
+            get { return Uuid != default(Guid) && ((int)StatusCode >= 200) && ((int)StatusCode <= 299); }
+        }
+
+        internal QBulkTaskResponse() {
+        }
+
+        /// <summary>
+        /// Returns all the information about this task submission response.
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString() {
+            return String.Format("[{0}] {1} ({2})", StatusCode, Uuid, Message);
+        }
+    }
     /// <summary>
     /// Represents an error that occur during a task execution.
     /// </summary>

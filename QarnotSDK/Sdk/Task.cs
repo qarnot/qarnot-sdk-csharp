@@ -61,9 +61,9 @@ namespace QarnotSDK {
     /// </summary>
     public partial class QTask {
         private readonly Connection _api;
-        private TaskApi _taskApi;
         private string _uri = null;
         private AdvancedRanges _advancedRange = null;
+        internal TaskApi _taskApi { get; private set; }
 
         /// <summary>
         /// The inner Connection object.
@@ -444,7 +444,7 @@ namespace QarnotSDK {
             await SubmitAsync(cancellationToken, autoCreateResultDisk);
         }
 
-        private async Task SubmitAsync(CancellationToken cancellationToken, bool autoCreateResultDisk = true) {
+        internal async Task PreSubmitAsync(CancellationToken cancellationToken, bool autoCreateResultDisk = true) {
             if (_taskApi.InstanceCount > 0 && !String.IsNullOrEmpty(_taskApi.AdvancedRanges)) {
                 throw new Exception("Can't use at the same time an instance count and a range.");
             }
@@ -504,12 +504,19 @@ namespace QarnotSDK {
             }
 
             if (_api.IsReadOnly) throw new Exception("Can't submit tasks, this connection is configured in read-only mode");
+        }
 
+
+        private async Task SubmitAsync(CancellationToken cancellationToken, bool autoCreateResultDisk = true) {
+            await PreSubmitAsync(cancellationToken, autoCreateResultDisk );
             var response = await _api._client.PostAsJsonAsync<TaskApi>("tasks", _taskApi, cancellationToken);
             await Utils.LookForErrorAndThrowAsync(_api._client, response);
-
-            // Update the task Uuid
             var result = await response.Content.ReadAsAsync<TaskApi>(cancellationToken);
+            await PostSubmitAsync(result, cancellationToken);
+        }
+
+        internal async Task PostSubmitAsync(TaskApi result, CancellationToken cancellationToken) {
+             // Update the task Uuid
             _taskApi.Uuid = result.Uuid;
             _uri = "tasks/" + _taskApi.Uuid.ToString();
 
