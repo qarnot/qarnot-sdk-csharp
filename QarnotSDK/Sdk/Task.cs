@@ -1,11 +1,11 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.IO;
 using System.Threading;
+using System.Linq;
 using System;
 
-// TODO: Tags
 // TODO: Commit changes made to a task
 
 namespace QarnotSDK {
@@ -138,6 +138,10 @@ namespace QarnotSDK {
         /// Use UpdateStatus or UpdateStatusAsync to refresh.
         /// </summary>
         public uint ResultsCount { get { return _taskApi.ResultsCount; } }
+        /// <summary>
+        /// The custom task tag list.
+        /// </summary>
+        public List<String> Tags { get { return _taskApi.Tags; } }
         /// <summary>
         /// The delay in seconds between two periodic snapshots.
         /// Once the task is running, use the SnapshotPeriodic method to update.
@@ -332,6 +336,14 @@ namespace QarnotSDK {
         #endregion
 
         #region public methods
+        /// <summary>
+        /// Set the a list of tags for the task.
+        /// </summary>
+        /// <param name="tags">Task tags.</param>
+        public void SetTags(params String [] tags) {
+            _taskApi.Tags = tags.Distinct().ToList();
+        }
+
         /// <summary>
         /// Deprecated, use SetConstant.
         /// </summary>

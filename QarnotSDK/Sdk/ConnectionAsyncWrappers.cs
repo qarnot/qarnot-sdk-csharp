@@ -21,6 +21,21 @@ namespace QarnotSDK {
         }
 
         /// <summary>
+        /// Retrieve the list of tasks filtered by tags.
+        /// </summary>
+        /// <param name="tags">list of tags for task filtering.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A list of tasks.</returns>
+        public List<QTask> RetrieveTasksByTags(List<string> tags, CancellationToken cancellationToken = default(CancellationToken)) {
+            try {
+                return RetrieveTasksByTagsAsync(tags, cancellationToken).Result;
+            } catch (AggregateException ex) {
+                throw ex.InnerException;
+            }
+        }
+
+
+        /// <summary>
         /// Retrieve the list of pools.
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
