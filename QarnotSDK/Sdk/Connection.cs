@@ -133,9 +133,10 @@ namespace QarnotSDK {
         /// <param name="name">The name of the pool</param>
         /// <param name="profile">The profile of the pool. If not specified, it must be given when the pool is started.</param>
         /// <param name="initialNodeCount">The number of nodes you want in the pool. If not specified, it must be given when the pool is started.</param>
+        /// <param name="shortname">optional unique friendly shortname of the pool.</param>
         /// <returns>A new pool.</returns>
-        public QPool CreatePool(string name, string profile = null, uint initialNodeCount = 0) {
-            var pool = new QPool(this, name, profile, initialNodeCount);
+        public QPool CreatePool(string name, string profile = null, uint initialNodeCount = 0, string shortname = default(string)) {
+            var pool = new QPool(this, name, profile, initialNodeCount, shortname);
             return pool;
         }
 
@@ -145,9 +146,10 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="name">The name of the task.</param>
         /// <param name="profile">The profile of the task. If not specified, it must be given when the task is submitted.</param>
+        /// <param name="shortname">optional unique friendly shortname of the task.</param>
         /// <returns>A new task.</returns>
-        public QTask CreateTask(string name, string profile = null) {
-            var task = new QTask(this, name, profile, 0);
+        public QTask CreateTask(string name, string profile = null, string shortname = default(string)) {
+            var task = new QTask(this, name, profile, 0, shortname);
             return task;
         }
 
@@ -158,9 +160,10 @@ namespace QarnotSDK {
         /// <param name="name">The name of the task.</param>
         /// <param name="profile">The profile of the task. If not specified, it must be given when the task is submitted.</param>
         /// <param name="instanceCount">How many times the task have to run. If not specified, it must be given when the task is submitted.</param>
+        /// <param name="shortname">optional unique friendly shortname of the task.</param>
         /// <returns>A new task.</returns>
-        public QTask CreateTask(string name, string profile, uint instanceCount = 0) {
-            var task = new QTask(this, name, profile, instanceCount);
+        public QTask CreateTask(string name, string profile, uint instanceCount = 0, string shortname = default(string)) {
+            var task = new QTask(this, name, profile, instanceCount, shortname);
             return task;
         }
 
@@ -171,9 +174,10 @@ namespace QarnotSDK {
         /// <param name="name">The name of the task.</param>
         /// <param name="profile">The profile of the task. If not specified, it must be given when the task is submitted.</param>
         /// <param name="range">Which instance ids of the task have to run. If not specified, it must be given when the task is submitted.</param>
+        /// <param name="shortname">optional unique friendly shortname of the task.</param>
         /// <returns>A new task.</returns>
-        public QTask CreateTask(string name, string profile, AdvancedRanges range) {
-            var task = new QTask(this, name, profile, range);
+        public QTask CreateTask(string name, string profile, AdvancedRanges range, string shortname = default(string)) {
+            var task = new QTask(this, name, profile, range, shortname);
             return task;
         }
 
@@ -184,9 +188,10 @@ namespace QarnotSDK {
         /// <param name="name">The name of the task.</param>
         /// <param name="pool">The pool where the task will run.</param>
         /// <param name="instanceCount">How many times the task have to run.</param>
+        /// <param name="shortname">optional unique friendly shortname of the task.</param>
         /// <returns>A new task.</returns>
-        public QTask CreateTask(string name, QPool pool, uint instanceCount) {
-            var task = new QTask(this, name, pool, instanceCount);
+        public QTask CreateTask(string name, QPool pool, uint instanceCount, string shortname = default(string)) {
+            var task = new QTask(this, name, pool, instanceCount, shortname);
             return task;
         }
 
@@ -197,9 +202,10 @@ namespace QarnotSDK {
         /// <param name="name">The name of the task.</param>
         /// <param name="pool">The pool where the task will run.</param>
         /// <param name="range">Which instance ids of the task have to run.</param>
+        /// <param name="shortname">optional unique friendly shortname of the task.</param>
         /// <returns>A new task.</returns>
-        public QTask CreateTask(string name, QPool pool, AdvancedRanges range) {
-            var task = new QTask(this, name, pool, range);
+        public QTask CreateTask(string name, QPool pool, AdvancedRanges range, string shortname = default(string)) {
+            var task = new QTask(this, name, pool, range, shortname);
             return task;
         }
 

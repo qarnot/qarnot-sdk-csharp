@@ -109,18 +109,19 @@ namespace QarnotSDK
         /// Create a new pool.
         /// </summary>
         /// <param name="connection">The inner connection object.</param>
-        /// <param name="shortname">The pool shortname.</param>
+        /// <param name="name">The pool name.</param>
         /// <param name="profile">The pool profile. If not specified, it must be given when the pool is started.</param>
         /// <param name="initialNodeCount">The number of compute nodes this pool will have. If not specified, it must be given when the pool is started.</param>
-        public QPool(Connection connection, string shortname, string profile = null, uint initialNodeCount = 0) {
+        /// <param name="shortname">optional unique friendly shortname of the pool.</param>
+        public QPool(Connection connection, string name, string profile = null, uint initialNodeCount = 0, string shortname = default(string)) {
             _api = connection;
             _poolApi = new PoolApi();
-            _poolApi.Name = shortname;
+            _poolApi.Name = name;
             _poolApi.Profile = profile;
             _poolApi.InstanceCount = initialNodeCount;
             Resources = new List<QAbstractStorage>();
 
-            if (_api.HasShortnameFeature) {
+            if (_api.HasShortnameFeature && shortname != default(string)) {
                 _poolApi.Shortname = shortname;
                 _uri = "pools/" + shortname;
             }

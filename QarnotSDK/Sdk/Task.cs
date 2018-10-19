@@ -208,16 +208,17 @@ namespace QarnotSDK {
         /// Create a new task outside of a pool.
         /// </summary>
         /// <param name="connection">The inner connection object.</param>
-        /// <param name="shortname">The task shortname.</param>
+        /// <param name="name">The task shortname.</param>
         /// <param name="profile">The task profile. If not specified, it must be given when the task is submitted.</param>
-        public QTask(Connection connection, string shortname, string profile = null) {
+        /// <param name="shortname">optional unique friendly shortname of the task.</param>
+        public QTask(Connection connection, string name, string profile = null, string shortname = default(string)) {
             _api = connection;
             _taskApi = new TaskApi();
-            _taskApi.Name = shortname;
+            _taskApi.Name = name;
             _taskApi.Profile = profile;
             Resources = new List<QAbstractStorage>();
 
-            if (_api.HasShortnameFeature) {
+            if (_api.HasShortnameFeature && shortname != default(string)) {
                 _taskApi.Shortname = shortname;
                 _uri = "tasks/" + shortname;
             }
@@ -227,10 +228,11 @@ namespace QarnotSDK {
         /// Create a new task outside of a pool.
         /// </summary>
         /// <param name="connection">The inner connection object.</param>
-        /// <param name="shortname">The task shortname.</param>
+        /// <param name="name">The task name.</param>
         /// <param name="profile">The task profile. If not specified, it must be given when the task is submitted.</param>
         /// <param name="instanceCount">How many times the task have to run. If not specified, it must be given when the task is submitted.</param>
-        public QTask(Connection connection, string shortname, string profile, uint instanceCount = 0) : this(connection, shortname, profile) {
+        /// <param name="shortname">optional unique friendly shortname of the task.</param>
+        public QTask(Connection connection, string name, string profile, uint instanceCount = 0, string shortname = default(string)) : this(connection, name, profile, shortname) {
             _taskApi.InstanceCount = instanceCount;
         }
 
@@ -238,10 +240,11 @@ namespace QarnotSDK {
         /// Create a new task outside of a pool.
         /// </summary>
         /// <param name="connection">The inner connection object.</param>
-        /// <param name="shortname">The task shortname.</param>
+        /// <param name="name">The task name.</param>
         /// <param name="profile">The task profile. If not specified, it must be given when the task is submitted.</param>
         /// <param name="range">Which instance ids of the task have to run. If not specified, it must be given when the task is submitted.</param>
-        public QTask(Connection connection, string shortname, string profile, AdvancedRanges range) : this(connection, shortname, profile) {
+        /// <param name="shortname">optional unique friendly shortname of the task.</param>
+        public QTask(Connection connection, string name, string profile, AdvancedRanges range, string shortname = default(string)) : this(connection, name, profile, shortname) {
             _advancedRange = range ?? new AdvancedRanges(null);
             _taskApi.AdvancedRanges = _advancedRange.ToString();
         }
@@ -250,10 +253,11 @@ namespace QarnotSDK {
         /// Create a new task inside an existing pool.
         /// </summary>
         /// <param name="connection">The inner connection object.</param>
-        /// <param name="shortname">The task shortname.</param>
+        /// <param name="name">The task name.</param>
         /// <param name="pool">The pool where this task will run.</param>
         /// <param name="instanceCount">How many times the task have to run. If not specified, it must be given when the task is submitted.</param>
-        public QTask(Connection connection, string shortname, QPool pool, uint instanceCount = 0) : this(connection, shortname, (string)null, instanceCount) {
+        /// <param name="shortname">optional unique friendly shortname of the task.</param>
+        public QTask(Connection connection, string name, QPool pool, uint instanceCount = 0, string shortname = default(string)) : this(connection, name, (string)null, instanceCount, shortname) {
             _taskApi.PoolUuid = pool.Uuid.ToString();
         }
 
@@ -261,10 +265,11 @@ namespace QarnotSDK {
         /// Create a new task outside of a pool.
         /// </summary>
         /// <param name="connection">The inner connection object.</param>
-        /// <param name="shortname">The task shortname.</param>
+        /// <param name="name">The task shortname.</param>
         /// <param name="pool">The pool where this task will run.</param>
         /// <param name="range">Which instance ids of the task have to run. If not specified, it must be given when the task is submitted.</param>
-        public QTask(Connection connection, string shortname, QPool pool, AdvancedRanges range) : this(connection, shortname, pool, 0) {
+        /// <param name="shortname">optional unique friendly shortname of the task.</param>
+        public QTask(Connection connection, string name, QPool pool, AdvancedRanges range, string shortname = default(string)) : this(connection, name, pool, 0, shortname) {
             _advancedRange = range ?? new AdvancedRanges(null);
             _taskApi.AdvancedRanges = _advancedRange.ToString();
         }
