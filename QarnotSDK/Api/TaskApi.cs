@@ -244,6 +244,7 @@ namespace QarnotSDK {
         public uint ResultsCount { get; set; }
         public DateTime CreationDate { get; set; }
         public List<KeyValHelper> Constants { get; set; }
+        public List<KeyValHelper> Constraints { get; set; }
         public List<String> Tags { get; set; }
         public Guid Uuid { get; set; }
         public string Shortname { get; set; }
@@ -257,6 +258,7 @@ namespace QarnotSDK {
 
         internal TaskApi() {
             Constants = new List<KeyValHelper>();
+            Constraints = new List<KeyValHelper>();
             Tags = new List<String>();
             ResourceDisks = new List<String>();
             ResourceBuckets = new List<String>();

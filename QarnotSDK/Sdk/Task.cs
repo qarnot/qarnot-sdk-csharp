@@ -62,6 +62,8 @@ namespace QarnotSDK {
     public partial class QTask {
         private readonly Connection _api;
         private string _uri = null;
+        private bool _isSummary = false;
+
         private AdvancedRanges _advancedRange = null;
         internal TaskApi _taskApi { get; private set; }
 
@@ -90,63 +92,173 @@ namespace QarnotSDK {
         /// Qarnot resources disks or buckets bound to this task.
         /// Can be set only before the task submission.
         /// </summary>
-        public List<QAbstractStorage> Resources { get; set; }
+        public List<QAbstractStorage> Resources {
+            get {
+                RefreshTaskIfSummary();
+                return _resources;
+            }
+            set {
+                _resources = value;
+            }
+        }
+        private List<QAbstractStorage> _resources { get; set; }
+
         /// <summary>
         /// Qarnot resources disks bound to this task.
         /// Can be set only before the task submission.
         /// </summary>
-        public IEnumerable<QDisk> ResourcesDisks { get { return GetResources<QDisk>(); } }
+        public IEnumerable<QDisk> ResourcesDisks {
+            get {
+                RefreshTaskIfSummary();
+                return GetResources<QDisk>();
+            }
+        }
         /// <summary>
         /// Qarnot resources buckets bound to this task.
         /// Can be set only before the task submission.
         /// </summary>
-        public IEnumerable<QBucket> ResourcesBuckets { get { return GetResources<QBucket>(); } }
+        public IEnumerable<QBucket> ResourcesBuckets {
+            get {
+                RefreshTaskIfSummary();
+                return GetResources<QBucket>();
+            }
+        }
 
         /// <summary>
         /// Qarnot result disk or bucket bound to this task.
         /// Can be set only before the task submission.
         /// </summary>
-        public QAbstractStorage Results { get; set; }
+        public QAbstractStorage Results {
+            get {
+                RefreshTaskIfSummary();
+                return _results;
+            }
+            set {
+                _results = value;
+            }
+        }
+
+        private QAbstractStorage _results { get; set; }
+
         /// <summary>
         /// Qarnot result disk bound to this task.
         /// Can be set only before the task submission.
         /// </summary>
-        public QDisk ResultsDisk { get { return GetResults<QDisk>(); } }
+        public QDisk ResultsDisk {
+            get {
+                RefreshTaskIfSummary();
+                return GetResults<QDisk>();
+            }
+        }
+
         /// <summary>
         /// Qarnot result bucket bound to this task.
         /// Can be set only before the task submission.
         /// </summary>
-        public QBucket ResultsBucket { get { return GetResults<QBucket>(); } }
+        public QBucket ResultsBucket {
+            get {
+                RefreshTaskIfSummary();
+                return GetResults<QBucket>();
+            }
+        }
 
         /// <summary>
         /// Retrieve the task state (see QTaskStates).
         /// Available only after the submission. Use UpdateStatus or UpdateStatusAsync to refresh.
         /// </summary>
         public string State { get { return _taskApi != null ? _taskApi.State : null; } }
+
+        /// <summary>
+        /// Retrieve the task errors.
+        /// </summary>
+        public List<QTaskError> Errors {
+            get {
+                RefreshTaskIfSummary();
+                return _taskApi != null ? _taskApi.Errors : new List<QTaskError>();
+            }
+        }
+
         /// <summary>
         /// Retrieve the task detailed status.
         /// Available only after the submission. Use UpdateStatus or UpdateStatusAsync to refresh.
         /// </summary>
-        public QTaskStatus Status { get { return _taskApi != null ? _taskApi.Status : null; } }
+        public QTaskStatus Status {
+            get {
+                RefreshTaskIfSummary();
+                if (_taskApi == null)
+                    return null;
+                return _taskApi.Status;
+            }
+        }
+
         /// <summary>
         /// The task creation date.
         /// Available only after the submission.
         /// </summary>
         public DateTime CreationDate { get { return _taskApi.CreationDate; } }
+
         /// <summary>
         /// Increased each time a new set of results is available, when snapshot or final results are ready.
         /// Use UpdateStatus or UpdateStatusAsync to refresh.
         /// </summary>
-        public uint ResultsCount { get { return _taskApi.ResultsCount; } }
+        public uint ResultsCount {
+            get {
+                RefreshTaskIfSummary();
+                return _taskApi.ResultsCount;
+            }
+        }
+
         /// <summary>
         /// The custom task tag list.
         /// </summary>
-        public List<String> Tags { get { return _taskApi.Tags; } }
+        public List<String> Tags {
+            get {
+                RefreshTaskIfSummary();
+                return _taskApi.Tags;
+            }
+        }
+
+        /// <summary>
+        /// The task constants.
+        /// </summary>
+        /// <returns>return all Constants</returns>
+        public Dictionary<string, string> Constants {
+            get {
+                RefreshTaskIfSummary();
+                var constants = _taskApi.Constants;
+                if (constants == null)
+                    return new Dictionary<string, string>();
+
+                return constants.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+            }
+        }
+
+        /// <summary>
+        /// The task constraints.
+        /// </summary>
+        /// <returns>return all Constraints</returns>
+        public Dictionary<string, string> Constraints {
+            get {
+                RefreshTaskIfSummary();
+                var constraints = _taskApi.Constraints;
+                if (constraints == null)
+                    return new Dictionary<string, string>();
+
+                return constraints.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+            }
+        }
+
         /// <summary>
         /// The delay in seconds between two periodic snapshots.
         /// Once the task is running, use the SnapshotPeriodic method to update.
         /// </summary>
-        public int SnapshotInterval { get { return _taskApi.SnapshotInterval; } }
+        public int SnapshotInterval {
+            get {
+                RefreshTaskIfSummary();
+                return _taskApi.SnapshotInterval;
+            }
+        }
+
         /// <summary>
         /// The pool where the task is running or null if the task doesn't belong to a pool.
         /// </summary>
@@ -186,23 +298,51 @@ namespace QarnotSDK {
         /// The results include only the files matching that regular expression.
         /// Must be set before the submission.
         /// </summary>
-        public string ResultsWhitelist { get { return _taskApi.ResultsWhitelist; } set { _taskApi.ResultsWhitelist = value; } }
+        public string ResultsWhitelist {
+            get {
+                RefreshTaskIfSummary();
+                return _taskApi.ResultsWhitelist;
+            }
+            set { _taskApi.ResultsWhitelist = value; }
+        }
+
         /// <summary>
         /// The results exclude all the files matching that regular expression.
         /// Must be set before the submission.
         /// </summary>
-        public string ResultsBlacklist { get { return _taskApi.ResultsBlacklist; } set { _taskApi.ResultsBlacklist = value; } }
+        public string ResultsBlacklist {
+            get {
+                RefreshTaskIfSummary();
+                return _taskApi.ResultsBlacklist;
+            }
+            set { _taskApi.ResultsBlacklist = value; }
+        }
+
 
         /// <summary>
         /// The snapshots include only the files matching that regular expression.
         /// Must be set before the submission.
         /// </summary>
-        public string SnapshotWhitelist { get { return _taskApi.SnapshotWhitelist; } set { _taskApi.SnapshotWhitelist = value; } }
+        public string SnapshotWhitelist {
+            get {
+                RefreshTaskIfSummary();
+                return _taskApi.SnapshotWhitelist;
+            }
+            set { _taskApi.SnapshotWhitelist = value; }
+        }
+
         /// <summary>
         /// The snapshots exclude all the files matching that regular expression.
         /// Must be set before the submission.
         /// </summary>
-        public string SnapshotBlacklist { get { return _taskApi.SnapshotBlacklist; } set { _taskApi.SnapshotBlacklist = value; } }
+        public string SnapshotBlacklist {
+            get {
+                RefreshTaskIfSummary();
+                return _taskApi.SnapshotBlacklist;
+            }
+            set { _taskApi.SnapshotBlacklist = value; }
+        }
+
 
         /// <summary>
         /// Create a new task outside of a pool.
@@ -288,9 +428,10 @@ namespace QarnotSDK {
             Resources = new List<QAbstractStorage>();
         }
 
-        internal QTask(Connection qapi, TaskApi taskApi) {
+        internal QTask(Connection qapi, TaskApi taskApi, bool isSummary = false) {
             _api = qapi;
             _uri = "tasks/" + taskApi.Uuid.ToString();
+            _isSummary = isSummary;
             if (Resources == null) Resources = new List<QAbstractStorage>();
             SyncFromApiObject(taskApi);
         }
@@ -375,6 +516,24 @@ namespace QarnotSDK {
             }
             // Doesn't exist, just add
             if (value != null) _taskApi.Constants.Add(new KeyValHelper(name, value));
+        }
+
+        /// <summary>
+        /// Set a constraint. If the constraint already exists, it is replaced (or removed if value is null).
+        /// </summary>
+        /// <param name="name">Constraint name.</param>
+        /// <param name="value">Constraint value. If null, the constraint is not added or deleted.</param>
+        public void SetConstraint(string name, string value) {
+            // First, check if the constraints already exists
+            var c = _taskApi.Constraints.Find(x => x.Key == name);
+            if (c != null) {
+                // Exists, just replace or delete
+                if (value == null) _taskApi.Constraints.Remove(c);
+                else c.Value = value;
+                return;
+            }
+            // Doesn't exist, just add
+            if (value != null) _taskApi.Constraints.Add(new KeyValHelper(name, value));
         }
 
         /// <summary>
@@ -578,6 +737,14 @@ namespace QarnotSDK {
         /// <returns></returns>
         public async Task UpdateStatusAsync(bool updateDisksInfo = true) {
             await UpdateStatusAsync(default(CancellationToken), updateDisksInfo);
+        }
+
+        private void RefreshTaskIfSummary(CancellationToken cancellationToken = default(CancellationToken)) {
+            if (!_isSummary) {
+                return;
+            }
+            UpdateStatusAsync(cancellationToken).Wait();
+            _isSummary = false;
         }
 
         private void SyncFromApiObject(TaskApi result) {
@@ -852,6 +1019,7 @@ namespace QarnotSDK {
         /// <param name="instanceId">The id of the instance.</param>
         /// <returns>The status of the instance or null if not available.</returns>
         public QTaskInstanceStatus GetInstanceStatus(UInt32 instanceId) {
+            RefreshTaskIfSummary();
             if (_taskApi.CompletedInstances != null) {
                 foreach (var j in _taskApi.CompletedInstances) {
                     if (j.InstanceId == instanceId) {

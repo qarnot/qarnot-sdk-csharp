@@ -46,6 +46,8 @@ namespace QarnotSDK
         private PoolApi _poolApi;
         private string _uri;
 
+        private bool _isSummary = false;
+
         /// <summary>
         /// The inner Connection object.
         /// </summary>
@@ -70,27 +72,67 @@ namespace QarnotSDK
         /// Qarnot resources disks or buckets bound to this pool.
         /// Can be set only before the pool start.
         /// </summary>
-        public List<QAbstractStorage> Resources { get; set; }
+        public List<QAbstractStorage> Resources {
+            get {
+                RefreshTaskIfSummary();
+                return _resources;
+            }
+            set {
+                _resources = value;
+            }
+        }
+
+        private List<QAbstractStorage> _resources { get; set; }
+
         /// <summary>
         /// Qarnot resources disks bound to this pool.
         /// Can be set only before the pool start.
         /// </summary>
-        public IEnumerable<QDisk> ResourcesDisks { get { return GetResources<QDisk>(); } }
+        public IEnumerable<QDisk> ResourcesDisks {
+            get {
+                RefreshTaskIfSummary();
+                return GetResources<QDisk>();
+            }
+        }
+
         /// <summary>
         /// Qarnot resources buckets bound to this pool.
         /// Can be set only before the pool start.
         /// </summary>
-        public IEnumerable<QBucket> ResourcesBuckets { get { return GetResources<QBucket>(); } }
+        public IEnumerable<QBucket> ResourcesBuckets {
+            get {
+                RefreshTaskIfSummary();
+                return GetResources<QBucket>();
+            }
+        }
+
         /// <summary>
         /// Retrieve the pool state (see QPoolStates).
         /// Available only after the pool is started. Use UpdateStatus or UpdateStatusAsync to refresh.
         /// </summary>
         public string State { get { return _poolApi != null ? _poolApi.State : null; } }
+
+        /// <summary>
+        /// Retrieve the task errors.
+        /// </summary>
+        public List<QPoolError> Errors {
+            get {
+                RefreshTaskIfSummary();
+                return _poolApi != null ? _poolApi.Errors : new List<QPoolError>();
+            }
+        }
+
         /// <summary>
         /// Retrieve the pool detailed status.
         /// Available only after the pool is started. Use UpdateStatus or UpdateStatusAsync to refresh.
         /// </summary>
-        public QPoolStatus Status { get { return _poolApi != null ? _poolApi.Status : null; } }
+        public QPoolStatus Status {
+            get {
+                RefreshTaskIfSummary();
+                return _poolApi != null ? _poolApi.Status : null;
+            }
+        }
+
         /// <summary>
         /// The pool creation date.
         /// Available only after the pool is started.
@@ -103,7 +145,40 @@ namespace QarnotSDK
         /// <summary>
         /// The custom pool tag list.
         /// </summary>
-        public List<String> Tags { get { return _poolApi.Tags; } }
+        public List<String> Tags {
+            get {
+                RefreshTaskIfSummary();
+                return _poolApi.Tags;
+            }
+        }
+
+        /// <summary>
+        /// The Pool constants.
+        /// </summary>
+        public Dictionary<string, string> Constants {
+            get {
+                RefreshTaskIfSummary();
+                var constants = _poolApi.Constants;
+                if (constants == null)
+                    return new Dictionary<string, string>();
+
+                return constants.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+            }
+        }
+
+        /// <summary>
+        /// The pool constraints.
+        /// </summary>
+        public Dictionary<string, string> Constraints {
+            get {
+                RefreshTaskIfSummary();
+                var constraints = _poolApi.Constraints;
+                if (constraints == null)
+                    return new Dictionary<string, string>();
+
+                return constraints.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+            }
+        }
 
         /// <summary>
         /// Create a new pool.
@@ -137,9 +212,10 @@ namespace QarnotSDK
             _poolApi.Uuid = uuid;
         }
 
-        internal QPool(Connection qapi, PoolApi poolApi) {
+        internal QPool(Connection qapi, PoolApi poolApi, bool isSummary = false) {
             _api = qapi;
             _uri = "pools/" + poolApi.Uuid.ToString();
+            _isSummary = isSummary;
             if (Resources == null) Resources = new List<QAbstractStorage>();
             SyncFromApiObject(poolApi);
         }
@@ -226,6 +302,24 @@ namespace QarnotSDK
         }
 
         /// <summary>
+        /// Set a constraint. If the constraint already exists, it is replaced (or removed if value is null).
+        /// </summary>
+        /// <param name="name">Constraint name.</param>
+        /// <param name="value">Constraint value. If null, the constraint is not added or deleted.</param>
+        public void SetConstraint(string name, string value) {
+            // First, check if the constraints already exists
+            var c = _poolApi.Constraints.Find(x => x.Key == name);
+            if (c != null) {
+                // Exists, just replace or delete
+                if (value == null) _poolApi.Constraints.Remove(c);
+                else c.Value = value;
+                return;
+            }
+            // Doesn't exist, just add
+            if (value != null) _poolApi.Constraints.Add(new KeyValHelper(name, value));
+        }
+
+        /// <summary>
         /// Start the pool.
         /// </summary>
         /// <param name="profile">The pool profile. Optional if it has already been defined in the constructor.</param>
@@ -308,6 +402,14 @@ namespace QarnotSDK
         /// <returns></returns>
         public async Task UpdateStatusAsync(bool updateDisksInfo = false) {
             await UpdateStatusAsync(default(CancellationToken), updateDisksInfo);
+        }
+
+        private void RefreshTaskIfSummary(CancellationToken cancellationToken = default(CancellationToken)) {
+            if (!_isSummary) {
+                return;
+            }
+            UpdateStatusAsync(cancellationToken).Wait();
+            _isSummary = false;
         }
 
         private void SyncFromApiObject(PoolApi result) {
