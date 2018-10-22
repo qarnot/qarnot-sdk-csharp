@@ -514,17 +514,19 @@ namespace QarnotSDK {
             // The "contract" with the api is that response should come in the same order as submission
             var errorMessage = String.Empty;
             var postTasks = new List<Task>();
+
             for (int i = 0; i < tasks.Count; i++) {
                 if (!results[i].IsSuccesResponse) {
                     errorMessage += $"[{tasks[i].Name}] : {results[i].StatusCode}, {results[i].Message}\n";
+                } else {
+                    postTasks.Add(tasks[i].PostSubmitAsync(new TaskApi() { Uuid = results[i].Uuid.GetValueOrDefault() }, cancellationToken));
                 }
-                postTasks.Add(tasks[i].PostSubmitAsync(new TaskApi() { Uuid = results[i].Uuid }, cancellationToken));
             }
             await Task.WhenAll(postTasks);
 
             // Notify user that something went partially wrong.
             if (!String.IsNullOrEmpty(errorMessage)) {
-                throw new Exception(errorMessage);
+                throw new QarnotApiException(errorMessage);
             }
         }
         #endregion

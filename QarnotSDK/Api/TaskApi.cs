@@ -10,7 +10,7 @@ namespace QarnotSDK {
         /// <summary>
         /// Task unique Guid
         /// </summary>
-        public Guid Uuid { get; set; }
+        public Guid? Uuid { get; set; }
         /// <summary>
         /// Http Status Code describing the success of the resource creation(Task)
         /// </summary>
