@@ -194,7 +194,7 @@ namespace QarnotSDK
             _poolApi.Name = name;
             _poolApi.Profile = profile;
             _poolApi.InstanceCount = initialNodeCount;
-            Resources = new List<QAbstractStorage>();
+            _resources = new List<QAbstractStorage>();
 
             if (_api.HasShortnameFeature && shortname != default(string)) {
                 _poolApi.Shortname = shortname;
@@ -216,7 +216,7 @@ namespace QarnotSDK
             _api = qapi;
             _uri = "pools/" + poolApi.Uuid.ToString();
             _isSummary = isSummary;
-            if (Resources == null) Resources = new List<QAbstractStorage>();
+            if (_resources == null) _resources = new List<QAbstractStorage>();
             SyncFromApiObject(poolApi);
         }
 
@@ -340,7 +340,7 @@ namespace QarnotSDK
             await ApiWorkaround_EnsureUriAsync(false, cancellationToken);
 
             _poolApi.ResourceDisks = new List<string>();
-            foreach (var item in Resources) {
+            foreach (var item in _resources) {
                 var resQDisk = item as QDisk;
                 if (resQDisk != null) {
                     if (_api.HasDiskShortnameFeature) {
@@ -415,10 +415,10 @@ namespace QarnotSDK
         private void SyncFromApiObject(PoolApi result) {
             _poolApi = result;
 
-            if (Resources.Count != _poolApi.ResourceDisks.Count) {
-                Resources.Clear();
+            if (_resources.Count != _poolApi.ResourceDisks.Count) {
+                _resources.Clear();
                 foreach (var r in _poolApi.ResourceDisks) {
-                    Resources.Add(new QDisk(_api, new Guid(r)));
+                    _resources.Add(new QDisk(_api, new Guid(r)));
                 }
             }
         }
@@ -439,7 +439,7 @@ namespace QarnotSDK
             SyncFromApiObject(result);
 
             if (updateDisksInfo) {
-                foreach(var r in Resources) {
+                foreach(var r in _resources) {
                     await r.UpdateAsync(cancellationToken);
                 }
             }
@@ -491,7 +491,7 @@ namespace QarnotSDK
         }
 
         private IEnumerable<T> GetResources<T>() where T : QAbstractStorage {
-            foreach (var d in Resources) {
+            foreach (var d in _resources) {
                 if (d is T) yield return ((T)d);
             }
         }
