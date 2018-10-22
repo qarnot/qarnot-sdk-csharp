@@ -509,7 +509,6 @@ namespace QarnotSDK {
         public async Task SubmitTasksAsync(List<QTask> tasks, bool autoCreateResultDisk = true, CancellationToken cancellationToken = default(CancellationToken)) {
             await Task.WhenAll(tasks.Select(task => task.PreSubmitAsync(cancellationToken, autoCreateResultDisk)));
             var response = await _client.PostAsJsonAsync<List<TaskApi>>("tasks", tasks.Select(t => t._taskApi).ToList(), cancellationToken);
-            await Utils.LookForErrorAndThrowAsync(_client, response);
             var results = await response.Content.ReadAsAsync<List<QBulkTaskResponse>>(cancellationToken);
 
             // The "contract" with the api is that response should come in the same order as submission
