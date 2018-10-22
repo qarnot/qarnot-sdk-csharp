@@ -356,7 +356,7 @@ namespace QarnotSDK {
             _taskApi = new TaskApi();
             _taskApi.Name = name;
             _taskApi.Profile = profile;
-            Resources = new List<QAbstractStorage>();
+            _resources = new List<QAbstractStorage>();
 
             if (_api.HasShortnameFeature && shortname != default(string)) {
                 _taskApi.Shortname = shortname;
@@ -425,14 +425,14 @@ namespace QarnotSDK {
         }
 
         internal QTask() {
-            Resources = new List<QAbstractStorage>();
+            _resources = new List<QAbstractStorage>();
         }
 
         internal QTask(Connection qapi, TaskApi taskApi, bool isSummary = false) {
             _api = qapi;
             _uri = "tasks/" + taskApi.Uuid.ToString();
             _isSummary = isSummary;
-            if (Resources == null) Resources = new List<QAbstractStorage>();
+            if (_resources == null) _resources = new List<QAbstractStorage>();
             SyncFromApiObject(taskApi);
         }
 
@@ -619,8 +619,8 @@ namespace QarnotSDK {
             await ApiWorkaround_EnsureUriAsync(false, cancellationToken);
 
             // Is a result disk defined?
-            if (Results != null) {
-                var resultsQDisk = Results as QDisk;
+            if (_results != null) {
+                var resultsQDisk = _results as QDisk;
                 if (resultsQDisk != null) {
                     if (_api.HasDiskShortnameFeature) {
                         _taskApi.ResultDisk = resultsQDisk.Shortname;
@@ -633,7 +633,7 @@ namespace QarnotSDK {
                         _taskApi.ResultBucket = null;
                     }
                 } else {
-                    var resultsQBucket = Results as QBucket;
+                    var resultsQBucket = _results as QBucket;
                     if (resultsQBucket != null) {
                         _taskApi.ResultBucket = resultsQBucket.Shortname;
                         _taskApi.ResultDisk = null;
@@ -645,7 +645,7 @@ namespace QarnotSDK {
 
             // Build the resource disk list
             _taskApi.ResourceDisks = new List<string>();
-            foreach (var item in Resources) {
+            foreach (var item in _resources) {
                 var resQDisk = item as QDisk;
                 if (resQDisk != null) {
                     if (_api.HasDiskShortnameFeature) {
@@ -752,15 +752,15 @@ namespace QarnotSDK {
             if (_taskApi.AdvancedRanges != null) _advancedRange = new AdvancedRanges(_taskApi.AdvancedRanges);
             else _advancedRange = null;
 
-            if (Resources.Count != _taskApi.ResourceDisks.Count) {
-                Resources.Clear();
+            if (_resources.Count != _taskApi.ResourceDisks.Count) {
+                _resources.Clear();
                 foreach (var r in _taskApi.ResourceDisks) {
-                    Resources.Add(new QDisk(_api, new Guid(r)));
+                    _resources.Add(new QDisk(_api, new Guid(r)));
                 }
             }
 
-            if (Results == null && _taskApi.ResultDisk != null) {
-                Results = new QDisk(_api, new Guid(_taskApi.ResultDisk));
+            if (_results == null && _taskApi.ResultDisk != null) {
+                _results = new QDisk(_api, new Guid(_taskApi.ResultDisk));
             }
         }
 
@@ -780,11 +780,11 @@ namespace QarnotSDK {
             SyncFromApiObject(result);
 
             if (updateDisksInfo) {
-                foreach (var r in Resources) {
+                foreach (var r in _resources) {
                     await r.UpdateAsync(cancellationToken);
                 }
-                if (Results != null) {
-                    await Results.UpdateAsync(cancellationToken);
+                if (_results != null) {
+                    await _results.UpdateAsync(cancellationToken);
                 }
             }
         }
@@ -1038,12 +1038,12 @@ namespace QarnotSDK {
         }
 
         private IEnumerable<T> GetResources<T>() where T : QAbstractStorage {
-            foreach (var d in Resources) {
+            foreach (var d in _resources) {
                 if (d is T) yield return ((T)d);
             }
         }
         private T GetResults<T>() where T : QAbstractStorage {
-            if (Results is T) return (T)Results;
+            if (_results is T) return (T)_results;
             return default(T);
         }
         #endregion

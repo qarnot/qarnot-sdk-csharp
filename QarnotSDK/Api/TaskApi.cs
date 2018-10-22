@@ -10,7 +10,7 @@ namespace QarnotSDK {
         /// <summary>
         /// Task unique Guid
         /// </summary>
-        public Guid Uuid { get; set; }
+        public Guid? Uuid { get; set; }
         /// <summary>
         /// Http Status Code describing the success of the resource creation(Task)
         /// </summary>
@@ -227,7 +227,7 @@ namespace QarnotSDK {
 
     internal class TaskApi {
         public override string ToString() {
-            return string.Format("[TaskApi: Name={0}, Profile={1}, InstanceCount={2}, ResultDisk={3}, State={4}, SnapshotInterval={5}, ResultsCount={6}, CreationDate={7}, Uuid={8}]", Name, Profile, InstanceCount, ResultDisk, State, SnapshotInterval, ResultsCount, CreationDate, Uuid);
+            return string.Format("[TaskApi: Name={0}, Profile={1}, InstanceCount={2}, ResultDisk={3}, State={4}, SnapshotInterval={5}, CreationDate={6}, Uuid={7}]", Name, Profile, InstanceCount, ResultDisk, State, SnapshotInterval, CreationDate, Uuid);
         }
 
         public string Name { get; set; }
