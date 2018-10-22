@@ -133,17 +133,53 @@ namespace QarnotSDK {
     /// Represents the statistics of a running pool.
     /// </summary>
     public class QPoolStatusRunningInstancesInfo {
+        /// <summary>
+        /// Last information update timestamp.
+        /// </summary>
         public DateTime Timestamp { get; set; }
+        /// <summary>
+        /// Average Frequency in GHz.
+        /// </summary>
         public float AverageFrequencyGHz { get; set; }
+        /// <summary>
+        /// Maximum Frequency in GHz.
+        /// </summary>
         public float MaxFrequencyGHz { get; set; }
+        /// <summary>
+        /// Minimum Frequency in GHz.
+        /// </summary>
         public float MinFrequencyGHz { get; set; }
+        /// <summary>
+        /// Average Maximum Frequency in GHz.
+        /// </summary>
         public float AverageMaxFrequencyGHz { get; set; }
+        /// <summary>
+        /// Average CPU Usage.
+        /// </summary>
         public float AverageCpuUsage { get; set; }
+        /// <summary>
+        /// Cluster Power Indicator.
+        /// </summary>
         public float ClusterPowerIndicator { get; set; }
+        /// <summary>
+        /// Average Memory Usage.
+        /// </summary>
         public float AverageMemoryUsage { get; set; }
+        /// <summary>
+        /// Average Network Input in Kbps.
+        /// </summary>
         public float AverageNetworkInKbps { get; set; }
+        /// <summary>
+        /// Average Network Output in Kbps.
+        /// </summary>
         public float AverageNetworkOutKbps { get; set; }
+        /// <summary>
+        /// Total Network Input in Kbps.
+        /// </summary>
         public float TotalNetworkInKbps { get; set; }
+        /// <summary>
+        /// Total Network Output in Kbps.
+        /// </summary>
         public float TotalNetworkOutKbps { get; set; }
         public List<QPoolStatusPerRunningInstanceInfo> PerRunningInstanceInfo { get; set; }
 
