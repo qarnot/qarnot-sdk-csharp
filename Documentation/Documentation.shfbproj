@@ -90,6 +90,7 @@ You can find samples and detailed information on http://computing.qarnot.com.</N
     <None Include="Content\VersionHistory\v1.1.0.aml" />
     <None Include="Content\VersionHistory\v1.1.1.aml" />
     <None Include="Content\VersionHistory\v1.1.2.aml" />
+    <None Include="Content\VersionHistory\v1.2.0.aml" />
     <None Include="Content\VersionHistory\VersionHistory.aml" />
     <None Include="Content\Welcome.aml" />
   </ItemGroup>

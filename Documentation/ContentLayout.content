@@ -29,5 +29,10 @@
         <HelpKeyword index="K" term="version, 1.1.2.0" />
       </HelpKeywords>
     </Topic>
+    <Topic id="2eddf1ce-ba55-483c-a37a-2c52fabb398a" visible="True" title="Version 1.1.2">
+      <HelpKeywords>
+        <HelpKeyword index="K" term="version, 1.2.0.0" />
+      </HelpKeywords>
+    </Topic>
   </Topic>
 </Topics>
