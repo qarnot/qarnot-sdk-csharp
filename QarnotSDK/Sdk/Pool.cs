@@ -59,7 +59,7 @@ namespace QarnotSDK
         /// <summary>
         /// The pool shortname identifier. The shortname is provided by the user. It has to be unique.
         /// </summary>
-        public string Shortname { get { return _api.HasShortnameFeature ? (_poolApi.Shortname == null ? _poolApi.Uuid.ToString() : _poolApi.Shortname) : _poolApi.Name; } }
+        public string Shortname { get { return _poolApi.Shortname == null ? _poolApi.Uuid.ToString() : _poolApi.Shortname; } }
         /// <summary>
         /// The pool name.
         /// </summary>
@@ -74,7 +74,7 @@ namespace QarnotSDK
         /// </summary>
         public List<QAbstractStorage> Resources {
             get {
-                RefreshTaskIfSummary();
+                RefreshPoolIfSummary();
                 return _resources;
             }
             set {
@@ -90,7 +90,7 @@ namespace QarnotSDK
         /// </summary>
         public IEnumerable<QDisk> ResourcesDisks {
             get {
-                RefreshTaskIfSummary();
+                RefreshPoolIfSummary();
                 return GetResources<QDisk>();
             }
         }
@@ -101,7 +101,7 @@ namespace QarnotSDK
         /// </summary>
         public IEnumerable<QBucket> ResourcesBuckets {
             get {
-                RefreshTaskIfSummary();
+                RefreshPoolIfSummary();
                 return GetResources<QBucket>();
             }
         }
@@ -113,11 +113,11 @@ namespace QarnotSDK
         public string State { get { return _poolApi != null ? _poolApi.State : null; } }
 
         /// <summary>
-        /// Retrieve the task errors.
+        /// Retrieve the pool errors.
         /// </summary>
         public List<QPoolError> Errors {
             get {
-                RefreshTaskIfSummary();
+                RefreshPoolIfSummary();
                 return _poolApi != null ? _poolApi.Errors : new List<QPoolError>();
             }
         }
@@ -128,7 +128,7 @@ namespace QarnotSDK
         /// </summary>
         public QPoolStatus Status {
             get {
-                RefreshTaskIfSummary();
+                RefreshPoolIfSummary();
                 return _poolApi != null ? _poolApi.Status : null;
             }
         }
@@ -147,7 +147,7 @@ namespace QarnotSDK
         /// </summary>
         public List<String> Tags {
             get {
-                RefreshTaskIfSummary();
+                RefreshPoolIfSummary();
                 return _poolApi.Tags;
             }
         }
@@ -157,7 +157,7 @@ namespace QarnotSDK
         /// </summary>
         public Dictionary<string, string> Constants {
             get {
-                RefreshTaskIfSummary();
+                RefreshPoolIfSummary();
                 var constants = _poolApi.Constants;
                 if (constants == null)
                     return new Dictionary<string, string>();
@@ -171,7 +171,7 @@ namespace QarnotSDK
         /// </summary>
         public Dictionary<string, string> Constraints {
             get {
-                RefreshTaskIfSummary();
+                RefreshPoolIfSummary();
                 var constraints = _poolApi.Constraints;
                 if (constraints == null)
                     return new Dictionary<string, string>();
@@ -196,7 +196,7 @@ namespace QarnotSDK
             _poolApi.InstanceCount = initialNodeCount;
             _resources = new List<QAbstractStorage>();
 
-            if (_api.HasShortnameFeature && shortname != default(string)) {
+            if (shortname != default(string)) {
                 _poolApi.Shortname = shortname;
                 _uri = "pools/" + shortname;
             }
@@ -219,50 +219,6 @@ namespace QarnotSDK
             if (_resources == null) _resources = new List<QAbstractStorage>();
             SyncFromApiObject(poolApi);
         }
-
-        #region workaround
-        // Will be removed once the 'shortname' is implemented on the api side
-        internal async Task ApiWorkaround_EnsureUriAsync(bool mustExist, CancellationToken cancellationToken) {
-            if (_api.HasShortnameFeature) {
-                // No workaround needed
-                return;
-            }
-
-            if (mustExist) {
-                // The pool Uri must exist, so if Uri is null, fetch the pool by name
-                if (_uri != null) {
-                    return;
-                }
-
-                var result = await _api.RetrievePoolByNameAsync(_poolApi.Name, cancellationToken);
-                if (result == null) {
-                    throw new QarnotApiResourceNotFoundException("pool " + _poolApi.Name + " doesn't exist", null);
-                }
-                _poolApi.Uuid = result.Uuid;
-                _uri = "pools/" + _poolApi.Uuid.ToString();
-            } else {
-                if (_uri != null) {
-                    // We have an Uri, check if it's still valid
-                    try {
-                        var response = await _api._client.GetAsync(_uri, cancellationToken); // get pool status
-                        await Utils.LookForErrorAndThrowAsync(_api._client, response);
-                        // no error, the pool still exists
-                        throw new QarnotApiResourceAlreadyExistsException("pool " + _poolApi.Name + " already exists", null);
-                    } catch(QarnotApiResourceNotFoundException) {
-                        // OK, not running
-                    }
-                } else {
-                    // We don't have any Uri, check if the pool name exists
-                    var result = await _api.RetrievePoolByNameAsync(_poolApi.Name, cancellationToken);
-                    if (result != null) {
-                        throw new QarnotApiResourceAlreadyExistsException("pool " + _poolApi.Name + " already exists", null);
-                    }
-                }
-                _poolApi.Uuid = new Guid();
-                _uri = null;
-            }
-        }
-        #endregion
 
         #region public methods
         /// <summary>
@@ -337,20 +293,12 @@ namespace QarnotSDK
         /// <param name="initialNodeCount">The number of compute nodes this pool will have. Optional if it has already been defined in the constructor.</param>
         /// <returns></returns>
         public async Task StartAsync(CancellationToken cancellationToken, string profile = null, uint initialNodeCount = 0) {
-            await ApiWorkaround_EnsureUriAsync(false, cancellationToken);
-
             _poolApi.ResourceDisks = new List<string>();
             foreach (var item in _resources) {
                 var resQDisk = item as QDisk;
                 if (resQDisk != null) {
-                    if (_api.HasDiskShortnameFeature) {
-                        _poolApi.ResourceDisks.Add(item.Shortname);
-                        _poolApi.ResourceBuckets.Clear();
-                    } else {
-                        if (resQDisk.Uuid == Guid.Empty) await resQDisk.UpdateAsync(cancellationToken);
-                        _poolApi.ResourceDisks.Add(resQDisk.Uuid.ToString());
-                        _poolApi.ResourceBuckets.Clear();
-                    }
+                    _poolApi.ResourceDisks.Add(item.Shortname);
+                    _poolApi.ResourceBuckets.Clear();
                 } else {
                     var resQBucket = item as QBucket;
                     if (resQBucket != null) {
@@ -373,26 +321,62 @@ namespace QarnotSDK
             var response = await _api._client.PostAsJsonAsync<PoolApi> ("pools", _poolApi, cancellationToken);
             await Utils.LookForErrorAndThrowAsync(_api._client, response);
 
-            // Update the task Uuid
+            // Update the pool Uuid
             var result = await response.Content.ReadAsAsync<TaskApi>(cancellationToken);
             _poolApi.Uuid = result.Uuid;
             _uri = "pools/" + _poolApi.Uuid.ToString();
 
-            // Retrieve the task status once to update the other fields (result disk uuid etc..)
+            // Retrieve the pool status once to update the other fields (result disk uuid etc..)
             await UpdateStatusAsync(cancellationToken);
         }
 
         /// <summary>
-        /// Stop the pool.
+        /// Delete the pool.
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
+        [Obsolete("use CloseAsync")]
         public async Task StopAsync(CancellationToken cancellationToken = default(CancellationToken)) {
-            await ApiWorkaround_EnsureUriAsync(true, cancellationToken);
-
             if (_api.IsReadOnly) throw new Exception("Can't stop pools, this connection is configured in read-only mode");
             var response = await _api._client.DeleteAsync(_uri, cancellationToken);
             await Utils.LookForErrorAndThrowAsync(_api._client, response);
+        }
+
+        /// <summary>
+        /// Close the pool.
+        /// </summary>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns></returns>
+        public async Task CloseAsync(CancellationToken cancellationToken = default(CancellationToken)) {
+            if (_api.IsReadOnly) throw new Exception("Can't close pools, this connection is configured in read-only mode");
+            var response = await _api._client.PostAsync(_uri + "/close", null, cancellationToken);;
+            await Utils.LookForErrorAndThrowAsync(_api._client, response);
+        }
+
+        /// <summary>
+        /// Delete the pool. If the pool is running, the pool is closed and deleted.
+        /// </summary>
+        /// <param name="failIfDoesntExist">If set to true and the pool doesn't exist, an exception is thrown. Default is false.</param>
+        /// <returns></returns>
+        public async Task DeleteAsync(bool failIfDoesntExist = false) {
+            await DeleteAsync(default(CancellationToken), failIfDoesntExist);
+        }
+
+        /// <summary>
+        /// Delete the pool. If the pool is running, the pool is closed and deleted.
+        /// </summary>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <param name="failIfDoesntExist">If set to false and the pool doesn't exist, no exception is thrown. Default is true.</param>
+        /// <returns></returns>
+        public async Task DeleteAsync(CancellationToken cancellationToken, bool failIfDoesntExist = false) {
+            try {
+                if (_api.IsReadOnly) throw new Exception("Can't delete pools, this connection is configured in read-only mode");
+                var response = await _api._client.DeleteAsync(_uri, cancellationToken);
+
+                await Utils.LookForErrorAndThrowAsync(_api._client, response);
+            } catch (QarnotApiResourceNotFoundException ex) {
+                if (failIfDoesntExist) throw ex;
+            }
         }
 
         /// <summary>
@@ -404,7 +388,7 @@ namespace QarnotSDK
             await UpdateStatusAsync(default(CancellationToken), updateDisksInfo);
         }
 
-        private void RefreshTaskIfSummary(CancellationToken cancellationToken = default(CancellationToken)) {
+        private void RefreshPoolIfSummary(CancellationToken cancellationToken = default(CancellationToken)) {
             if (!_isSummary) {
                 return;
             }
@@ -430,8 +414,6 @@ namespace QarnotSDK
         /// <param name="updateDisksInfo">If set to true, the resources disk objects are also updated.</param>
         /// <returns></returns>
         public async Task UpdateStatusAsync(CancellationToken cancellationToken, bool updateDisksInfo = false) {
-            await ApiWorkaround_EnsureUriAsync(true, cancellationToken);
-
             var response = await _api._client.GetAsync(_uri, cancellationToken); // get pool status
             await Utils.LookForErrorAndThrowAsync(_api._client, response);
 
