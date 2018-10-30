@@ -232,12 +232,15 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="connection">The inner connection object.</param>
         /// <param name="shortname">The bucket name.</param>
-        public QBucket(Connection connection, string shortname) {
+        public QBucket(Connection connection, string shortname, bool create=true) {
             _api = connection;
             Shortname = shortname;
+
+            if (create)
+                this.CreateAsync().Wait();
         }
 
-        internal QBucket(Connection connection, Amazon.S3.Model.S3Bucket s3Bucket) : this(connection, s3Bucket.BucketName) {
+        internal QBucket(Connection connection, Amazon.S3.Model.S3Bucket s3Bucket) : this(connection, s3Bucket.BucketName, create: false) {
             CreationDate = s3Bucket.CreationDate;
         }
 
