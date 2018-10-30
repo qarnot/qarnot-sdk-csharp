@@ -42,9 +42,50 @@ namespace QarnotSDK
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
+        [Obsolete("use Close")]
         public void Stop(CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 StopAsync(cancellationToken).Wait();
+            } catch (AggregateException ex) {
+                throw ex.InnerException;
+            }
+        }
+
+        /// <summary>
+        /// Close the pool.
+        /// </summary>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns></returns>
+        public void Close(CancellationToken cancellationToken = default(CancellationToken)) {
+            try {
+                CloseAsync(cancellationToken).Wait();
+            } catch (AggregateException ex) {
+                throw ex.InnerException;
+            }
+        }
+
+        /// <summary>
+        /// Delete the pool. If the pool is running, the pool is closed and deleted.
+        /// </summary>
+        /// <param name="failIfDoesntExist">If set to true and the pool doesn't exist, an exception is thrown. Default is false.</param>
+        /// <returns></returns>
+        public void Delete(bool failIfDoesntExist = false) {
+            try {
+                DeleteAsync(failIfDoesntExist).Wait();
+            } catch (AggregateException ex) {
+                throw ex.InnerException;
+            }
+        }
+
+        /// <summary>
+        /// Delete the pool. If the pool is running, the pool is aborted and deleted.
+        /// </summary>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <param name="failIfDoesntExist">If set to false and the pool doesn't exist, no exception is thrown. Default is true.</param>
+        /// <returns></returns>
+        public void Delete(CancellationToken cancellationToken, bool failIfDoesntExist = false) {
+            try {
+                DeleteAsync(cancellationToken, failIfDoesntExist).Wait();
             } catch (AggregateException ex) {
                 throw ex.InnerException;
             }

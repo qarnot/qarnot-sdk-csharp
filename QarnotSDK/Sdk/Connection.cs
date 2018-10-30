@@ -22,14 +22,16 @@ namespace QarnotSDK {
         /// however more requests are needed to achieve the same result.
         /// The default value is true.
         /// </summary>
-        public bool HasShortnameFeature { get; set; }
+        [ObsoleteAttribute("It will always be True as the SDK don't need to emulate shortname anymore", false)]
+        public bool HasShortnameFeature { get { return true; } set { ; } }
         /// <summary>
         /// Specify if the Api has the shortname feature to retrieve the disks by name.
         /// If set to false, the disk shortname feature will be emulated by the SDK,
         /// however more requests are needed to achieve the same result.
         /// The default value is false.
         /// </summary>
-        public bool HasDiskShortnameFeature { get; set; }
+        [ObsoleteAttribute("It will always be True as the SDK don't need to emulate shortname anymore", false)]
+        public bool HasDiskShortnameFeature { get { return true; } set { ; } }
         /// <summary>
         /// Set the Connection object in read-only mode, useful for monitoring purpose.
         /// </summary>
@@ -113,8 +115,6 @@ namespace QarnotSDK {
             if (storageUri != null) StorageUri = new Uri(storageUri);
             Token = token;
             StorageSecretKey = token;
-            HasShortnameFeature = true;
-            HasDiskShortnameFeature = false;
             _httpClientHandler = httpClientHandler == null ? new HttpClientHandler():httpClientHandler;
             _retryHandler = new RetryHandler(_httpClientHandler, 3);
             _client = new HttpClient(_retryHandler);
@@ -217,6 +217,16 @@ namespace QarnotSDK {
         public QDisk CreateDisk(string name) {
             var disk = new QDisk(this, name);
             return disk;
+        }
+
+        /// <summary>
+        /// Create a new bucket.
+        /// </summary>
+        /// <param name="name">The name of the bucket.</param>
+        /// <returns>A new Bucket.</returns>
+        public QBucket CreateBucket(string name) {
+            var bucket = new QBucket(this, name);
+            return bucket;
         }
         #endregion
 
