@@ -117,7 +117,7 @@ namespace QarnotSDK
         /// </summary>
         /// <param name="connection">The inner connection object.</param>
         /// <param name="shortname">The disk shortname.</param>
-        public QDisk(Connection connection, string shortname) {
+        public QDisk(Connection connection, string shortname, bool create=true) {
             _api = connection;
             _diskApi = new DiskApi();
             _diskApi.Description = shortname;
@@ -126,6 +126,9 @@ namespace QarnotSDK
                 _diskApi.Shortname = shortname;
                 _uri = "disks/" + shortname;
             }
+
+            if (create)
+                this.CreateAsync().Wait();
         }
 
         /// <summary>
@@ -133,7 +136,7 @@ namespace QarnotSDK
         /// </summary>
         /// <param name="connection">The inner connection object.</param>
         /// <param name="uuid">The Uuid of an already existing disk.</param>
-        public QDisk(Connection connection, Guid uuid) : this(connection, uuid.ToString()) {
+        public QDisk(Connection connection, Guid uuid) : this(connection, uuid.ToString(), create: false) {
             _uri = "disks/" + uuid.ToString();
         }
 

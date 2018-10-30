@@ -74,7 +74,7 @@ namespace QarnotSDK
         /// </summary>
         public List<QAbstractStorage> Resources {
             get {
-                RefreshTaskIfSummary();
+                RefreshPoolIfSummary();
                 return _resources;
             }
             set {
@@ -90,7 +90,7 @@ namespace QarnotSDK
         /// </summary>
         public IEnumerable<QDisk> ResourcesDisks {
             get {
-                RefreshTaskIfSummary();
+                RefreshPoolIfSummary();
                 return GetResources<QDisk>();
             }
         }
@@ -101,7 +101,7 @@ namespace QarnotSDK
         /// </summary>
         public IEnumerable<QBucket> ResourcesBuckets {
             get {
-                RefreshTaskIfSummary();
+                RefreshPoolIfSummary();
                 return GetResources<QBucket>();
             }
         }
@@ -113,11 +113,11 @@ namespace QarnotSDK
         public string State { get { return _poolApi != null ? _poolApi.State : null; } }
 
         /// <summary>
-        /// Retrieve the task errors.
+        /// Retrieve the pool errors.
         /// </summary>
         public List<QPoolError> Errors {
             get {
-                RefreshTaskIfSummary();
+                RefreshPoolIfSummary();
                 return _poolApi != null ? _poolApi.Errors : new List<QPoolError>();
             }
         }
@@ -128,7 +128,7 @@ namespace QarnotSDK
         /// </summary>
         public QPoolStatus Status {
             get {
-                RefreshTaskIfSummary();
+                RefreshPoolIfSummary();
                 return _poolApi != null ? _poolApi.Status : null;
             }
         }
@@ -147,7 +147,7 @@ namespace QarnotSDK
         /// </summary>
         public List<String> Tags {
             get {
-                RefreshTaskIfSummary();
+                RefreshPoolIfSummary();
                 return _poolApi.Tags;
             }
         }
@@ -157,7 +157,7 @@ namespace QarnotSDK
         /// </summary>
         public Dictionary<string, string> Constants {
             get {
-                RefreshTaskIfSummary();
+                RefreshPoolIfSummary();
                 var constants = _poolApi.Constants;
                 if (constants == null)
                     return new Dictionary<string, string>();
@@ -171,7 +171,7 @@ namespace QarnotSDK
         /// </summary>
         public Dictionary<string, string> Constraints {
             get {
-                RefreshTaskIfSummary();
+                RefreshPoolIfSummary();
                 var constraints = _poolApi.Constraints;
                 if (constraints == null)
                     return new Dictionary<string, string>();
@@ -373,26 +373,68 @@ namespace QarnotSDK
             var response = await _api._client.PostAsJsonAsync<PoolApi> ("pools", _poolApi, cancellationToken);
             await Utils.LookForErrorAndThrowAsync(_api._client, response);
 
-            // Update the task Uuid
+            // Update the pool Uuid
             var result = await response.Content.ReadAsAsync<TaskApi>(cancellationToken);
             _poolApi.Uuid = result.Uuid;
             _uri = "pools/" + _poolApi.Uuid.ToString();
 
-            // Retrieve the task status once to update the other fields (result disk uuid etc..)
+            // Retrieve the pool status once to update the other fields (result disk uuid etc..)
             await UpdateStatusAsync(cancellationToken);
         }
 
         /// <summary>
-        /// Stop the pool.
+        /// Delete the pool.
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
+        [Obsolete("use CloseAsync")]
         public async Task StopAsync(CancellationToken cancellationToken = default(CancellationToken)) {
             await ApiWorkaround_EnsureUriAsync(true, cancellationToken);
 
             if (_api.IsReadOnly) throw new Exception("Can't stop pools, this connection is configured in read-only mode");
             var response = await _api._client.DeleteAsync(_uri, cancellationToken);
             await Utils.LookForErrorAndThrowAsync(_api._client, response);
+        }
+
+        /// <summary>
+        /// Close the pool.
+        /// </summary>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns></returns>
+        public async Task CloseAsync(CancellationToken cancellationToken = default(CancellationToken)) {
+            await ApiWorkaround_EnsureUriAsync(true, cancellationToken);
+
+            if (_api.IsReadOnly) throw new Exception("Can't close pools, this connection is configured in read-only mode");
+            var response = await _api._client.PostAsync(_uri + "/close", null, cancellationToken);;
+            await Utils.LookForErrorAndThrowAsync(_api._client, response);
+        }
+
+        /// <summary>
+        /// Delete the pool. If the pool is running, the pool is closed and deleted.
+        /// </summary>
+        /// <param name="failIfDoesntExist">If set to true and the pool doesn't exist, an exception is thrown. Default is false.</param>
+        /// <returns></returns>
+        public async Task DeleteAsync(bool failIfDoesntExist = false) {
+            await DeleteAsync(default(CancellationToken), failIfDoesntExist);
+        }
+
+        /// <summary>
+        /// Delete the pool. If the pool is running, the pool is closed and deleted.
+        /// </summary>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <param name="failIfDoesntExist">If set to false and the pool doesn't exist, no exception is thrown. Default is true.</param>
+        /// <returns></returns>
+        public async Task DeleteAsync(CancellationToken cancellationToken, bool failIfDoesntExist = false) {
+            try {
+                await ApiWorkaround_EnsureUriAsync(true, cancellationToken);
+
+                if (_api.IsReadOnly) throw new Exception("Can't delete pools, this connection is configured in read-only mode");
+                var response = await _api._client.DeleteAsync(_uri, cancellationToken);
+
+                await Utils.LookForErrorAndThrowAsync(_api._client, response);
+            } catch (QarnotApiResourceNotFoundException ex) {
+                if (failIfDoesntExist) throw ex;
+            }
         }
 
         /// <summary>
@@ -404,7 +446,7 @@ namespace QarnotSDK
             await UpdateStatusAsync(default(CancellationToken), updateDisksInfo);
         }
 
-        private void RefreshTaskIfSummary(CancellationToken cancellationToken = default(CancellationToken)) {
+        private void RefreshPoolIfSummary(CancellationToken cancellationToken = default(CancellationToken)) {
             if (!_isSummary) {
                 return;
             }

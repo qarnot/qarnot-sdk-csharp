@@ -696,7 +696,7 @@ namespace QarnotSDK {
         public async Task AbortAsync(CancellationToken cancellationToken = default(CancellationToken)) {
             await ApiWorkaround_EnsureUriAsync(true, cancellationToken);
 
-            if (_api.IsReadOnly) throw new Exception("Can't delete tasks, this connection is configured in read-only mode");
+            if (_api.IsReadOnly) throw new Exception("Can't abort tasks, this connection is configured in read-only mode");
             var response = await _api._client.PostAsync(_uri + "/abort", null, cancellationToken);
 
             await Utils.LookForErrorAndThrowAsync(_api._client, response);

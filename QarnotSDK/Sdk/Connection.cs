@@ -218,6 +218,16 @@ namespace QarnotSDK {
             var disk = new QDisk(this, name);
             return disk;
         }
+
+        /// <summary>
+        /// Create a new bucket.
+        /// </summary>
+        /// <param name="name">The name of the bucket.</param>
+        /// <returns>A new disk.</returns>
+        public QBucket CreateBucket(string name) {
+            var bucket = new QBucket(this, name);
+            return bucket;
+        }
         #endregion
 
         #region RetrieveXAsync
