@@ -223,7 +223,7 @@ namespace QarnotSDK {
         /// Create a new bucket.
         /// </summary>
         /// <param name="name">The name of the bucket.</param>
-        /// <returns>A new disk.</returns>
+        /// <returns>A new Bucket.</returns>
         public QBucket CreateBucket(string name) {
             var bucket = new QBucket(this, name);
             return bucket;

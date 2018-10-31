@@ -3,13 +3,13 @@
     {
       "src": [
         {
-	  "src": "..",
+	        "src": "..",
           "files": [
             "**/**.csproj"
           ]
         }
       ],
-      "dest": "api",
+      "dest": "sdk",
       "disableGitFeatures": false,
       "disableDefaultFilter": false
     }
@@ -41,11 +41,9 @@
     "overwrite": [
       {
         "files": [
-          "apidoc/**.md"
         ],
         "exclude": [
-          "obj/**",
-          "_site/**"
+          "sdk/index.md"
         ]
       }
     ],
