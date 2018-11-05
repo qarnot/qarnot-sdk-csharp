@@ -87,7 +87,7 @@ namespace QarnotSDK
         /// <summary>
         /// The disk shortname identifier. The shortname is provided by the user. It has to be unique.
         /// </summary>
-        public override string Shortname { get { return _api.HasDiskShortnameFeature ? _diskApi.Shortname : _diskApi.Description; } }
+        public override string Shortname { get { return _diskApi.Shortname; } }
         /// <summary>
         /// The disk description.
         /// </summary>
@@ -121,11 +121,8 @@ namespace QarnotSDK
             _api = connection;
             _diskApi = new DiskApi();
             _diskApi.Description = shortname;
-
-            if (_api.HasDiskShortnameFeature) {
-                _diskApi.Shortname = shortname;
-                _uri = "disks/" + shortname;
-            }
+            _diskApi.Shortname = shortname;
+            _uri = "disks/" + shortname;
 
             if (create)
                 this.CreateAsync().Wait();
@@ -145,50 +142,6 @@ namespace QarnotSDK
             _diskApi = diskApi;
             _uri = "disks/" + _diskApi.Uuid.ToString();
         }
-
-        #region workaround
-        // Will be removed once the 'shortname' is implemented on the api side
-        internal async Task ApiWorkaround_EnsureUriAsync(bool mustExist, CancellationToken cancellationToken) {
-            if (_api.HasDiskShortnameFeature) {
-                // No workaround needed
-                return;
-            }
-
-            if (mustExist) {
-                // The pool Uri must exist, so if Uri is null, fetch the pool by name
-                if (_uri != null) {
-                    return;
-                }
-
-                var result = await _api.RetrieveDiskByNameAsync(_diskApi.Description, cancellationToken);
-                if (result == null) {
-                    throw new QarnotApiResourceNotFoundException("disk " + _diskApi.Description + " doesn't exist", null);
-                }
-                _diskApi.Uuid = result.Uuid;
-                _uri = "disks/" + _diskApi.Uuid.ToString();
-            } else {
-                if (_uri != null) {
-                    // We have an Uri, check if it's still valid
-                    try {
-                        var response = await _api._client.GetAsync(_uri, cancellationToken); // get disk status
-                        await Utils.LookForErrorAndThrowAsync(_api._client, response);
-                        // no error, the disk still exists
-                        throw new QarnotApiResourceAlreadyExistsException("disk " + _diskApi.Description + " already exists", null);
-                    } catch (QarnotApiResourceNotFoundException) {
-                        // OK, not running
-                    }
-                } else {
-                    // We don't have any Uri, check if the disk name exists
-                    var result = await _api.RetrieveDiskByNameAsync(_diskApi.Description, cancellationToken);
-                    if (result != null) {
-                        throw new QarnotApiResourceAlreadyExistsException("disk " + _diskApi.Description + " already exists", null);
-                    }
-                }
-                _diskApi.Uuid = new Guid();
-                _uri = null;
-            }
-        }
-        #endregion
 
         /// <summary>
         /// Create the disk.
@@ -215,8 +168,6 @@ namespace QarnotSDK
                 }
             }
 
-            await ApiWorkaround_EnsureUriAsync(false, cancellationToken);
-
             if (_api.IsReadOnly) throw new Exception("Can't create disks, this connection is configured in read-only mode");
             var response = await _api._client.PostAsJsonAsync<DiskApi>("disks", _diskApi, cancellationToken);
             await Utils.LookForErrorAndThrowAsync(_api._client, response);
@@ -234,8 +185,6 @@ namespace QarnotSDK
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
         public async Task LockAsync(bool lockState, CancellationToken cancellationToken = default(CancellationToken)) {
-            await ApiWorkaround_EnsureUriAsync(true, cancellationToken);
-
             if (_api.IsReadOnly) throw new Exception("Can't change disks lock state, this connection is configured in read-only mode");
             var lockApi = new LockApi(lockState);
             var response = await _api._client.PutAsJsonAsync<LockApi>(_uri, lockApi, cancellationToken);
@@ -250,8 +199,6 @@ namespace QarnotSDK
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
         public override async Task DeleteAsync(CancellationToken cancellationToken = default(CancellationToken)) {
-            await ApiWorkaround_EnsureUriAsync(true, cancellationToken);
-
             if (_api.IsReadOnly) throw new Exception("Can't delete disks, this connection is configured in read-only mode");
             var response = await _api._client.DeleteAsync(_uri, cancellationToken);
             response.EnsureSuccessStatusCode();
@@ -263,8 +210,6 @@ namespace QarnotSDK
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
         public override async Task UpdateAsync(CancellationToken cancellationToken = default(CancellationToken)) {
-            await ApiWorkaround_EnsureUriAsync(true, cancellationToken);
-
             var response = await _api._client.GetAsync(_uri, cancellationToken);
             await Utils.LookForErrorAndThrowAsync(_api._client, response);
 
@@ -282,8 +227,6 @@ namespace QarnotSDK
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
         public override async Task UploadStreamAsync(Stream sourceStream, string remoteFile, CancellationToken cancellationToken = default(CancellationToken)) {
-            await ApiWorkaround_EnsureUriAsync(true, cancellationToken);
-
             var requestContent = new MultipartFormDataContent();
             var fileContent = new StreamContent(sourceStream);
             fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("application/octet-stream");
@@ -302,8 +245,6 @@ namespace QarnotSDK
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>A stream with the file's data.</returns>
         public override async Task<Stream> DownloadStreamAsync(string remoteFile, CancellationToken cancellationToken = default(CancellationToken)) {
-            await ApiWorkaround_EnsureUriAsync(true, cancellationToken);
-
             string fileUri = _uri + "/" + remoteFile;
 
             var response = await _api._client.GetAsync(
@@ -321,8 +262,6 @@ namespace QarnotSDK
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
         public override async Task DeleteEntryAsync(string remotePath, CancellationToken cancellationToken = default(CancellationToken)) {
-            await ApiWorkaround_EnsureUriAsync(true, cancellationToken);
-
             if (_api.IsReadOnly) throw new Exception("Can't delete disks, this connection is configured in read-only mode");
             var response = await _api._client.DeleteAsync(_uri + "/" + remotePath, cancellationToken);
             response.EnsureSuccessStatusCode();
@@ -335,8 +274,6 @@ namespace QarnotSDK
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>A list of QAbstractStorageEntry</returns>
         public override async Task<List<QAbstractStorageEntry>> ListEntriesAsync(string remoteFolder, CancellationToken cancellationToken = default(CancellationToken)) {
-            await ApiWorkaround_EnsureUriAsync(true, cancellationToken);
-
             string treeUri = "disks/list/" + _diskApi.Uuid.ToString() + "/" + remoteFolder;
             var response = await _api._client.GetAsync(treeUri, cancellationToken);
 
@@ -356,8 +293,6 @@ namespace QarnotSDK
         /// <returns>A list of QAbstractStorageEntry</returns>
         [System.Obsolete("use ListEntriesAsync() instead")]
         public async Task<List<QAbstractStorageEntry>> TreeAsync(CancellationToken cancellationToken = default(CancellationToken)) {
-            await ApiWorkaround_EnsureUriAsync(true, cancellationToken);
-
             string treeUri = "disks/tree/" + _diskApi.Uuid.ToString();
             var response = await _api._client.GetAsync(treeUri, cancellationToken);
 

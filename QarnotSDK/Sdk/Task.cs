@@ -78,7 +78,7 @@ namespace QarnotSDK {
         /// <summary>
         /// The task shortname identifier. The shortname is provided by the user. It has to be unique.
         /// </summary>
-        public string Shortname { get { return _api.HasShortnameFeature ? (_taskApi.Shortname == null ? _taskApi.Uuid.ToString() : _taskApi.Shortname) : _taskApi.Name; } }
+        public string Shortname { get { return _taskApi.Shortname == null ? _taskApi.Uuid.ToString() : _taskApi.Shortname; } }
         /// <summary>
         /// The task name.
         /// </summary>
@@ -357,11 +357,8 @@ namespace QarnotSDK {
             _taskApi.Name = name;
             _taskApi.Profile = profile;
             _resources = new List<QAbstractStorage>();
-
-            if (_api.HasShortnameFeature && shortname != default(string)) {
-                _taskApi.Shortname = shortname;
-                _uri = "tasks/" + shortname;
-            }
+            _taskApi.Shortname = shortname;
+            _uri = "tasks/" + shortname;
         }
 
         /// <summary>
@@ -435,51 +432,6 @@ namespace QarnotSDK {
             if (_resources == null) _resources = new List<QAbstractStorage>();
             SyncFromApiObject(taskApi);
         }
-
-        #region workaround
-        // Will be removed once the unique custom id is implemented on the api side
-        internal async Task ApiWorkaround_EnsureUriAsync(bool mustExist, CancellationToken cancellationToken) {
-            if (_api.HasShortnameFeature) {
-                // No workaround needed
-                return;
-            }
-
-            if (mustExist) {
-                // The task Uri must exist, so if Uri is null, fetch the task by name
-                if (_uri != null) {
-                    return; // OK
-                }
-
-                var result = await _api.RetrieveTaskByNameAsync(_taskApi.Name, cancellationToken);
-                if (result == null) {
-                    throw new QarnotApiResourceNotFoundException("task " + _taskApi.Name + " doesn't exist", null);
-                }
-                _taskApi.Uuid = result.Uuid;
-                _uri = "tasks/" + _taskApi.Uuid.ToString();
-            } else {
-                // The task must NOT exist
-                if (_uri != null) {
-                    // We have an Uri, check if it's still valid
-                    try {
-                        var response = await _api._client.GetAsync(_uri, cancellationToken); // get task status
-                        await Utils.LookForErrorAndThrowAsync(_api._client, response);
-                        // no error, the task still exists
-                        throw new QarnotApiResourceAlreadyExistsException("task " + _taskApi.Name + " already exists", null);
-                    } catch (QarnotApiResourceNotFoundException) {
-                        // OK, not running
-                    }
-                } else {
-                    // We don't have any Uri, check if the task name exists
-                    var result = await _api.RetrieveTaskByNameAsync(_taskApi.Name, cancellationToken);
-                    if (result != null) {
-                        throw new QarnotApiResourceAlreadyExistsException("task " + _taskApi.Name + " already exists", null);
-                    }
-                }
-                _taskApi.Uuid = new Guid();
-                _uri = null;
-            }
-        }
-        #endregion
 
         #region public methods
         /// <summary>
@@ -616,22 +568,11 @@ namespace QarnotSDK {
                 throw new Exception("An instance count or a range must be set to submit a task.");
             }
 
-            await ApiWorkaround_EnsureUriAsync(false, cancellationToken);
-
             // Is a result disk defined?
             if (_results != null) {
                 var resultsQDisk = _results as QDisk;
                 if (resultsQDisk != null) {
-                    if (_api.HasDiskShortnameFeature) {
-                        _taskApi.ResultDisk = resultsQDisk.Shortname;
-                    } else {
-                        if (resultsQDisk.Uuid == Guid.Empty) {
-                            if (!autoCreateResultDisk) await resultsQDisk.UpdateAsync(cancellationToken);
-                            else await resultsQDisk.CreateAsync(true, cancellationToken);
-                        }
-                        _taskApi.ResultDisk = resultsQDisk.Uuid.ToString();
-                        _taskApi.ResultBucket = null;
-                    }
+                    _taskApi.ResultDisk = resultsQDisk.Shortname;
                 } else {
                     var resultsQBucket = _results as QBucket;
                     if (resultsQBucket != null) {
@@ -648,14 +589,8 @@ namespace QarnotSDK {
             foreach (var item in _resources) {
                 var resQDisk = item as QDisk;
                 if (resQDisk != null) {
-                    if (_api.HasDiskShortnameFeature) {
-                        _taskApi.ResourceDisks.Add(item.Shortname);
-                        _taskApi.ResourceBuckets.Clear();
-                    } else {
-                        if (resQDisk.Uuid == Guid.Empty) await resQDisk.UpdateAsync(cancellationToken);
-                        _taskApi.ResourceDisks.Add(resQDisk.Uuid.ToString());
-                        _taskApi.ResourceBuckets.Clear();
-                    }
+                    _taskApi.ResourceDisks.Add(item.Shortname);
+                    _taskApi.ResourceBuckets.Clear();
                 } else {
                     var resQBucket = item as QBucket;
                     if (resQBucket != null) {
@@ -694,8 +629,6 @@ namespace QarnotSDK {
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
         public async Task AbortAsync(CancellationToken cancellationToken = default(CancellationToken)) {
-            await ApiWorkaround_EnsureUriAsync(true, cancellationToken);
-
             if (_api.IsReadOnly) throw new Exception("Can't abort tasks, this connection is configured in read-only mode");
             var response = await _api._client.PostAsync(_uri + "/abort", null, cancellationToken);
 
@@ -719,8 +652,6 @@ namespace QarnotSDK {
         /// <returns></returns>
         public async Task DeleteAsync(CancellationToken cancellationToken, bool failIfDoesntExist = false) {
             try {
-                await ApiWorkaround_EnsureUriAsync(true, cancellationToken);
-
                 if (_api.IsReadOnly) throw new Exception("Can't delete tasks, this connection is configured in read-only mode");
                 var response = await _api._client.DeleteAsync(_uri, cancellationToken);
 
@@ -771,8 +702,6 @@ namespace QarnotSDK {
         /// <param name="updateDisksInfo">If set to true, the resources and results disk objects are also updated.</param>
         /// <returns></returns>
         public async Task UpdateStatusAsync(CancellationToken cancellationToken, bool updateDisksInfo = true) {
-            await ApiWorkaround_EnsureUriAsync(true, cancellationToken);
-
             var response = await _api._client.GetAsync(_uri, cancellationToken); // get task status
             await Utils.LookForErrorAndThrowAsync(_api._client, response);
 
@@ -801,8 +730,6 @@ namespace QarnotSDK {
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
         public async Task UpdateResourcesAsync(CancellationToken cancellationToken = default(CancellationToken)) {
-            await ApiWorkaround_EnsureUriAsync(true, cancellationToken);
-
             if (_api.IsReadOnly) throw new Exception("Can't update resources, this connection is configured in read-only mode");
             var reqMsg = new HttpRequestMessage(new HttpMethod("PATCH"), _uri);
             var response = await _api._client.SendAsync(reqMsg, cancellationToken);
@@ -817,8 +744,6 @@ namespace QarnotSDK {
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
         public async Task SnapshotAsync(CancellationToken cancellationToken = default(CancellationToken)) {
-            await ApiWorkaround_EnsureUriAsync(true, cancellationToken);
-
             if (_api.IsReadOnly) throw new Exception("Can't request a snapshot, this connection is configured in read-only mode");
             var response = await _api._client.PostAsync(_uri + "/snapshot", null, cancellationToken);
             await Utils.LookForErrorAndThrowAsync(_api._client, response);
@@ -831,8 +756,6 @@ namespace QarnotSDK {
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
         public async Task SnapshotPeriodicAsync(uint interval, CancellationToken cancellationToken = default(CancellationToken)) {
-            await ApiWorkaround_EnsureUriAsync(true, cancellationToken);
-
             Snapshot s = new QarnotSDK.Snapshot();
             s.Interval = Convert.ToInt32(interval);
             if (_api.IsReadOnly) throw new Exception("Can't configure snapshots, this connection is configured in read-only mode");
@@ -850,8 +773,6 @@ namespace QarnotSDK {
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
         public async Task CopyStdoutToAsync(Stream destinationStream, CancellationToken cancellationToken = default(CancellationToken)) {
-            await ApiWorkaround_EnsureUriAsync(true, cancellationToken);
-
             var response = await _api._client.GetAsync(_uri + "/stdout", cancellationToken);
             await Utils.LookForErrorAndThrowAsync(_api._client, response);
 
@@ -866,8 +787,6 @@ namespace QarnotSDK {
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
         public async Task CopyStderrToAsync(Stream destinationStream, CancellationToken cancellationToken = default(CancellationToken)) {
-            await ApiWorkaround_EnsureUriAsync(true, cancellationToken);
-
             var response = await _api._client.GetAsync(_uri + "/stderr", cancellationToken);
             await Utils.LookForErrorAndThrowAsync(_api._client, response);
 
@@ -881,8 +800,6 @@ namespace QarnotSDK {
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
         public async Task CopyFreshStdoutToAsync(Stream destinationStream, CancellationToken cancellationToken = default(CancellationToken)) {
-            await ApiWorkaround_EnsureUriAsync(true, cancellationToken);
-
             if (_api.IsReadOnly) throw new Exception("Can't retrieve fresh standard output, this connection is configured in read-only mode");
             var response = await _api._client.PostAsync(_uri + "/stdout", null, cancellationToken);
             await Utils.LookForErrorAndThrowAsync(_api._client, response);
@@ -897,8 +814,6 @@ namespace QarnotSDK {
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
         public async Task CopyFreshStderrToAsync(Stream destinationStream, CancellationToken cancellationToken = default(CancellationToken)) {
-            await ApiWorkaround_EnsureUriAsync(true, cancellationToken);
-
             if (_api.IsReadOnly) throw new Exception("Can't retrieve fresh standard error, this connection is configured in read-only mode");
             var response = await _api._client.PostAsync(_uri + "/stderr", null, cancellationToken);
             await Utils.LookForErrorAndThrowAsync(_api._client, response);
