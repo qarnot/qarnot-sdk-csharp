@@ -150,7 +150,21 @@ namespace QarnotSDK {
             } catch (AggregateException ex) {
                 throw ex.InnerException;
             }
+        }
 
+        /// <summary>
+        /// Retrieve the list of pools filtered by tags.
+        /// </summary>
+        /// <param name="tags">list of tags for pool filtering.</param>
+        /// <param name="summary">Optional token to choose between full pools and pools summaries.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A list of pools.</returns>
+        public List<QPool> RetrievePoolsByTags(List<string> tags, bool summary = true, CancellationToken cancellationToken = default(CancellationToken)) {
+            try {
+                return RetrievePoolsByTagsAsync(tags, summary, cancellationToken).Result;
+            } catch (AggregateException ex) {
+                throw ex.InnerException;
+            }
         }
 
         /// <summary>

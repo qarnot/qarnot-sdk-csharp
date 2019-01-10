@@ -389,6 +389,31 @@ namespace QarnotSDK {
         }
 
         /// <summary>
+        /// Retrieve the pools list filtered by tags.
+        /// </summary>
+        /// <param name="tags">list of tags for pool filtering.</param>
+        /// <param name="summary">Optional token to choose between full pools and pools summaries.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A list of pools.</returns>
+        public async Task<List<QPool>> RetrievePoolsByTagsAsync(List<string> tags, bool summary = true, CancellationToken cancellationToken = default(CancellationToken)) {
+            if(tags == null || tags.Count == 0)
+                return RetrievePoolsAsync(summary, cancellationToken).Result;
+            var baseUri = summary ? "pools/summaries?tag=" : "pools/?tag=";
+
+            var uri = baseUri + string.Join(",", tags.Select(tag => HttpUtility.UrlEncode(tag)));
+            var response = await _client.GetAsync(uri, cancellationToken);
+
+            await Utils.LookForErrorAndThrowAsync(_client, response);
+
+            var qapiPoolList = await response.Content.ReadAsAsync<List<PoolApi>>(cancellationToken);
+            var ret = new List<QPool>();
+            foreach (var item in qapiPoolList) {
+                ret.Add(new QPool(this, item, summary));
+            }
+            return ret;
+        }
+
+        /// <summary>
         /// Retrieve the disks list.
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
