@@ -6,7 +6,6 @@ using System.Threading;
 using System.Linq;
 using System;
 
-// TODO: Commit changes made to a task
 
 namespace QarnotSDK {
     /// <summary>
@@ -486,6 +485,16 @@ namespace QarnotSDK {
             }
             // Doesn't exist, just add
             if (value != null) _taskApi.Constraints.Add(new KeyValHelper(name, value));
+        }
+
+        /// <summary>
+        /// Commit the local task changes.
+        /// </summary>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns></returns>
+        public async Task CommitAsync(CancellationToken cancellationToken = default(CancellationToken)) {
+            var response = await _api._client.PutAsJsonAsync<TaskApi>("tasks", _taskApi, cancellationToken);
+            await Utils.LookForErrorAndThrowAsync(_api._client, response);
         }
 
         /// <summary>

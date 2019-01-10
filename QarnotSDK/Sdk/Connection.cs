@@ -298,6 +298,31 @@ namespace QarnotSDK {
         }
 
         /// <summary>
+        /// Retrieve the pools list filtered by tags.
+        /// </summary>
+        /// <param name="tags">list of tags for pool filtering.</param>
+        /// <param name="summary">Optional token to choose between full pools and pools summaries.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A list of pools.</returns>
+        public async Task<List<QPool>> RetrievePoolsByTagsAsync(List<string> tags, bool summary = true, CancellationToken cancellationToken = default(CancellationToken)) {
+            if(tags == null || tags.Count == 0)
+                return RetrievePoolsAsync(summary, cancellationToken).Result;
+            var baseUri = summary ? "pools/summaries?tag=" : "pools/?tag=";
+
+            var uri = baseUri + string.Join(",", tags.Select(tag => HttpUtility.UrlEncode(tag)));
+            var response = await _client.GetAsync(uri, cancellationToken);
+
+            await Utils.LookForErrorAndThrowAsync(_client, response);
+
+            var qapiPoolList = await response.Content.ReadAsAsync<List<PoolApi>>(cancellationToken);
+            var ret = new List<QPool>();
+            foreach (var item in qapiPoolList) {
+                ret.Add(new QPool(this, item, summary));
+            }
+            return ret;
+        }
+
+        /// <summary>
         /// Retrieve the disks list.
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
@@ -344,6 +369,19 @@ namespace QarnotSDK {
                 s3Config);
 
             return s3Client;
+        }
+
+        /// <summary>
+        /// Retrieve the bucket for the corresponding unique name.
+        /// </summary>
+        /// <param name="bucketName">Unique name of the bucket.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>The bucket.</returns>
+        public async Task<QBucket> RetrieveBucketAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken)) {
+            using (var s3Client = await GetS3ClientAsync(cancellationToken)) {
+                bool exist = await Amazon.S3.Util.AmazonS3Util.DoesS3BucketExistAsync(s3Client, bucketName);
+                return exist ? new QBucket(this, bucketName, create: false) : null;
+            }
         }
 
         /// <summary>
@@ -486,6 +524,19 @@ namespace QarnotSDK {
         }
 
         /// <summary>
+        /// Retrieve a task by its uuid.
+        /// </summary>
+        /// <param name="uuid">uuid of the task to find.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>The task object for that uuid or null if it hasn't been found.</returns>
+        public async Task<QTask> RetrieveTaskByUuidAsync(string uuid, CancellationToken cancellationToken = default(CancellationToken)) {
+            var response = await _client.GetAsync($"tasks/{uuid}", cancellationToken);
+            await Utils.LookForErrorAndThrowAsync(_client, response);
+            var apiTask = await response.Content.ReadAsAsync<TaskApi>(cancellationToken);
+            return new QTask(this, apiTask, isSummary: false);
+        }
+
+        /// <summary>
         /// Retrieve a pool by its name.
         /// </summary>
         /// <param name="name">Name of the pool to find.</param>
@@ -494,6 +545,20 @@ namespace QarnotSDK {
         public async Task<QPool> RetrievePoolByNameAsync(string name, CancellationToken cancellationToken = default(CancellationToken)) {
             var ret = await RetrievePoolsAsync(true, cancellationToken);
             return ret.Find(x => x.Name == name);
+        }
+
+
+        /// <summary>
+        /// Retrieve a pool by its uuid or shortname.
+        /// </summary>
+        /// <param name="uuid">uuid or shortname of the pool to find.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>The pool object for that uuid or null if it hasn't been found.</returns>
+        public async Task<QPool> RetrievePoolByUuidAsync(string uuid, CancellationToken cancellationToken = default(CancellationToken)) {
+            var response = await _client.GetAsync($"pools/{uuid}", cancellationToken);
+            await Utils.LookForErrorAndThrowAsync(_client, response);
+            var apiPool = await response.Content.ReadAsAsync<PoolApi>(cancellationToken);
+            return new QPool(this, apiPool, isSummary: false);
         }
 
         /// <summary>
@@ -538,6 +603,20 @@ namespace QarnotSDK {
             if (!String.IsNullOrEmpty(errorMessage)) {
                 throw new QarnotApiException(errorMessage);
             }
+        }
+
+
+        /// <summary>
+        /// Retreive a bucket or create one if it does not exist.
+        /// </summary>
+        /// <param name="bucketName">The name of the bucket.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A new Bucket.</returns>
+        public async Task<QBucket> RetrieveOrCreateBucketAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken)) {
+            var bucket = await RetrieveBucketAsync(bucketName, cancellationToken);
+            if (bucket == null)
+                bucket = CreateBucket(bucketName);
+            return bucket;
         }
         #endregion
     }
