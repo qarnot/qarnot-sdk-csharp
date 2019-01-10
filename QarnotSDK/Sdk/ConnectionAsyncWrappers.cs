@@ -364,10 +364,9 @@ namespace QarnotSDK {
             }
         }
 
-        /// <summary>
-        /// Retrieve a task by its uuid.
+        /// Retrieve a task by its uuid or shortname(unique and dns compliant).
         /// </summary>
-        /// <param name="uuid">uuid of the task to find.</param>
+        /// <param name="uuid">uuid or shortname of the task to find.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>The task object for that uuid or null if it hasn't been found.</returns>
         public QTask RetrieveTaskByUuid(string uuid, CancellationToken cancellationToken = default(CancellationToken)) {
@@ -421,7 +420,7 @@ namespace QarnotSDK {
         }
 
         /// <summary>
-        /// Retrieve a pool by its uuid or shortname.
+        /// Retrieve a pool by its uuid or shortname(unique and dns compliant).
         /// </summary>
         /// <param name="uuid">uuid or shortname of the pool to find.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>

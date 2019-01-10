@@ -651,6 +651,7 @@ namespace QarnotSDK {
         }
 
         /// <summary>
+
         /// Retrieve a task by its uuid.
         /// </summary>
         /// <param name="uuid">uuid of the task to find.</param>
@@ -674,6 +675,7 @@ namespace QarnotSDK {
             await Utils.LookForErrorAndThrowAsync(_client, response);
             var apiTask = await response.Content.ReadAsAsync<TaskApi>(cancellationToken);
             return await QTaskSummary.CreateAsync(this, apiTask);
+
         }
 
         /// <summary>
@@ -685,6 +687,20 @@ namespace QarnotSDK {
         public async Task<QPool> RetrievePoolByNameAsync(string name, CancellationToken cancellationToken = default(CancellationToken)) {
             var ret = await RetrievePoolsAsync(cancellationToken);
             return ret.Find(x => x.Name == name);
+        }
+
+
+        /// <summary>
+        /// Retrieve a pool by its uuid or shortname.
+        /// </summary>
+        /// <param name="uuid">uuid or shortname of the pool to find.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>The pool object for that uuid or null if it hasn't been found.</returns>
+        public async Task<QPool> RetrievePoolByUuidAsync(string uuid, CancellationToken cancellationToken = default(CancellationToken)) {
+            var response = await _client.GetAsync($"pools/{uuid}", cancellationToken);
+            await Utils.LookForErrorAndThrowAsync(_client, response);
+            var apiPool = await response.Content.ReadAsAsync<PoolApi>(cancellationToken);
+            return new QPool(this, apiPool, isSummary: false);
         }
 
         /// <summary>
