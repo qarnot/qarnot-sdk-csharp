@@ -57,6 +57,59 @@ namespace QarnotSDK {
     }
 
     /// <summary>
+    /// Represents the pool elastic properties
+    /// </summary>
+    internal class QPoolElasticProperty {
+
+        public const bool DEFAULT_IS_ELASTIC = false;
+        public const uint DEFAULT_MIN_TOTAL_SLOTS = 0;
+        public const uint DEFAULT_MAX_TOTAL_SLOTS = 0;
+        public const uint DEFAULT_MIN_IDLING_SLOTS = 0;
+        public const uint DEFAULT_RESIZE_PERIOD = 90;
+        public const float DEFAULT_RAMP_RESIZE_FACTOR = 0.4f;
+        public const uint DEFAULT_MIN_IDLING_TIME = 90;
+
+        /// <summary>
+        /// if the elastic behaviour is activated
+        /// </summary>
+        public bool IsElastic { get; set; } = DEFAULT_IS_ELASTIC;
+
+        /// <summary>
+        /// Lower bound of slots number
+        /// </summary>
+        public uint MinTotalSlots { get; set; } = DEFAULT_MIN_TOTAL_SLOTS;
+
+        /// <summary>
+        /// Upper bound of slots number
+        /// </summary>
+        public uint MaxTotalSlots { get; set; } = DEFAULT_MAX_TOTAL_SLOTS;
+
+        /// <summary>
+        /// Keep a number of slot doing nothing, but up and waiting
+        /// </summary>
+        public uint MinIdleSlots { get; set; } = DEFAULT_MIN_IDLING_SLOTS;
+
+        /// <summary>
+        /// Period for time for resizing idling slots (in seconds)
+        /// </summary>
+        /// <remarks> ResizePeriod minimum is 90 secondes </remarks>
+        public uint ResizePeriod { get; set; } = DEFAULT_RESIZE_PERIOD;
+
+        /// <summary>
+        /// In order to close or open progresssively slots.
+        /// </summary>
+        /// <remarks> RampResizeFactor is in [0:1[ </remarks>
+        public float RampResizeFactor { get; set; } = DEFAULT_RAMP_RESIZE_FACTOR;
+
+        /// <summary>
+        /// when a slot is empty, wait MinIdleTimeSeconds seconds before allowing the slot to be closed or reused
+        /// </summary>
+        public uint MinIdleTimeSeconds { get; set; } = DEFAULT_MIN_IDLING_TIME;
+
+        internal QPoolElasticProperty() {}
+    }
+
+    /// <summary>
     /// Represents the status and the statistics of a running pool node.
     /// </summary>
     public class QPoolStatusPerRunningInstanceInfo {
@@ -227,6 +280,8 @@ namespace QarnotSDK {
         public Guid Uuid { get; set; }
         public string Shortname { get; set; }
         public QPoolStatus Status { get; set; }
+        public QPoolElasticProperty ElasticProperty { get; set; }
+
 
         internal PoolApi() {
             Constants = new List<KeyValHelper>();
@@ -235,6 +290,7 @@ namespace QarnotSDK {
             ResourceDisks = new List<String>();
             ResourceBuckets = new List<String>();
             Errors = new List<QPoolError>();
+            ElasticProperty = new QPoolElasticProperty();
         }
     }
 }

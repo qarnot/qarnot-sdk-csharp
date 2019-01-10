@@ -12,10 +12,10 @@
     <description>$description$</description>
     <copyright>$author$</copyright>
     <dependencies>
-      <dependency id="AWSSDK.Core" version="3.3.21.2" />
-      <dependency id="AWSSDK.S3" version="3.3.16" />
-      <dependency id="Newtonsoft.Json" version="6.0.4" />
-      <dependency id="Microsoft.AspNet.WebApi.Client" version="5.2.3" />
+      <dependency id="AWSSDK.Core" version="3.3.31.7" />
+      <dependency id="AWSSDK.S3" version="3.3.31.15" />
+      <dependency id="Newtonsoft.Json" version="12.0.1" />
+      <dependency id="Microsoft.AspNet.WebApi.Client" version="5.2.7" />
     </dependencies>
   </metadata>
 </package>

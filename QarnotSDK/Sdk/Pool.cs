@@ -180,6 +180,62 @@ namespace QarnotSDK
             }
         }
 
+        #region Elastic properties
+        /// <summary>
+        /// Allow the automatic resize of the pool
+        /// </summary>
+        public bool IsElastic {
+            get { return _poolApi.ElasticProperty.IsElastic; }
+            set { _poolApi.ElasticProperty.IsElastic = value; }
+        }
+
+        /// <summary>
+        /// Minimum node number for the pool in elastic mode
+        /// </summary>
+        public uint ElasticMinimumTotalNodes {
+            get { return _poolApi.ElasticProperty.MinTotalSlots; }
+            set { _poolApi.ElasticProperty.MinTotalSlots = value; }
+        }
+
+        /// <summary>
+        /// Maximum node number for the pool in elastic mode
+        /// </summary>
+        public uint ElasticMaximumTotalNodes {
+            get { return _poolApi.ElasticProperty.MaxTotalSlots; }
+            set { _poolApi.ElasticProperty.MaxTotalSlots = value; }
+        }
+
+        /// <summary>
+        /// Minimum idling node number.
+        /// </summary>
+        public uint ElasticMinimumIdlingNodes {
+            get { return _poolApi.ElasticProperty.MinIdleSlots; }
+            set { _poolApi.ElasticProperty.MinIdleSlots = value; }
+        }
+
+        /// <summary>
+        /// </summary>
+        public uint ElasticResizePeriod {
+            get { return _poolApi.ElasticProperty.ResizePeriod; }
+            set { _poolApi.ElasticProperty.ResizePeriod = value; }
+        }
+
+        /// <summary>
+        /// </summary>
+        public float ElasticResizeFactor {
+            get { return _poolApi.ElasticProperty.RampResizeFactor; }
+            set { _poolApi.ElasticProperty.RampResizeFactor = value; }
+        }
+
+        /// <summary>
+        /// </summary>
+        public uint ElasticMinimumIdlingTime {
+            get { return _poolApi.ElasticProperty.MinIdleTimeSeconds; }
+            set { _poolApi.ElasticProperty.MinIdleTimeSeconds = value; }
+        }
+
+        #endregion
+
         /// <summary>
         /// Create a new pool.
         /// </summary>
@@ -232,7 +288,7 @@ namespace QarnotSDK
         /// <summary>
         /// Deprecated, use SetConstant.
         /// </summary>
-        /// <param name="name">Constant name.</param>
+        /// <param name="key">Constant name.</param>
         /// <param name="value">Constant value.</param>
         [Obsolete("use SetConstant")]
         public void AddConstant(string key, string value) {
@@ -273,6 +329,16 @@ namespace QarnotSDK
             }
             // Doesn't exist, just add
             if (value != null) _poolApi.Constraints.Add(new KeyValHelper(name, value));
+        }
+
+        /// <summary>
+        /// Commit the local pool changes.
+        /// </summary>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns></returns>
+        public async Task CommitAsync(CancellationToken cancellationToken = default(CancellationToken)) {
+            var response = await _api._client.PutAsJsonAsync<PoolApi>("pools", _poolApi, cancellationToken);
+            await Utils.LookForErrorAndThrowAsync(_api._client, response);
         }
 
         /// <summary>
@@ -322,7 +388,7 @@ namespace QarnotSDK
             await Utils.LookForErrorAndThrowAsync(_api._client, response);
 
             // Update the pool Uuid
-            var result = await response.Content.ReadAsAsync<TaskApi>(cancellationToken);
+            var result = await response.Content.ReadAsAsync<PoolApi>(cancellationToken);
             _poolApi.Uuid = result.Uuid;
             _uri = "pools/" + _poolApi.Uuid.ToString();
 

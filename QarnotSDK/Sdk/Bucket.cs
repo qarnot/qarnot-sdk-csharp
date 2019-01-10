@@ -253,10 +253,7 @@ namespace QarnotSDK {
             if (_api.IsReadOnly) throw new Exception("Can't create buckets, this connection is configured in read-only mode");
 
             using (var s3Client = await _api.GetS3ClientAsync(cancellationToken)) {
-                var s3Request = new Amazon.S3.Model.PutBucketRequest {
-                    BucketName = Shortname
-                };
-                var s3Response = await s3Client.PutBucketAsync(s3Request, cancellationToken);
+                var s3Response = await s3Client.PutBucketAsync(Shortname, cancellationToken);
             }
         }
 
