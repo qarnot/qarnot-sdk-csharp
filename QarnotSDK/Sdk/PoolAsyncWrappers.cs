@@ -81,6 +81,17 @@ namespace QarnotSDK
                 throw ex.InnerException;
             }
         }
+
+        /// <summary>
+        /// Commit the local pool changes.
+        /// </summary>
+        public void Commit(CancellationToken cancellationToken = default(CancellationToken)) {
+           try {
+                CommitAsync().Wait();
+            } catch (AggregateException ex) {
+                throw ex.InnerException;
+            }
+        }
         #endregion
     }
 }

@@ -265,6 +265,16 @@ namespace QarnotSDK
         }
 
         /// <summary>
+        /// Commit the local pool changes.
+        /// </summary>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns></returns>
+        public async Task CommitAsync(CancellationToken cancellationToken = default(CancellationToken)) {
+            var response = await _api._client.PutAsJsonAsync<PoolApi>("pools", _poolApi, cancellationToken);
+            await Utils.LookForErrorAndThrowAsync(_api._client, response);
+        }
+
+        /// <summary>
         /// Start the pool.
         /// </summary>
         /// <param name="profile">The pool profile. Optional if it has already been defined in the constructor.</param>
