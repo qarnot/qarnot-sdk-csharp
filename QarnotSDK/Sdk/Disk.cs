@@ -170,6 +170,7 @@ namespace QarnotSDK
         public override async Task CreateAsync(CancellationToken cancellationToken = default(CancellationToken)) {
             await CreateAsync(true, default(CancellationToken));
         }
+
         /// <summary>
         /// Create the disk.
         /// </summary>
