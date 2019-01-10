@@ -321,7 +321,7 @@ namespace QarnotSDK
             await Utils.LookForErrorAndThrowAsync(_api._client, response);
 
             // Update the pool Uuid
-            var result = await response.Content.ReadAsAsync<TaskApi>(cancellationToken);
+            var result = await response.Content.ReadAsAsync<PoolApi>(cancellationToken);
             _poolApi.Uuid = result.Uuid;
             _uri = "pools/" + _poolApi.Uuid.ToString();
 
