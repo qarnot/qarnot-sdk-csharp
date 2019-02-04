@@ -64,20 +64,24 @@ namespace QarnotSDK {
         /// <summary>
         /// The task shortname identifier. The shortname is provided by the user. It has to be unique.
         /// </summary>
+        [InternalDataApiName(Name="Shortname")]
         public string Shortname { get { return _taskApi.Shortname == null ? _taskApi.Uuid.ToString() : _taskApi.Shortname; } }
         /// <summary>
         /// The task name.
         /// </summary>
+        [InternalDataApiName(Name="Name")]
         public string Name { get { return _taskApi.Name; } }
         /// <summary>
         /// The task profile.
         /// </summary>
+        [InternalDataApiName(Name="Profile")]
         public string Profile { get { return _taskApi.Profile; } }
 
         /// <summary>
         /// Qarnot resources disks or buckets bound to this task.
         /// Can be set only before the task submission.
         /// </summary>
+        [InternalDataApiName(IsFilterable=false, IsSelectable=false)]
         public List<QAbstractStorage> Resources {
             get {
                 return _resources;
@@ -86,12 +90,14 @@ namespace QarnotSDK {
                 _resources = value;
             }
         }
+
         private List<QAbstractStorage> _resources { get; set; }
 
         /// <summary>
         /// Qarnot resources disks bound to this task.
         /// Can be set only before the task submission.
         /// </summary>
+        [InternalDataApiName(IsFilterable=false, IsSelectable=false)]
         public IEnumerable<QDisk> ResourcesDisks {
             get {
                 return GetResources<QDisk>();
@@ -101,6 +107,7 @@ namespace QarnotSDK {
         /// Qarnot resources buckets bound to this task.
         /// Can be set only before the task submission.
         /// </summary>
+        [InternalDataApiName(Name="ResourceBuckets", IsFilterable=false)]
         public IEnumerable<QBucket> ResourcesBuckets {
             get {
                 return GetResources<QBucket>();
@@ -111,6 +118,7 @@ namespace QarnotSDK {
         /// Qarnot result disk or bucket bound to this task.
         /// Can be set only before the task submission.
         /// </summary>
+        [InternalDataApiName(IsFilterable=false, IsSelectable=false)]
         public QAbstractStorage Results {
             get {
                 return _results;
@@ -126,6 +134,7 @@ namespace QarnotSDK {
         /// Qarnot result disk bound to this task.
         /// Can be set only before the task submission.
         /// </summary>
+        [InternalDataApiName(IsFilterable=false, IsSelectable=false)]
         public QDisk ResultsDisk {
             get {
                 return GetResults<QDisk>();
@@ -136,6 +145,7 @@ namespace QarnotSDK {
         /// Qarnot result bucket bound to this task.
         /// Can be set only before the task submission.
         /// </summary>
+        [InternalDataApiName(Name="ResultBucket")]
         public QBucket ResultsBucket {
             get {
                 return GetResults<QBucket>();
@@ -146,11 +156,13 @@ namespace QarnotSDK {
         /// Retrieve the task state (see QTaskStates).
         /// Available only after the submission. Use UpdateStatus or UpdateStatusAsync to refresh.
         /// </summary>
+        [InternalDataApiName(Name="State")]
         public string State { get { return _taskApi != null ? _taskApi.State : null; } }
 
         /// <summary>
         /// Retrieve the task errors.
         /// </summary>
+        [InternalDataApiName(Name="Errors", IsFilterable=false)]
         public List<QTaskError> Errors {
             get {
                 return _taskApi != null ? _taskApi.Errors : new List<QTaskError>();
@@ -161,6 +173,7 @@ namespace QarnotSDK {
         /// Retrieve the task detailed status.
         /// Available only after the submission. Use UpdateStatus or UpdateStatusAsync to refresh.
         /// </summary>
+        [InternalDataApiName(Name="Status", IsFilterable=false)]
         public QTaskStatus Status {
             get {
                 if (_taskApi == null)
@@ -173,12 +186,14 @@ namespace QarnotSDK {
         /// The task creation date.
         /// Available only after the submission.
         /// </summary>
+        [InternalDataApiName(Name="CreationDate")]
         public DateTime CreationDate { get { return _taskApi.CreationDate; } }
 
         /// <summary>
         /// Increased each time a new set of results is available, when snapshot or final results are ready.
         /// Use UpdateStatus or UpdateStatusAsync to refresh.
         /// </summary>
+        [InternalDataApiName(Name="ResultsCount")]
         public uint ResultsCount {
             get {
                 return _taskApi.ResultsCount;
@@ -188,6 +203,7 @@ namespace QarnotSDK {
         /// <summary>
         /// The custom task tag list.
         /// </summary>
+        [InternalDataApiName(Name="Tags")]
         public List<String> Tags {
             get {
                 return _taskApi.Tags;
@@ -198,6 +214,7 @@ namespace QarnotSDK {
         /// The task constants.
         /// </summary>
         /// <returns>return all Constants</returns>
+        [InternalDataApiName(Name="Constants")]
         public Dictionary<string, string> Constants {
             get {
                 var constants = _taskApi.Constants;
@@ -212,6 +229,7 @@ namespace QarnotSDK {
         /// The task constraints.
         /// </summary>
         /// <returns>return all Constraints</returns>
+        [InternalDataApiName(Name="Constraints")]
         public Dictionary<string, string> Constraints {
             get {
                 var constraints = _taskApi.Constraints;
@@ -226,6 +244,7 @@ namespace QarnotSDK {
         /// The delay in seconds between two periodic snapshots.
         /// Once the task is running, use the SnapshotPeriodic method to update.
         /// </summary>
+        [InternalDataApiName(Name="SnapshotInterval")]
         public int SnapshotInterval {
             get {
                 return _taskApi.SnapshotInterval;
@@ -235,12 +254,14 @@ namespace QarnotSDK {
         /// <summary>
         /// The pool where the task is running or null if the task doesn't belong to a pool.
         /// </summary>
+        [InternalDataApiName(IsFilterable=false, IsSelectable=false)]
         public QPool Pool { get { return (_taskApi.PoolUuid == null || _taskApi.PoolUuid == Guid.Empty.ToString()) ? null : new QPool(_api, new Guid(_taskApi.PoolUuid)); } }
 
         /// <summary>
         /// True if the task is completed or false if the task is still running or deploying.
         /// Use UpdateStatus or UpdateStatusAsync to refresh.
         /// </summary>
+        [InternalDataApiName(IsFilterable=false, IsSelectable=false)]
         public bool Completed {
             get {
                 return State == QTaskStates.Success || State == QTaskStates.Failure || State == QTaskStates.Cancelled;
@@ -251,6 +272,7 @@ namespace QarnotSDK {
         /// True if the task is executing (PartiallyExecuting or FullyExecuting) or false if the task is in another state.
         /// Use UpdateStatus or UpdateStatusAsync to refresh.
         /// </summary>
+        [InternalDataApiName(IsFilterable=false, IsSelectable=false)]
         public bool Executing {
             get {
                 return State == QTaskStates.PartiallyExecuting || State == QTaskStates.FullyExecuting;
@@ -260,6 +282,7 @@ namespace QarnotSDK {
         /// <summary>
         /// How many times this task have to run.
         /// </summary>
+        [InternalDataApiName(Name="InstanceCount")]
         public uint InstanceCount {
             get {
                 if (_advancedRange == null) return _taskApi.InstanceCount;
@@ -271,6 +294,7 @@ namespace QarnotSDK {
         /// The results include only the files matching that regular expression.
         /// Must be set before the submission.
         /// </summary>
+        [InternalDataApiName(Name="ResultsWhitelist")]
         public string ResultsWhitelist {
             get {
                 return _taskApi.ResultsWhitelist;
@@ -282,6 +306,7 @@ namespace QarnotSDK {
         /// The results exclude all the files matching that regular expression.
         /// Must be set before the submission.
         /// </summary>
+        [InternalDataApiName(Name="ResultsBlacklist")]
         public string ResultsBlacklist {
             get {
                 return _taskApi.ResultsBlacklist;
@@ -294,6 +319,7 @@ namespace QarnotSDK {
         /// The snapshots include only the files matching that regular expression.
         /// Must be set before the submission.
         /// </summary>
+        [InternalDataApiName(Name="SnapshotWhitelist")]
         public string SnapshotWhitelist {
             get {
                 return _taskApi.SnapshotWhitelist;
@@ -305,6 +331,7 @@ namespace QarnotSDK {
         /// The snapshots exclude all the files matching that regular expression.
         /// Must be set before the submission.
         /// </summary>
+        [InternalDataApiName(Name="SnapshotBlacklist")]
         public string SnapshotBlacklist {
             get {
                 return _taskApi.SnapshotBlacklist;
@@ -461,6 +488,7 @@ namespace QarnotSDK {
         }
 
 
+        /// <summary>
         /// Run this task.
         /// </summary>
         /// <param name="taskTimeoutSeconds">Optional number of second before abort is called.</param>
@@ -655,20 +683,33 @@ namespace QarnotSDK {
 
         private async Task SyncFromApiObjectAsync(TaskApi result) {
             _taskApi = result;
+
+            // update task range
             if (_taskApi.AdvancedRanges != null) _advancedRange = new AdvancedRanges(_taskApi.AdvancedRanges);
             else _advancedRange = null;
 
-            if (_resources.Count != _taskApi.ResourceDisks.Count) {
+            // update the task resources
+            var newResourcesCount = 0;
+            if (_taskApi.ResourceDisks != null) newResourcesCount += _taskApi.ResourceDisks.Count;
+            if (_taskApi.ResourceBuckets != null) newResourcesCount += _taskApi.ResourceBuckets.Count;
+
+            if (_resources.Count != newResourcesCount) {
                 _resources.Clear();
-                foreach (var r in _taskApi.ResourceDisks) {
-                    _resources.Add(await QDisk.CreateAsync(_api, r, create: false));
+
+                if (_taskApi.ResourceDisks != null) {
+                    foreach (var r in _taskApi.ResourceDisks) {
+                        _resources.Add(await QDisk.CreateAsync(_api, r, create: false));
+                    }
                 }
 
-                foreach (var r in _taskApi.ResourceBuckets) {
-                    _resources.Add(await QBucket.CreateAsync(_api, r, create: false));
+                if (_taskApi.ResourceDisks != null) {
+                    foreach (var r in _taskApi.ResourceBuckets) {
+                        _resources.Add(await QBucket.CreateAsync(_api, r, create: false));
+                    }
                 }
             }
 
+            // update the task result
             if (_results == null && _taskApi.ResultDisk != null) {
                 _results = await QDisk.CreateAsync(_api, _taskApi.ResultDisk, create: false);
             }

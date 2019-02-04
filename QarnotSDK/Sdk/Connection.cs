@@ -300,6 +300,26 @@ namespace QarnotSDK {
         }
 
         /// <summary>
+        /// Retrieve the tasks list with custom filtering.
+        /// </summary>
+        /// <param name="level">the qtask filter object</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A list of tasks.</returns>
+        public async Task<List<QTask>> RetrieveTasksAsync(QDataDetail<QTask> level, CancellationToken cancellationToken = default(CancellationToken)) {
+            var baseUri =  "tasks/search";
+            var response = await _client.PostAsJsonAsync<DataDetailApi<QTask>>(baseUri, level._dataDetailApi, cancellationToken);
+
+            await Utils.LookForErrorAndThrowAsync(_client, response);
+
+            var qapiTaskList = await response.Content.ReadAsAsync<List<TaskApi>>(cancellationToken);
+            var ret = new List<QTask>();
+            foreach (var item in qapiTaskList) {
+                ret.Add(await QTask.CreateAsync(this, item));
+            }
+            return ret;
+        }
+
+        /// <summary>
         /// Retrieve the tasks list filtered by tags.
         /// </summary>
         /// <param name="tags">list of tags for task filtering.</param>
@@ -383,7 +403,27 @@ namespace QarnotSDK {
             var list = await response.Content.ReadAsAsync<List<PoolApi>>(cancellationToken);
             var ret = new List<QPoolSummary>();
             foreach (var item in list) {
-                ret.Add(new QPoolSummary(this, item));
+                ret.Add(await QPoolSummary.CreateAsync(this, item));
+            }
+            return ret;
+        }
+
+        /// <summary>
+        /// Retrieve the pools list with custom filtering.
+        /// </summary>
+        /// <param name="level">the qpool filter object</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A list of pools.</returns>
+        public async Task<List<QPool>> RetrievePoolsAsync(QDataDetail<QPool> level, CancellationToken cancellationToken = default(CancellationToken)) {
+            var baseUri =  "pools/search";
+            var response = await _client.PostAsJsonAsync<DataDetailApi<QPool>>(baseUri, level._dataDetailApi, cancellationToken);
+
+            await Utils.LookForErrorAndThrowAsync(_client, response);
+
+            var qapiPoolList = await response.Content.ReadAsAsync<List<PoolApi>>(cancellationToken);
+            var ret = new List<QPool>();
+            foreach (var item in qapiPoolList) {
+                ret.Add(new QPool(this, item));
             }
             return ret;
         }
@@ -408,7 +448,7 @@ namespace QarnotSDK {
             var qapiPoolList = await response.Content.ReadAsAsync<List<PoolApi>>(cancellationToken);
             var ret = new List<QPool>();
             foreach (var item in qapiPoolList) {
-                ret.Add(new QPool(this, item, summary));
+                ret.Add(await QPool.CreateAsync(this, item));
             }
             return ret;
         }
@@ -463,18 +503,6 @@ namespace QarnotSDK {
             return s3Client;
         }
 
-        /// <summary>
-        /// Retrieve the bucket for the corresponding unique name.
-        /// </summary>
-        /// <param name="bucketName">Unique name of the bucket.</param>
-        /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        /// <returns>The bucket.</returns>
-        public async Task<QBucket> RetrieveBucketAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken)) {
-            using (var s3Client = await GetS3ClientAsync(cancellationToken)) {
-                bool exist = await Amazon.S3.Util.AmazonS3Util.DoesS3BucketExistAsync(s3Client, bucketName);
-                return exist ? new QBucket(this, bucketName, create: false) : null;
-            }
-        }
 
         /// <summary>
         /// Retrieve the buckets list with each bucket file count and used space.
@@ -501,6 +529,7 @@ namespace QarnotSDK {
                 var tasks = new List<Task>();
                 foreach (var item in s3Response.Buckets) {
                     var b = new QBucket(this, item);
+
                     if (retrieveBucketStats) tasks.Add(b.UpdateAsync(cancellationToken));
                     ret.Add(b);
                 }
@@ -651,7 +680,6 @@ namespace QarnotSDK {
         }
 
         /// <summary>
-
         /// Retrieve a task by its uuid.
         /// </summary>
         /// <param name="uuid">uuid of the task to find.</param>
@@ -689,19 +717,6 @@ namespace QarnotSDK {
             return ret.Find(x => x.Name == name);
         }
 
-
-        /// <summary>
-        /// Retrieve a pool by its uuid or shortname.
-        /// </summary>
-        /// <param name="uuid">uuid or shortname of the pool to find.</param>
-        /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        /// <returns>The pool object for that uuid or null if it hasn't been found.</returns>
-        public async Task<QPool> RetrievePoolByUuidAsync(string uuid, CancellationToken cancellationToken = default(CancellationToken)) {
-            var response = await _client.GetAsync($"pools/{uuid}", cancellationToken);
-            await Utils.LookForErrorAndThrowAsync(_client, response);
-            var apiPool = await response.Content.ReadAsAsync<PoolApi>(cancellationToken);
-            return new QPool(this, apiPool, isSummary: false);
-        }
 
         /// <summary>
         /// Retrieve a pool summary by its name.
@@ -784,19 +799,6 @@ namespace QarnotSDK {
             }
         }
 
-
-        /// <summary>
-        /// Retreive a bucket or create one if it does not exist.
-        /// </summary>
-        /// <param name="bucketName">The name of the bucket.</param>
-        /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        /// <returns>A new Bucket.</returns>
-        public async Task<QBucket> RetrieveOrCreateBucketAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken)) {
-            var bucket = await RetrieveBucketAsync(bucketName, cancellationToken);
-            if (bucket == null)
-                bucket = CreateBucket(bucketName);
-            return bucket;
-        }
         #endregion
     }
 }

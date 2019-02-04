@@ -45,19 +45,23 @@ namespace QarnotSDK
         /// <summary>
         /// The pool shortname identifier. The shortname is provided by the user. It has to be unique.
         /// </summary>
+        [InternalDataApiName(Name="Shortname")]
         public string Shortname { get { return _poolApi.Shortname == null ? _poolApi.Uuid.ToString() : _poolApi.Shortname; } }
         /// <summary>
         /// The pool name.
         /// </summary>
+        [InternalDataApiName(Name="Name")]
         public string Name { get { return _poolApi.Name; } }
         /// <summary>
         /// The pool profile.
         /// </summary>
+        [InternalDataApiName(Name="Profile")]
         public string Profile { get { return _poolApi.Profile; } }
         /// <summary>
         /// Qarnot resources disks or buckets bound to this pool.
         /// Can be set only before the pool start.
         /// </summary>
+        [InternalDataApiName(IsFilterable=false, IsSelectable=false)]
         public List<QAbstractStorage> Resources {
             get {
                 return _resources;
@@ -73,6 +77,7 @@ namespace QarnotSDK
         /// Qarnot resources disks bound to this pool.
         /// Can be set only before the pool start.
         /// </summary>
+        [InternalDataApiName(IsFilterable=false)]
         public IEnumerable<QDisk> ResourcesDisks {
             get {
                 return GetResources<QDisk>();
@@ -83,6 +88,7 @@ namespace QarnotSDK
         /// Qarnot resources buckets bound to this pool.
         /// Can be set only before the pool start.
         /// </summary>
+        [InternalDataApiName(Name="ResourceBuckets", IsFilterable=false)]
         public IEnumerable<QBucket> ResourcesBuckets {
             get {
                 return GetResources<QBucket>();
@@ -93,11 +99,13 @@ namespace QarnotSDK
         /// Retrieve the pool state (see QPoolStates).
         /// Available only after the pool is started. Use UpdateStatus or UpdateStatusAsync to refresh.
         /// </summary>
+        [InternalDataApiName(Name="State")]
         public string State { get { return _poolApi != null ? _poolApi.State : null; } }
 
         /// <summary>
         /// Retrieve the pool errors.
         /// </summary>
+        [InternalDataApiName(Name="Errors", IsFilterable=false)]
         public List<QPoolError> Errors {
             get {
                 return _poolApi != null ? _poolApi.Errors : new List<QPoolError>();
@@ -108,6 +116,7 @@ namespace QarnotSDK
         /// Retrieve the pool detailed status.
         /// Available only after the pool is started. Use UpdateStatus or UpdateStatusAsync to refresh.
         /// </summary>
+        [InternalDataApiName(Name="Status", IsFilterable=false)]
         public QPoolStatus Status {
             get {
                 return _poolApi != null ? _poolApi.Status : null;
@@ -118,14 +127,17 @@ namespace QarnotSDK
         /// The pool creation date.
         /// Available only after the pool is started.
         /// </summary>
+        [InternalDataApiName(Name="CreationDate")]
         public DateTime CreationDate { get { return _poolApi.CreationDate; } }
         /// <summary>
         /// How many nodes this pool has.
         /// </summary>
+        [InternalDataApiName(Name="InstanceCount")]
         public uint NodeCount { get { return _poolApi.InstanceCount; } }
         /// <summary>
         /// The custom pool tag list.
         /// </summary>
+        [InternalDataApiName(Name="Tags")]
         public List<String> Tags {
             get {
                 return _poolApi.Tags;
@@ -135,6 +147,7 @@ namespace QarnotSDK
         /// <summary>
         /// The Pool constants.
         /// </summary>
+        [InternalDataApiName(Name="Constants", IsFilterable=false)]
         public Dictionary<string, string> Constants {
             get {
                 var constants = _poolApi.Constants;
@@ -148,6 +161,7 @@ namespace QarnotSDK
         /// <summary>
         /// The pool constraints.
         /// </summary>
+        [InternalDataApiName(Name="Constraints", IsFilterable=false)]
         public Dictionary<string, string> Constraints {
             get {
                 var constraints = _poolApi.Constraints;
@@ -162,6 +176,7 @@ namespace QarnotSDK
         /// <summary>
         /// Allow the automatic resize of the pool
         /// </summary>
+        [InternalDataApiName(Name="ElasticProperty.IsElastic")]
         public bool IsElastic {
             get { return _poolApi.ElasticProperty.IsElastic; }
             set { _poolApi.ElasticProperty.IsElastic = value; }
@@ -170,6 +185,7 @@ namespace QarnotSDK
         /// <summary>
         /// Minimum node number for the pool in elastic mode
         /// </summary>
+        [InternalDataApiName(Name="ElasticProperty.MinTotalSlots")]
         public uint ElasticMinimumTotalNodes {
             get { return _poolApi.ElasticProperty.MinTotalSlots; }
             set { _poolApi.ElasticProperty.MinTotalSlots = value; }
@@ -178,6 +194,7 @@ namespace QarnotSDK
         /// <summary>
         /// Maximum node number for the pool in elastic mode
         /// </summary>
+        [InternalDataApiName(Name="ElasticProperty.MaxTotalSlots")]
         public uint ElasticMaximumTotalNodes {
             get { return _poolApi.ElasticProperty.MaxTotalSlots; }
             set { _poolApi.ElasticProperty.MaxTotalSlots = value; }
@@ -186,6 +203,7 @@ namespace QarnotSDK
         /// <summary>
         /// Minimum idling node number.
         /// </summary>
+        [InternalDataApiName(Name="ElasticProperty.MinIdleSlots")]
         public uint ElasticMinimumIdlingNodes {
             get { return _poolApi.ElasticProperty.MinIdleSlots; }
             set { _poolApi.ElasticProperty.MinIdleSlots = value; }
@@ -193,6 +211,7 @@ namespace QarnotSDK
 
         /// <summary>
         /// </summary>
+        [InternalDataApiName(Name="ElasticProperty.ResizePeriod")]
         public uint ElasticResizePeriod {
             get { return _poolApi.ElasticProperty.ResizePeriod; }
             set { _poolApi.ElasticProperty.ResizePeriod = value; }
@@ -200,6 +219,7 @@ namespace QarnotSDK
 
         /// <summary>
         /// </summary>
+        [InternalDataApiName(Name="ElasticProperty.RampResizeFactor")]
         public float ElasticResizeFactor {
             get { return _poolApi.ElasticProperty.RampResizeFactor; }
             set { _poolApi.ElasticProperty.RampResizeFactor = value; }
@@ -207,6 +227,7 @@ namespace QarnotSDK
 
         /// <summary>
         /// </summary>
+        [InternalDataApiName(Name="ElasticProperty.MinIdleTimeSeconds")]
         public uint ElasticMinimumIdlingTime {
             get { return _poolApi.ElasticProperty.MinIdleTimeSeconds; }
             set { _poolApi.ElasticProperty.MinIdleTimeSeconds = value; }
@@ -398,13 +419,23 @@ namespace QarnotSDK
         private async Task SyncFromApiObjectAsync(PoolApi result) {
             _poolApi = result;
 
-            if (_resources.Count != _poolApi.ResourceDisks.Count) {
+            var newResourcesCount = 0;
+            if (_poolApi.ResourceDisks != null) newResourcesCount += _poolApi.ResourceDisks.Count;
+            if (_poolApi.ResourceBuckets != null) newResourcesCount += _poolApi.ResourceBuckets.Count;
+
+            if (_resources.Count != newResourcesCount) {
                 _resources.Clear();
-                foreach (var r in _poolApi.ResourceDisks) {
-                    _resources.Add(await QDisk.CreateAsync(_api, r, create: false));
+
+                if (_poolApi.ResourceDisks != null) {
+                    foreach (var r in _poolApi.ResourceDisks) {
+                        _resources.Add(await QDisk.CreateAsync(_api, r, create: false));
+                    }
                 }
-                foreach (var r in _poolApi.ResourceBuckets) {
-                    _resources.Add(await QBucket.CreateAsync(_api, r, create: false));
+
+                if (_poolApi.ResourceBuckets != null) {
+                    foreach (var r in _poolApi.ResourceBuckets) {
+                        _resources.Add(await QBucket.CreateAsync(_api, r, create: false));
+                    }
                 }
             }
         }

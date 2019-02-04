@@ -38,6 +38,7 @@ namespace QarnotSDK {
             return String.Format("[{0}] {1} ({2})", StatusCode, Uuid, Message);
         }
     }
+
     /// <summary>
     /// Represents an error that occur during a task execution.
     /// </summary>

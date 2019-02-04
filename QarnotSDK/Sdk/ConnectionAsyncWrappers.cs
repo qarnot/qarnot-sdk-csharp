@@ -90,6 +90,20 @@ namespace QarnotSDK {
         }
 
         /// <summary>
+        /// Retrieve the tasks list with custom filtering.
+        /// </summary>
+        /// <param name="level">the qtask filter object</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A list of tasks.</returns>
+        public List<QTask> RetrieveTasks(QDataDetail<QTask> level, CancellationToken cancellationToken = default(CancellationToken)) {
+            try {
+                return RetrieveTasksAsync(level, cancellationToken).Result;
+            } catch (AggregateException ex) {
+                throw ex.InnerException;
+            }
+        }
+
+        /// <summary>
         /// Retrieve the list of tasks filtered by tags.
         /// </summary>
         /// <param name="tags">list of tags for task filtering.</param>
@@ -147,6 +161,20 @@ namespace QarnotSDK {
         public List<QPoolSummary> RetrievePoolSummaries(CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 return RetrievePoolSummariesAsync(cancellationToken).Result;
+            } catch (AggregateException ex) {
+                throw ex.InnerException;
+            }
+        }
+
+        /// <summary>
+        /// Retrieve the pools list with custom filtering.
+        /// </summary>
+        /// <param name="level">the qpool filter object</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A list of pools.</returns>
+        public List<QPool> RetrievePools(QDataDetail<QPool> level, CancellationToken cancellationToken = default(CancellationToken)) {
+            try {
+                return RetrievePoolsAsync(level, cancellationToken).Result;
             } catch (AggregateException ex) {
                 throw ex.InnerException;
             }
@@ -231,35 +259,6 @@ namespace QarnotSDK {
         public List<QBucket> RetrieveBuckets(bool retrieveBucketStats, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 return RetrieveBucketsAsync(retrieveBucketStats, cancellationToken).Result;
-            } catch (AggregateException ex) {
-                throw ex.InnerException;
-            }
-        }
-
-        /// <summary>
-        /// Retrieve the bucket
-        /// </summary>
-        /// <param name="bucketName">Unique name of the bucket to retrieve.</param>
-        /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        /// <remarks>If the bucket is not found, null is return</remarks>
-        /// <returns>Corresponding bucket.</returns>
-        public QBucket RetrieveBucket(string bucketName, CancellationToken cancellationToken = default(CancellationToken)) {
-            try {
-                return RetrieveBucketAsync(bucketName, cancellationToken).Result;
-            } catch (AggregateException ex) {
-                throw ex.InnerException;
-            }
-        }
-
-        /// <summary>
-        /// Retrieve the bucket, if it does not exist, create it
-        /// </summary>
-        /// <param name="bucketName">Unique name of the bucket to retrieve.</param>
-        /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        /// <returns>Corresponding bucket.</returns>
-        public QBucket RetrieveOrCreateBucket(string bucketName, CancellationToken cancellationToken = default(CancellationToken)) {
-            try {
-                return RetrieveOrCreateBucketAsync(bucketName, cancellationToken).Result;
             } catch (AggregateException ex) {
                 throw ex.InnerException;
             }
@@ -364,6 +363,7 @@ namespace QarnotSDK {
             }
         }
 
+        /// <summary>
         /// Retrieve a task by its uuid or shortname(unique and dns compliant).
         /// </summary>
         /// <param name="uuid">uuid or shortname of the task to find.</param>

@@ -163,20 +163,6 @@ namespace QarnotSDK {
             }
         }
 
-
-        /// <summary>
-        /// Returns the fresh new standard error since the last call.
-        /// </summary>
-        /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        /// <returns>The task fresh standard error.</returns>
-        public string FreshStderr(CancellationToken cancellationToken = default(CancellationToken)) {
-            try {
-                return FreshStderrAsync(cancellationToken).Result;
-            } catch(AggregateException ex) {
-                throw ex.InnerException;
-            }
-        }
-
         /// <summary>
         /// Commit the local task changes.
         /// </summary>
