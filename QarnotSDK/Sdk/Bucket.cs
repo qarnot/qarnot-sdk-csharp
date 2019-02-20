@@ -194,7 +194,7 @@ namespace QarnotSDK {
     /// This class manages the Qarnot Ceph buckets (S3 compatible).
     /// </summary>
     public class QBucket : QAbstractStorage {
-        private readonly Connection _api;
+        private Connection _api;
         private long _usedSpaceBytes;
         private int _fileCount;
 
@@ -209,7 +209,7 @@ namespace QarnotSDK {
         /// <summary>
         /// The bucket name.
         /// </summary>
-        public override string Shortname { get; }
+        public override string Shortname { get; protected set; }
         /// <summary>
         /// Number of files in this bucket.
         /// Use Update or UpdateAsync to refresh.
@@ -240,8 +240,23 @@ namespace QarnotSDK {
                 this.CreateAsync().Wait();
         }
 
+        internal QBucket() {}
+
         internal QBucket(Connection connection, Amazon.S3.Model.S3Bucket s3Bucket) : this(connection, s3Bucket.BucketName, create: false) {
             CreationDate = s3Bucket.CreationDate;
+        }
+
+        internal async Task<QBucket> InitializeAsync(Connection qapi, string shortname, bool create=true, CancellationToken ct=default(CancellationToken)) {
+             _api = qapi;
+            Shortname = shortname;
+
+            if (create)
+                await this.CreateAsync(ct);
+            return this;
+        }
+
+        internal async static Task<QBucket> CreateAsync(Connection qapi, string shortname, bool create=true, CancellationToken ct=default(CancellationToken)) {
+            return await new QBucket().InitializeAsync(qapi, shortname, create, ct);
         }
 
         /// <summary>

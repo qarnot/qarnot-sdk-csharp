@@ -73,6 +73,14 @@
     <Compile Include="Sdk\Disk.cs" />
     <Compile Include="Sdk\Exceptions.cs" />
     <Compile Include="Sdk\Task.cs" />
+    <Compile Include="Sdk\AbstractTask.cs" />
+    <Compile Include="Sdk\AbstractTaskAsyncWrapper.cs" />
+    <Compile Include="Sdk\TaskSummary.cs" />
+    <Compile Include="Sdk\TaskSummaryAsyncWrapper.cs" />
+    <Compile Include="Sdk\AbstractPool.cs" />
+    <Compile Include="Sdk\AbstractPoolAsyncWrapper.cs" />
+    <Compile Include="Sdk\PoolSummary.cs" />
+    <Compile Include="Sdk\PoolSummaryAsyncWrapper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

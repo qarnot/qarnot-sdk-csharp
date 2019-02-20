@@ -7,6 +7,35 @@ using System;
 namespace QarnotSDK {
     public partial class Connection {
         #region CreateX
+
+        /// <summary>
+        /// Create a new disk.
+        /// </summary>
+        /// <param name="name">The name of the disk.</param>
+        /// <param name="ct">Optional token to cancel the request.</param>
+        /// <returns>A new disk.</returns>
+        public QDisk CreateDisk(string name, CancellationToken ct=default(CancellationToken)) {
+            try {
+                return CreateDiskAsync(name, ct).Result;
+            } catch (AggregateException ex) {
+                throw ex.InnerException;
+            }
+        }
+
+        /// <summary>
+        /// Create a new bucket.
+        /// </summary>
+        /// <param name="name">The name of the bucket.</param>
+        /// <param name="ct">Optional token to cancel the request.</param>
+        /// <returns>A new Bucket.</returns>
+        public QBucket CreateBucket(string name, CancellationToken ct=default(CancellationToken)) {
+            try {
+                return CreateBucketAsync(name, ct).Result;
+            } catch (AggregateException ex) {
+                throw ex.InnerException;
+            }
+        }
+
         /// <summary>
         /// Submit a list of task as a bulk.
         /// </summary>
@@ -28,12 +57,24 @@ namespace QarnotSDK {
         /// <summary>
         /// Retrieve the list of tasks.
         /// </summary>
-        /// <param name="summary">Optional token to choose between full tasks and tasks summaries.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>A list of tasks.</returns>
-        public List<QTask> RetrieveTasks(bool summary = true, CancellationToken cancellationToken = default(CancellationToken)) {
+        public List<QTask> RetrieveTasks(CancellationToken cancellationToken = default(CancellationToken)) {
             try {
-                return RetrieveTasksAsync(summary, cancellationToken).Result;
+                return RetrieveTasksAsync(cancellationToken).Result;
+            } catch (AggregateException ex) {
+                throw ex.InnerException;
+            }
+        }
+
+        /// <summary>
+        /// Retrieve the list of tasks summary.
+        /// </summary>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A list of tasks.</returns>
+        public List<QTaskSummary> RetrieveTasksSummary(CancellationToken cancellationToken = default(CancellationToken)) {
+            try {
+                return RetrieveTasksSummaryAsync(cancellationToken).Result;
             } catch (AggregateException ex) {
                 throw ex.InnerException;
             }
@@ -43,27 +84,51 @@ namespace QarnotSDK {
         /// Retrieve the list of tasks filtered by tags.
         /// </summary>
         /// <param name="tags">list of tags for task filtering.</param>
-        /// <param name="summary">Optional token to choose between full tasks and tasks summaries.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>A list of tasks.</returns>
-        public List<QTask> RetrieveTasksByTags(List<string> tags, bool summary = true, CancellationToken cancellationToken = default(CancellationToken)) {
+        public List<QTask> RetrieveTasksByTags(List<string> tags, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
-                return RetrieveTasksByTagsAsync(tags, summary, cancellationToken).Result;
+                return RetrieveTasksByTagsAsync(tags, cancellationToken).Result;
             } catch (AggregateException ex) {
                 throw ex.InnerException;
             }
         }
 
+        /// <summary>
+        /// Retrieve the list of tasks summary filtered by tags.
+        /// </summary>
+        /// <param name="tags">list of tags for task filtering.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A list of tasks summary.</returns>
+        public List<QTaskSummary> RetrieveTasksSummaryByTags(List<string> tags, CancellationToken cancellationToken = default(CancellationToken)) {
+            try {
+                return RetrieveTasksSummaryByTagsAsync(tags, cancellationToken).Result;
+            } catch (AggregateException ex) {
+                throw ex.InnerException;
+            }
+        }
 
         /// <summary>
         /// Retrieve the list of pools.
         /// </summary>
-        /// <param name="summary">Optional token to choose between full tasks and tasks summaries.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>A list of pools.</returns>
-        public List<QPool> RetrievePools(bool summary = true, CancellationToken cancellationToken = default(CancellationToken)) {
+        public List<QPool> RetrievePools(CancellationToken cancellationToken = default(CancellationToken)) {
             try {
-                return RetrievePoolsAsync(summary, cancellationToken).Result;
+                return RetrievePoolsAsync(cancellationToken).Result;
+            } catch (AggregateException ex) {
+                throw ex.InnerException;
+            }
+        }
+
+        /// <summary>
+        /// Retrieve the list of pools summary.
+        /// </summary>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A list of pools summary.</returns>
+        public List<QPoolSummary> RetrievePoolsSummary(CancellationToken cancellationToken = default(CancellationToken)) {
+            try {
+                return RetrievePoolsSummaryAsync(cancellationToken).Result;
             } catch (AggregateException ex) {
                 throw ex.InnerException;
             }
@@ -195,6 +260,20 @@ namespace QarnotSDK {
         }
 
         /// <summary>
+        /// Retrieve a task summary by its name.
+        /// </summary>
+        /// <param name="name">Name of the task to find.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>The task summary object for that name or null if it hasn't been found.</returns>
+        public QTaskSummary RetrieveTaskSummaryByName(string name, CancellationToken cancellationToken = default(CancellationToken)) {
+            try {
+                return RetrieveTaskSummaryByNameAsync(name, cancellationToken).Result;
+            } catch (AggregateException ex) {
+                throw ex.InnerException;
+            }
+        }
+
+        /// <summary>
         /// Retrieve a pool by its name.
         /// </summary>
         /// <param name="name">Name of the pool to find.</param>
@@ -203,6 +282,20 @@ namespace QarnotSDK {
         public QPool RetrievePoolByName(string name, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 return RetrievePoolByNameAsync(name, cancellationToken).Result;
+            } catch (AggregateException ex) {
+                throw ex.InnerException;
+            }
+        }
+
+        /// <summary>
+        /// Retrieve a pool summary by its name.
+        /// </summary>
+        /// <param name="name">Name of the pool to find.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>The pool summary object for that name or null if it hasn't been found.</returns>
+        public QPoolSummary RetrievePoolSummaryByName(string name, CancellationToken cancellationToken = default(CancellationToken)) {
+            try {
+                return RetrievePoolSummaryByNameAsync(name, cancellationToken).Result;
             } catch (AggregateException ex) {
                 throw ex.InnerException;
             }

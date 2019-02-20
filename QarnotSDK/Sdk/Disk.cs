@@ -68,7 +68,7 @@ namespace QarnotSDK
     /// This class manages the Qarnot disks.
     /// </summary>
     public partial class QDisk : QAbstractStorage {
-        private readonly Connection _api;
+        private Connection _api;
         private DiskApi _diskApi;
         private string _uri;
 
@@ -87,7 +87,7 @@ namespace QarnotSDK
         /// <summary>
         /// The disk shortname identifier. The shortname is provided by the user. It has to be unique.
         /// </summary>
-        public override string Shortname { get { return _diskApi.Shortname; } }
+        public override string Shortname { get { return _diskApi.Shortname; } protected set {;} }
         /// <summary>
         /// The disk description.
         /// </summary>
@@ -137,10 +137,28 @@ namespace QarnotSDK
             _uri = "disks/" + uuid.ToString();
         }
 
+        internal QDisk() { }
+
         internal QDisk(Connection api, DiskApi diskApi) {
             _api = api;
             _diskApi = diskApi;
             _uri = "disks/" + _diskApi.Uuid.ToString();
+        }
+
+        internal async Task<QDisk> InitializeAsync(Connection qapi, string shortname, bool create=true, CancellationToken ct=default(CancellationToken)) {
+            _api = qapi;
+            _diskApi = new DiskApi();
+            _diskApi.Description = shortname;
+            _diskApi.Shortname = shortname;
+            _uri = "disks/" + shortname;
+
+            if (create)
+                await this.CreateAsync(ct);
+            return this;
+        }
+
+        internal async static Task<QDisk> CreateAsync(Connection qapi, string shortname, bool create=true, CancellationToken ct=default(CancellationToken)) {
+            return await new QDisk().InitializeAsync(qapi, shortname, create, ct);
         }
 
         /// <summary>

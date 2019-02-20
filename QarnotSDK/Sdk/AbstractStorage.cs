@@ -87,7 +87,7 @@ namespace QarnotSDK {
         /// The storage shortname identifier. The shortname is provided by the user. It has to be unique.
         /// Note: For a bucket, shortname is the bucket name.
         /// </summary>
-        public abstract string Shortname { get; }
+        public abstract string Shortname { get; protected set; }
         /// <summary>
         /// Number of files in this storage.
         /// Use Update or UpdateAsync to refresh.

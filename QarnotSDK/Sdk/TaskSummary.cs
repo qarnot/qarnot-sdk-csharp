@@ -1,0 +1,130 @@
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
+using System.IO;
+using System.Threading;
+using System.Linq;
+using System;
+
+
+namespace QarnotSDK {
+
+    /// <summary>
+    /// This class manages tasks life cycle: submission, monitor, delete.
+    /// </summary>
+    public partial class QTaskSummary : AQTask {
+
+        private AdvancedRanges _advancedRange = null;
+
+        /// <summary>
+        /// The task shortname identifier. The shortname is provided by the user. It has to be unique.
+        /// </summary>
+        public string Shortname { get { return _taskApi.Shortname == null ? _taskApi.Uuid.ToString() : _taskApi.Shortname; } }
+        /// <summary>
+        /// The task name.
+        /// </summary>
+        public string Name { get { return _taskApi.Name; } }
+        /// <summary>
+        /// The task profile.
+        /// </summary>
+        public string Profile { get { return _taskApi.Profile; } }
+
+
+        /// <summary>
+        /// Retrieve the task state (see QTaskStates).
+        /// Available only after the submission.
+        /// </summary>
+        public string State { get { return _taskApi != null ? _taskApi.State : null; } }
+
+        /// <summary>
+        /// The task creation date.
+        /// Available only after the submission.
+        /// </summary>
+        public DateTime CreationDate { get { return _taskApi.CreationDate; } }
+
+        /// <summary>
+        /// The pool where the task is running or null if the task doesn't belong to a pool.
+        /// </summary>
+        public QPool Pool { get { return (_taskApi.PoolUuid == null || _taskApi.PoolUuid == Guid.Empty.ToString()) ? null : new QPool(_api, new Guid(_taskApi.PoolUuid)); } }
+
+        /// <summary>
+        /// True if the task is completed or false if the task is still running or deploying.
+        /// </summary>
+        public bool Completed {
+            get {
+                return State == QTaskStates.Success || State == QTaskStates.Failure || State == QTaskStates.Cancelled;
+            }
+        }
+
+        /// <summary>
+        /// True if the task is executing (PartiallyExecuting or FullyExecuting) or false if the task is in another state.
+        /// </summary>
+        public bool Executing {
+            get {
+                return State == QTaskStates.PartiallyExecuting || State == QTaskStates.FullyExecuting;
+            }
+        }
+
+        /// <summary>
+        /// How many times this task have to run.
+        /// </summary>
+        public uint InstanceCount {
+            get {
+                if (_advancedRange == null) return _taskApi.InstanceCount;
+                else return _advancedRange.Count;
+            }
+        }
+
+
+        internal QTaskSummary() { }
+
+        internal QTaskSummary(Connection qapi, TaskApi taskApi) : base(qapi, taskApi) { }
+
+        internal async new Task<QTaskSummary> InitializeAsync(Connection qapi, TaskApi taskApi) {
+            await base.InitializeAsync(qapi, taskApi);
+             _uri = "tasks/" + taskApi.Uuid.ToString();
+            await SyncFromApiObjectAsync(taskApi);
+            return this;
+        }
+
+        internal async static Task<QTaskSummary> CreateAsync(Connection qapi, TaskApi taskApi) {
+            return await new QTaskSummary().InitializeAsync(qapi, taskApi);
+        }
+
+        private async Task SyncFromApiObjectAsync(TaskApi result) {
+            _taskApi = result;
+            if (_taskApi.AdvancedRanges != null) _advancedRange = new AdvancedRanges(_taskApi.AdvancedRanges);
+            else _advancedRange = null;
+        }
+
+        #region helpers
+        /// <summary>
+        /// Enumeration on the task instance ids.
+        /// Useful if an advanced range is used.
+        /// </summary>
+        public IEnumerable<UInt32> Instances {
+            get {
+                if (_advancedRange != null) {
+                    foreach (var i in _advancedRange)
+                        yield return i;
+                } else {
+                    for (UInt32 i = 0; i < _taskApi.InstanceCount; i++)
+                        yield return i;
+                }
+            }
+        }
+        #endregion
+
+        /// <summary>
+        /// Get The Full Task from this task summary.
+        /// <param name="ct">Optional token to cancel the request.</param>
+        /// </summary>
+        public async Task<QTask> GetFullQTaskAsync(CancellationToken ct = default(CancellationToken)) {
+            var response = await _api._client.GetAsync(_uri, ct);
+            await Utils.LookForErrorAndThrowAsync(_api._client, response);
+
+            var result = await response.Content.ReadAsAsync<TaskApi>();
+            return await QTask.CreateAsync(Connection, result);
+        }
+    }
+}
