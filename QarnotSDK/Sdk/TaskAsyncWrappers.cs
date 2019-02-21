@@ -94,6 +94,34 @@ namespace QarnotSDK {
         }
 
         /// <summary>
+        /// Run this task.
+        /// </summary>
+        /// <param name="taskTimeoutSeconds">Optional number of second before abort is called.</param>
+        /// <param name="ct">Optional token to cancel the request.</param>
+        /// <returns></returns>
+        public void Run(int taskTimeoutSeconds=-1, CancellationToken ct =default(CancellationToken)) {
+            try {
+                RunAsync(taskTimeoutSeconds, ct).Wait();
+            } catch (AggregateException ex) {
+                throw ex.InnerException;
+            }
+        }
+
+        /// <summary>
+        /// Wait this task completion.
+        /// </summary>
+        /// <param name="taskTimeoutSeconds">Optional maximum number of second to wait for completion.</param>
+        /// <param name="ct">Optional token to cancel the request.</param>
+        /// <returns></returns>
+        public void Wait(int taskTimeoutSeconds=-1, CancellationToken ct =default(CancellationToken)) {
+            try {
+                WaitAsync(taskTimeoutSeconds, ct).Wait();
+            } catch (AggregateException ex) {
+                throw ex.InnerException;
+            }
+        }
+
+        /// <summary>
         /// Update this task state and status.
         /// </summary>
         /// <param name="updateDisksInfo">If set to true, the resources and results disk objects are also updated.</param>

@@ -462,6 +462,39 @@ namespace QarnotSDK {
         }
 
         /// <summary>
+        /// Run this task.
+        /// </summary>
+        /// <param name="taskTimeoutSeconds">Optional number of second before abort is called.</param>
+        /// <param name="ct">Optional token to cancel the request.</param>
+        /// <returns></returns>
+        public async Task RunAsync(int taskTimeoutSeconds=-1, CancellationToken ct =default(CancellationToken)) {
+            await SubmitAsync(ct, null, 0);
+            await WaitAsync(taskTimeoutSeconds, ct);
+            if (taskTimeoutSeconds > 0)
+                await AbortAsync(ct);
+        }
+
+        /// <summary>
+        /// Wait this task completion.
+        /// </summary>
+        /// <param name="taskTimeoutSeconds">Optional maximum number of second to wait for completion.</param>
+        /// <param name="ct">Optional token to cancel the request.</param>
+        /// <returns></returns>
+        public async Task WaitAsync(int taskTimeoutSeconds=-1, CancellationToken ct =default(CancellationToken)) {
+           var start = DateTime.Now;
+            while(!Completed) {
+                await UpdateStatusAsync();
+                var elasped = (DateTime.Now - start).Seconds;
+
+                // loop timeout exit condition
+                if(taskTimeoutSeconds > 0 || elasped > taskTimeoutSeconds) return;
+
+                // loop delay
+                await Task.Delay(10);
+            }
+        }
+
+        /// <summary>
         /// Submit this task.
         /// </summary>
         /// <param name="profile">The task profile, if not running inside a pool. Optional if the profile has already been defined in the constructor or if the task is bound to a pool, profile must be null.</param>
