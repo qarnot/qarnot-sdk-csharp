@@ -274,6 +274,34 @@ namespace QarnotSDK {
         }
 
         /// <summary>
+        /// Retrieve a task by its uuid.
+        /// </summary>
+        /// <param name="uuid">uuid of the task to find.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>The task object for that uuid or null if it hasn't been found.</returns>
+        public QTask RetrieveTaskByUuid(string uuid, CancellationToken cancellationToken = default(CancellationToken)) {
+            try {
+                return RetrieveTaskByUuidAsync(uuid, cancellationToken).Result;
+            } catch (AggregateException ex) {
+                throw ex.InnerException;
+            }
+        }
+
+        /// <summary>
+        /// Retrieve a task summary by its uuid.
+        /// </summary>
+        /// <param name="uuid">uuid of the task summary to find.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>The task summary object for that uuid or null if it hasn't been found.</returns>
+        public QTaskSummary RetrieveTaskSummaryByUuid(string uuid, CancellationToken cancellationToken = default(CancellationToken)) {
+            try {
+                return RetrieveTaskSummaryByUuidAsync(uuid, cancellationToken).Result;
+            } catch (AggregateException ex) {
+                throw ex.InnerException;
+            }
+        }
+
+        /// <summary>
         /// Retrieve a pool by its name.
         /// </summary>
         /// <param name="name">Name of the pool to find.</param>
@@ -296,6 +324,34 @@ namespace QarnotSDK {
         public QPoolSummary RetrievePoolSummaryByName(string name, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 return RetrievePoolSummaryByNameAsync(name, cancellationToken).Result;
+            } catch (AggregateException ex) {
+                throw ex.InnerException;
+            }
+        }
+
+        /// <summary>
+        /// Retrieve a pool by its uuid or shortname.
+        /// </summary>
+        /// <param name="uuid">uuid or shortname of the pool to find.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>The pool object for that uuid or null if it hasn't been found.</returns>
+        public QPool RetrievePoolByUuid(string uuid, CancellationToken cancellationToken = default(CancellationToken)) {
+            try {
+                return RetrievePoolByUuidAsync(uuid, cancellationToken).Result;
+            } catch (AggregateException ex) {
+                throw ex.InnerException;
+            }
+        }
+
+        /// <summary>
+        /// Retrieve a pool summary by its uuid or shortname.
+        /// </summary>
+        /// <param name="uuid">uuid or shortname of the pool to find.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>The pool summary object for that uuid or null if it hasn't been found.</returns>
+        public QPoolSummary RetrievePoolSummaryByUuid(string uuid, CancellationToken cancellationToken = default(CancellationToken)) {
+            try {
+                return RetrievePoolSummaryByUuidAsync(uuid, cancellationToken).Result;
             } catch (AggregateException ex) {
                 throw ex.InnerException;
             }
