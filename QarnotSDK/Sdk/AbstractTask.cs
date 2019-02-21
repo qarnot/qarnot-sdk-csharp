@@ -36,7 +36,6 @@ namespace QarnotSDK {
         /// </summary>
         public Guid Uuid { get { return _taskApi.Uuid; } }
 
-
         internal AQTask() { }
 
         internal AQTask(Connection qapi, TaskApi taskApi) {
@@ -68,28 +67,23 @@ namespace QarnotSDK {
         /// <summary>
         /// Delete the task. If the task is running, the task is aborted and deleted.
         /// </summary>
-        /// <param name="failIfDoesntExist">If set to true and the task doesn't exist, an exception is thrown. Default is false.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <param name="failIfDoesntExist">If set to false and the task doesn't exist, no exception is thrown. Default is true.</param>
+        /// <param name="purgeResources">Boolean to trigger all resource storages deletion. Default is false.</param>
+        /// <param name="purgeResults">Boolean to trigger result storage deletion. Default is false.</param>
         /// <returns></returns>
-        public async Task DeleteAsync(bool failIfDoesntExist = false) {
-            await DeleteAsync(default(CancellationToken), failIfDoesntExist);
-        }
+        public abstract Task DeleteAsync(CancellationToken cancellationToken=default(CancellationToken),
+            bool failIfDoesntExist = false, bool purgeResources=false, bool purgeResults=false);
 
         /// <summary>
         /// Delete the task. If the task is running, the task is aborted and deleted.
         /// </summary>
-        /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <param name="failIfDoesntExist">If set to false and the task doesn't exist, no exception is thrown. Default is true.</param>
+        /// <param name="purgeResources">Boolean to trigger all resource storages deletion. Default is false.</param>
+        /// <param name="purgeResults">Boolean to trigger result storage deletion. Default is false.</param>
         /// <returns></returns>
-        public async Task DeleteAsync(CancellationToken cancellationToken, bool failIfDoesntExist = false) {
-            try {
-                if (_api.IsReadOnly) throw new Exception("Can't delete tasks, this connection is configured in read-only mode");
-                var response = await _api._client.DeleteAsync(_uri, cancellationToken);
-
-                await Utils.LookForErrorAndThrowAsync(_api._client, response);
-            } catch (QarnotApiResourceNotFoundException ex) {
-                if (failIfDoesntExist) throw ex;
-            }
-        }
+        public async Task DeleteAsync(bool failIfDoesntExist = false, bool purgeResources=false, bool purgeResults=false)
+            => await DeleteAsync(default(CancellationToken), failIfDoesntExist, purgeResources, purgeResults);
         #endregion
 
         #region resource updates/snapshots

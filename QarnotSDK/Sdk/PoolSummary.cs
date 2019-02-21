@@ -55,12 +55,39 @@ namespace QarnotSDK {
             return await new QPoolSummary().InitializeAsync(qapi, poolApi);
         }
 
+        /// <summary>
+        /// Delete the pool. If the pool is running, the pool is aborted and deleted.
+        /// </summary>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <param name="failIfDoesntExist">If set to false and the pool doesn't exist, no exception is thrown. Default is true.</param>
+        /// <param name="purgeResources">Boolean to trigger all resource storages deletion. Default is false.</param>
+        /// <returns></returns>
+        public override async Task DeleteAsync(CancellationToken cancellationToken=default(CancellationToken), bool failIfDoesntExist = false,
+            bool purgeResources=false)
+        {
+            if (_api.IsReadOnly) throw new Exception("Can't delete pools, this connection is configured in read-only mode");
+
+            // the summary pool hasn't the resources and the results. (switching to fullPool for purging)
+            if (purgeResources) {
+                var fullPool = await GetFullQPoolAsync(cancellationToken);
+                await fullPool.DeleteAsync(cancellationToken, failIfDoesntExist, purgeResources);
+            }
+            else {
+                try {
+                    var response = await _api._client.DeleteAsync(_uri, cancellationToken);
+                    await Utils.LookForErrorAndThrowAsync(_api._client, response);
+                } catch (QarnotApiResourceNotFoundException ex) {
+                    if (failIfDoesntExist) throw ex;
+                }
+            }
+        }
+
         private void SyncFromApiObject(PoolApi result) {
             _poolApi = result;
         }
 
         /// <summary>
-        /// Get The Full Pool from this task summary.
+        /// Get The Full Pool from this pool summary.
         /// <param name="ct">Optional token to cancel the request.</param>
         /// </summary>
         public async Task<QPool> GetFullQPoolAsync(CancellationToken ct = default(CancellationToken)) {

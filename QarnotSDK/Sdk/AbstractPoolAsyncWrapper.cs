@@ -42,27 +42,20 @@ namespace QarnotSDK {
         /// <summary>
         /// Delete the task. If the task is running, the task is aborted and deleted.
         /// </summary>
-        /// <param name="failIfDoesntExist">If set to true and the task doesn't exist, an exception is thrown. Default is false.</param>
-        public void Delete(bool failIfDoesntExist = false) {
-            try {
-                DeleteAsync(failIfDoesntExist).Wait();
-            } catch (AggregateException ex) {
-                throw ex.InnerException;
-            }
-        }
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <param name="failIfDoesntExist">If set to false and the task doesn't exist, no exception is thrown. Default is true.</param>
+        /// <param name="purgeResources">Boolean to trigger all resource storages deletion. Default is false.</param>
+        /// <returns></returns>
+        public abstract void Delete(CancellationToken cancellationToken=default(CancellationToken), bool failIfDoesntExist = false, bool purgeResources=false);
 
         /// <summary>
         /// Delete the task. If the task is running, the task is aborted and deleted.
         /// </summary>
-        /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        /// <param name="failIfDoesntExist">If set to true and the task doesn't exist, an exception is thrown. Default is false.</param>
-        public void Delete(CancellationToken cancellationToken, bool failIfDoesntExist = false) {
-            try {
-                DeleteAsync(cancellationToken, failIfDoesntExist).Wait();
-            } catch (AggregateException ex) {
-                throw ex.InnerException;
-            }
-        }
+        /// <param name="failIfDoesntExist">If set to false and the task doesn't exist, no exception is thrown. Default is true.</param>
+        /// <param name="purgeResources">Boolean to trigger all resource storages deletion. Default is false.</param>
+        /// <returns></returns>
+        public void Delete(bool failIfDoesntExist = false, bool purgeResources=false)
+            => Delete(default(CancellationToken) ,failIfDoesntExist, purgeResources);
         #endregion
     }
 }

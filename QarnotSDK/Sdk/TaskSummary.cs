@@ -91,6 +91,33 @@ namespace QarnotSDK {
             return await new QTaskSummary().InitializeAsync(qapi, taskApi);
         }
 
+        /// <summary>
+        /// Delete the task. If the task is running, the task is aborted and deleted.
+        /// </summary>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <param name="failIfDoesntExist">If set to false and the task doesn't exist, no exception is thrown. Default is true.</param>
+        /// <param name="purgeResources">Boolean to trigger all resource storages deletion. Default is false.</param>
+        /// <param name="purgeResults">Boolean to trigger result storage deletion. Default is false.</param>
+        /// <returns></returns>
+        public override async Task DeleteAsync(CancellationToken cancellationToken=default(CancellationToken), bool failIfDoesntExist = false,
+            bool purgeResources=false, bool purgeResults=false) {
+            if (_api.IsReadOnly) throw new Exception("Can't delete tasks, this connection is configured in read-only mode");
+
+            // the summary task hasn't the resources and the results. (switching to fullTask for purging)
+            if (purgeResources || purgeResults) {
+                var fullTask = await GetFullQTaskAsync(cancellationToken);
+                await fullTask.DeleteAsync(cancellationToken, failIfDoesntExist, purgeResources, purgeResults);
+            }
+            else {
+                try {
+                    var response = await _api._client.DeleteAsync(_uri, cancellationToken);
+                    await Utils.LookForErrorAndThrowAsync(_api._client, response);
+                } catch (QarnotApiResourceNotFoundException ex) {
+                    if (failIfDoesntExist) throw ex;
+                }
+            }
+        }
+
         private async Task SyncFromApiObjectAsync(TaskApi result) {
             _taskApi = result;
             if (_taskApi.AdvancedRanges != null) _advancedRange = new AdvancedRanges(_taskApi.AdvancedRanges);

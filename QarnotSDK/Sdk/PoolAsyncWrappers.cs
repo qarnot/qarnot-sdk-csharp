@@ -64,6 +64,23 @@ namespace QarnotSDK
                 throw ex.InnerException;
             }
         }
+
+
+        /// <summary>
+        /// Delete the pool. If the pool is running, the pool is closed and deleted.
+        /// </summary>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <param name="failIfDoesntExist">If set to false and the pool doesn't exist, no exception is thrown. Default is true.</param>
+        /// <param name="purgeResources">Boolean to trigger all resource storages deletion. Default is false.</param>
+        /// <returns></returns>
+        public override void Delete(CancellationToken cancellationToken, bool failIfDoesntExist = false, bool purgeResources=false)
+        {
+            try {
+                DeleteAsync(cancellationToken, failIfDoesntExist,purgeResources).Wait();
+            } catch (AggregateException ex) {
+                throw ex.InnerException;
+            }
+        }
         #endregion
     }
 }

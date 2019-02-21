@@ -359,6 +359,28 @@ namespace QarnotSDK
                 }
             }
         }
+
+        /// <summary>
+        /// Delete the pool. If the pool is running, the pool is closed and deleted.
+        /// </summary>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <param name="failIfDoesntExist">If set to false and the pool doesn't exist, no exception is thrown. Default is true.</param>
+        /// <param name="purgeResources">Boolean to trigger all resource storages deletion. Default is false.</param>
+        /// <returns></returns>
+        public override async Task DeleteAsync(CancellationToken cancellationToken, bool failIfDoesntExist = false,
+            bool purgeResources=false)
+        {
+            try {
+                if (_api.IsReadOnly) throw new Exception("Can't delete pools, this connection is configured in read-only mode");
+
+                var response = await _api._client.DeleteAsync(_uri, cancellationToken);
+                await Utils.LookForErrorAndThrowAsync(_api._client, response);
+
+                if (purgeResources) await Task.WhenAll(Resources.Select(r => r.DeleteAsync(cancellationToken)));
+            } catch (QarnotApiResourceNotFoundException ex) {
+                if (failIfDoesntExist) throw ex;
+            }
+        }
         #endregion
 
         #region helpers

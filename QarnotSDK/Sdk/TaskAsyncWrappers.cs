@@ -145,6 +145,23 @@ namespace QarnotSDK {
                 throw ex.InnerException;
             }
         }
+
+        /// <summary>
+        /// Delete the task. If the task is running, the task is aborted and deleted.
+        /// </summary>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <param name="failIfDoesntExist">If set to true and the task doesn't exist, an exception is thrown. Default is false.</param>
+        /// <param name="purgeResources">Boolean to trigger all resource storages deletion. Default is false.</param>
+        /// <param name="purgeResults">Boolean to trigger result storage deletion. Default is false.</param>
+        public override void Delete(CancellationToken cancellationToken=default(CancellationToken), bool failIfDoesntExist = false,
+            bool purgeResources=false, bool purgeResults=false)
+        {
+            try {
+                DeleteAsync(cancellationToken, failIfDoesntExist, purgeResources, purgeResults).Wait();
+            } catch (AggregateException ex) {
+                throw ex.InnerException;
+            }
+        }
         #endregion
     }
 }
