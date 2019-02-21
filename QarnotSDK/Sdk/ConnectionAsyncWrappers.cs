@@ -176,6 +176,36 @@ namespace QarnotSDK {
         }
 
         /// <summary>
+        /// Retrieve the bucket
+        /// </summary>
+        /// <param name="bucketName">Unique name of the bucket to retrieve.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <remarks>If the bucket is not found, null is return</remarks>
+        /// <returns>Corresponding bucket.</returns>
+        public QBucket RetrieveBucket(string bucketName, CancellationToken cancellationToken = default(CancellationToken)) {
+            try {
+                return RetrieveBucketAsync(bucketName, cancellationToken).Result;
+            } catch (AggregateException ex) {
+                throw ex.InnerException;
+            }
+        }
+
+        /// <summary>
+        /// Retrieve the bucket, if it does not exist, create it
+        /// </summary>
+        /// <param name="bucketName">Unique name of the bucket to retrieve.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>Corresponding bucket.</returns>
+        public QBucket RetrieveOrCreateBucket(string bucketName, CancellationToken cancellationToken = default(CancellationToken)) {
+            try {
+                return RetrieveOrCreateBucketAsync(bucketName, cancellationToken).Result;
+            } catch (AggregateException ex) {
+                throw ex.InnerException;
+            }
+        }
+
+
+        /// <summary>
         /// Retrieve the storages list (buckets and disks).
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>

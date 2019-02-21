@@ -433,6 +433,30 @@ namespace QarnotSDK {
         }
 
         /// <summary>
+        /// Retrieve the bucket for the corresponding unique name.
+        /// </summary>
+        /// <param name="bucketName">Unique name of the bucket.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>The bucket.</returns>
+        public async Task<QBucket> RetrieveBucketAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken)) {
+            using (var s3Client = await GetS3ClientAsync(cancellationToken)) {
+                bool exist = await Amazon.S3.Util.AmazonS3Util.DoesS3BucketExistAsync(s3Client, bucketName);
+                return exist ? await QBucket.CreateAsync(this, bucketName) : null;
+            }
+        }
+
+        /// <summary>
+        /// Retrieve a bucket or create one if it does not exist.
+        /// </summary>
+        /// <param name="bucketName">The name of the bucket.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A new Bucket.</returns>
+        public async Task<QBucket> RetrieveOrCreateBucketAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken)) {
+            var bucket = await RetrieveBucketAsync(bucketName, cancellationToken);
+            return bucket?? await CreateBucketAsync(bucketName);
+        }
+
+        /// <summary>
         /// Retrieve the storages list (buckets and disks).
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
