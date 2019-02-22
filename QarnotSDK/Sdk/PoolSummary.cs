@@ -62,7 +62,7 @@ namespace QarnotSDK {
         /// <param name="failIfDoesntExist">If set to false and the pool doesn't exist, no exception is thrown. Default is true.</param>
         /// <param name="purgeResources">Boolean to trigger all resource storages deletion. Default is false.</param>
         /// <returns></returns>
-        public override async Task DeleteAsync(CancellationToken cancellationToken=default(CancellationToken), bool failIfDoesntExist = false,
+        public override async Task DeleteAsync(CancellationToken cancellationToken, bool failIfDoesntExist = false,
             bool purgeResources=false)
         {
             if (_api.IsReadOnly) throw new Exception("Can't delete pools, this connection is configured in read-only mode");

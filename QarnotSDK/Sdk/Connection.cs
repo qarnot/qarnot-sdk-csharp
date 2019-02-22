@@ -232,6 +232,16 @@ namespace QarnotSDK {
 
         #region RetrieveXAsync
         /// <summary>
+        /// Retrieve the tasks list. (deprecated)
+        /// </summary>
+        /// <param name="summary">Obsolete params to get a summary version of a task.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A list of tasks.</returns>
+        [Obsolete("use RetrieveTasksSummaryAsync()")]
+        public async Task<List<QTask>> RetrieveTasksAsync(bool summary, CancellationToken cancellationToken = default(CancellationToken))
+            => await RetrieveTasksAsync(cancellationToken);
+
+        /// <summary>
         /// Retrieve the tasks list.
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
@@ -310,6 +320,16 @@ namespace QarnotSDK {
             }
             return ret;
         }
+
+        /// <summary>
+        /// Retrieve the pools list. (deprecated)
+        /// </summary>
+        /// <param name="summary">Obsolete params to get a summary version of a pool.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A list of pools.</returns>
+        [Obsolete("use RetrievePoolsSummaryAsync()")]
+        public async Task<List<QPool>> RetrievePoolsAsync(bool summary, CancellationToken cancellationToken = default(CancellationToken))
+            => await RetrievePoolsAsync(cancellationToken);
 
         /// <summary>
         /// Retrieve the pools list.
@@ -441,7 +461,7 @@ namespace QarnotSDK {
         public async Task<QBucket> RetrieveBucketAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken)) {
             using (var s3Client = await GetS3ClientAsync(cancellationToken)) {
                 bool exist = await Amazon.S3.Util.AmazonS3Util.DoesS3BucketExistAsync(s3Client, bucketName);
-                return exist ? await QBucket.CreateAsync(this, bucketName) : null;
+                return exist ? await QBucket.CreateAsync(this, bucketName, create: false, ct: cancellationToken) : null;
             }
         }
 
@@ -588,7 +608,7 @@ namespace QarnotSDK {
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>The task summary object for that uuid or null if it hasn't been found.</returns>
         public async Task<QTaskSummary> RetrieveTaskSummaryByUuidAsync(string uuid, CancellationToken cancellationToken = default(CancellationToken)) {
-            var response = await _client.GetAsync($"tasks/{uuid}", cancellationToken);//TODO:Add the url path for summary
+            var response = await _client.GetAsync($"tasks/{uuid}", cancellationToken);//TODO:Add the url path for summary when api is ready
             await Utils.LookForErrorAndThrowAsync(_client, response);
             var apiTask = await response.Content.ReadAsAsync<TaskApi>(cancellationToken);
             return await QTaskSummary.CreateAsync(this, apiTask);
@@ -636,7 +656,7 @@ namespace QarnotSDK {
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>The pool summary object for that uuid or null if it hasn't been found.</returns>
         public async Task<QPoolSummary> RetrievePoolSummaryByUuidAsync(string uuid, CancellationToken cancellationToken = default(CancellationToken)) {
-            var response = await _client.GetAsync($"pools/{uuid}", cancellationToken);//TODO:Add the url path for summary
+            var response = await _client.GetAsync($"pools/{uuid}", cancellationToken);//TODO:Add the url path for summary when api is ready
             await Utils.LookForErrorAndThrowAsync(_client, response);
             var apiPool = await response.Content.ReadAsAsync<PoolApi>(cancellationToken);
             return await QPoolSummary.CreateAsync(this, apiPool);

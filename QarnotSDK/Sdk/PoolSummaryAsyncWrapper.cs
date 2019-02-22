@@ -32,7 +32,7 @@ namespace QarnotSDK {
         /// <param name="failIfDoesntExist">If set to false and the pool doesn't exist, no exception is thrown. Default is true.</param>
         /// <param name="purgeResources">Boolean to trigger all resource storages deletion. Default is false.</param>
         /// <returns></returns>
-        public override void Delete(CancellationToken cancellationToken=default(CancellationToken), bool failIfDoesntExist = false,
+        public override void Delete(CancellationToken cancellationToken, bool failIfDoesntExist = false,
             bool purgeResources=false)
         {
             try {

@@ -686,7 +686,7 @@ namespace QarnotSDK {
         /// <param name="purgeResources">Boolean to trigger all resource storages deletion. Default is false.</param>
         /// <param name="purgeResults">Boolean to trigger result storage deletion. Default is false.</param>
         /// <returns></returns>
-        public override async Task DeleteAsync(CancellationToken cancellationToken=default(CancellationToken), bool failIfDoesntExist = false,
+        public override async Task DeleteAsync(CancellationToken cancellationToken, bool failIfDoesntExist = false,
             bool purgeResources=false, bool purgeResults=false) {
             try {
                 if (_api.IsReadOnly) throw new Exception("Can't delete tasks, this connection is configured in read-only mode");

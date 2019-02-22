@@ -29,7 +29,7 @@ namespace QarnotSDK {
         /// <param name="purgeResources">Boolean to trigger all resource storages deletion. Default is false.</param>
         /// <param name="purgeResults">Boolean to trigger result storage deletion. Default is false.</param>
         /// <returns></returns>
-        public abstract void Delete(CancellationToken cancellationToken=default(CancellationToken),
+        public abstract void Delete(CancellationToken cancellationToken,
             bool failIfDoesntExist = false, bool purgeResources=false, bool purgeResults=false);
 
         /// <summary>

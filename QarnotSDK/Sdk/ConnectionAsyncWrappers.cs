@@ -55,6 +55,16 @@ namespace QarnotSDK {
 
         #region RetrieveX
         /// <summary>
+        /// Retrieve the tasks list. (deprecated)
+        /// </summary>
+        /// <param name="summary">Obsolete params to get a summary version of a task.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A list of tasks.</returns>
+        [Obsolete("use RetrieveTasksSummary()")]
+        public List<QTask> RetrieveTasks(bool summary, CancellationToken cancellationToken = default(CancellationToken))
+            => RetrieveTasks(cancellationToken);
+
+        /// <summary>
         /// Retrieve the list of tasks.
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
@@ -107,6 +117,16 @@ namespace QarnotSDK {
                 throw ex.InnerException;
             }
         }
+
+        /// <summary>
+        /// Retrieve the pools list. (deprecated)
+        /// </summary>
+        /// <param name="summary">Obsolete params to get a summary version of a pool.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A list of pools.</returns>
+        [Obsolete("use RetrievePoolsSummary()")]
+        public List<QPool> RetrievePools(bool summary, CancellationToken cancellationToken = default(CancellationToken))
+            => RetrievePools(cancellationToken);
 
         /// <summary>
         /// Retrieve the list of pools.
