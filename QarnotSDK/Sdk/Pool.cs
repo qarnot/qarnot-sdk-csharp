@@ -335,7 +335,10 @@ namespace QarnotSDK
             if (_resources.Count != _poolApi.ResourceDisks.Count) {
                 _resources.Clear();
                 foreach (var r in _poolApi.ResourceDisks) {
-                    _resources.Add(await QDisk.CreateAsync(_api, r));
+                    _resources.Add(await QDisk.CreateAsync(_api, r, create: false));
+                }
+                foreach (var r in _poolApi.ResourceBuckets) {
+                    _resources.Add(await QBucket.CreateAsync(_api, r, create: false));
                 }
             }
         }

@@ -648,10 +648,18 @@ namespace QarnotSDK {
                 foreach (var r in _taskApi.ResourceDisks) {
                     _resources.Add(await QDisk.CreateAsync(_api, r, create: false));
                 }
+
+                foreach (var r in _taskApi.ResourceBuckets) {
+                    _resources.Add(await QBucket.CreateAsync(_api, r, create: false));
+                }
             }
 
             if (_results == null && _taskApi.ResultDisk != null) {
                 _results = await QDisk.CreateAsync(_api, _taskApi.ResultDisk, create: false);
+            }
+
+            if (_results == null && _taskApi.ResultBucket != null) {
+                _results = await QBucket.CreateAsync(_api, _taskApi.ResultBucket, create: false);
             }
         }
 
