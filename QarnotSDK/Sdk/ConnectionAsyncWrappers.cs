@@ -60,7 +60,6 @@ namespace QarnotSDK {
         /// <param name="summary">Obsolete params to get a summary version of a task.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>A list of tasks.</returns>
-        [Obsolete("use RetrieveTasksSummary()")]
         public List<QTask> RetrieveTasks(bool summary, CancellationToken cancellationToken = default(CancellationToken))
             => RetrieveTasks(cancellationToken);
 
@@ -82,9 +81,9 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>A list of tasks.</returns>
-        public List<QTaskSummary> RetrieveTasksSummary(CancellationToken cancellationToken = default(CancellationToken)) {
+        public List<QTaskSummary> RetrieveTaskSummaries(CancellationToken cancellationToken = default(CancellationToken)) {
             try {
-                return RetrieveTasksSummaryAsync(cancellationToken).Result;
+                return RetrieveTaskSummariesAsync(cancellationToken).Result;
             } catch (AggregateException ex) {
                 throw ex.InnerException;
             }
@@ -110,9 +109,9 @@ namespace QarnotSDK {
         /// <param name="tags">list of tags for task filtering.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>A list of tasks summary.</returns>
-        public List<QTaskSummary> RetrieveTasksSummaryByTags(List<string> tags, CancellationToken cancellationToken = default(CancellationToken)) {
+        public List<QTaskSummary> RetrieveTaskSummariesByTags(List<string> tags, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
-                return RetrieveTasksSummaryByTagsAsync(tags, cancellationToken).Result;
+                return RetrieveTaskSummariesByTagsAsync(tags, cancellationToken).Result;
             } catch (AggregateException ex) {
                 throw ex.InnerException;
             }
@@ -124,7 +123,6 @@ namespace QarnotSDK {
         /// <param name="summary">Obsolete params to get a summary version of a pool.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>A list of pools.</returns>
-        [Obsolete("use RetrievePoolsSummary()")]
         public List<QPool> RetrievePools(bool summary, CancellationToken cancellationToken = default(CancellationToken))
             => RetrievePools(cancellationToken);
 
@@ -146,9 +144,9 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>A list of pools summary.</returns>
-        public List<QPoolSummary> RetrievePoolsSummary(CancellationToken cancellationToken = default(CancellationToken)) {
+        public List<QPoolSummary> RetrievePoolSummaries(CancellationToken cancellationToken = default(CancellationToken)) {
             try {
-                return RetrievePoolsSummaryAsync(cancellationToken).Result;
+                return RetrievePoolSummariesAsync(cancellationToken).Result;
             } catch (AggregateException ex) {
                 throw ex.InnerException;
             }
