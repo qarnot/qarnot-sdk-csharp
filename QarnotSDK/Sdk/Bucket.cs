@@ -259,6 +259,21 @@ namespace QarnotSDK {
             return await new QBucket().InitializeAsync(qapi, shortname, create, ct);
         }
 
+        internal static  List<QBucket> GetBucketsFromResources(IEnumerable<QAbstractStorage> storages) {
+            var buckets = new List<QBucket>();
+            if (storages != null) {
+                foreach (var d in storages) {
+                    if (d is QBucket) buckets.Add((QBucket)d);
+                }
+            }
+            return buckets;
+        }
+
+        internal static QBucket GetBucketFromResource(QAbstractStorage storage) {
+            if (storage is QBucket) return (QBucket)storage;
+            return null;
+        }
+
         /// <summary>
         /// Create the bucket.
         /// </summary>
@@ -353,7 +368,7 @@ namespace QarnotSDK {
                 using (var s3Client = await _api.GetS3ClientAsync(cancellationToken)) {
                     var s3Request = new Amazon.S3.Model.PutObjectRequest {
                         BucketName = Shortname,
-                        Key = remoteFile
+                        Key = remoteFile,
                         InputStream = sourceStream,
                         AutoCloseStream = false
                     };
@@ -385,7 +400,7 @@ namespace QarnotSDK {
             using (var s3Client = await _api.GetS3ClientAsync(cancellationToken)) {
                 var s3Request = new Amazon.S3.Model.GetObjectRequest {
                     BucketName = Shortname,
-                    Key = remoteFile
+                    Key = remoteFile,
                 };
                 var s3Response = await s3Client.GetObjectAsync(s3Request, cancellationToken);
                 return s3Response.ResponseStream;
