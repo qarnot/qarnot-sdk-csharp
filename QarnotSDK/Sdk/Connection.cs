@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Web;
 using System.Net.Http;
+using System.Reflection;
 using System.Net.Http.Headers;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -10,12 +11,25 @@ using Amazon;
 
 namespace QarnotSDK {
     /// <summary>
-    /// This class allows you to access the Qarnot compute API and construct other objects: QTask, QPool, QDisk.
+    /// This class allows you to access the Qarnot compute API and construct other objects: QTask, QPool
     /// </summary>
     public partial class Connection {
         internal HttpClient _client;
         internal HttpClientHandler _httpClientHandler;
         internal RetryHandler _retryHandler;
+
+        /// <summary>
+        /// Overload class of the AmazonS3Config to be able to overload
+        /// some getters (user-agent, etc...)
+        /// </summary>
+        private class OverloadedS3config: Amazon.S3.AmazonS3Config {
+
+            /// <summary>
+            /// overload the AmazonS3Config user agent to append a qarnot version
+            /// </summary>
+            /// <value>the qarnot sdk and s3 sdk user agent</value>
+            public override string UserAgent { get => $"{Connection.SdkUserAgent} {base.UserAgent}"; }
+        }
 
         /// <summary>
         /// Specify if the Api has the shortname feature to retrieve the tasks/pools by name.
@@ -25,14 +39,6 @@ namespace QarnotSDK {
         /// </summary>
         [ObsoleteAttribute("It will always be True as the SDK don't need to emulate shortname anymore", false)]
         public bool HasShortnameFeature { get { return true; } set { ; } }
-        /// <summary>
-        /// Specify if the Api has the shortname feature to retrieve the disks by name.
-        /// If set to false, the disk shortname feature will be emulated by the SDK,
-        /// however more requests are needed to achieve the same result.
-        /// The default value is false.
-        /// </summary>
-        [ObsoleteAttribute("It will always be True as the SDK don't need to emulate shortname anymore", false)]
-        public bool HasDiskShortnameFeature { get { return true; } set { ; } }
         /// <summary>
         /// Set the Connection object in read-only mode, useful for monitoring purpose.
         /// </summary>
@@ -80,11 +86,20 @@ namespace QarnotSDK {
         public List<long> StorageAvailablePartSizes {
             get; set;
         } = new List<long>() { 0 };
+
         /// <summary>
         /// Maximum number of retries in case of transient error.
         /// Default is 3 times.
         /// </summary>
         public int MaxRetry { get { return _retryHandler.MaxRetries; } set { _retryHandler.MaxRetries = value; } }
+
+        /// <summary>
+        /// Sdk user agent: adding references to the current version to trace bugs and usages
+        /// </summary>
+        private static string SdkUserAgent { get {
+                return $"qarnot-sdk-csharp/{Assembly.GetExecutingAssembly().GetName().Version}";
+            }
+        }
 
         /// <summary>
         /// Construct a new Connection object using your token.
@@ -123,6 +138,7 @@ namespace QarnotSDK {
             _client.DefaultRequestHeaders.Clear();
             _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(Token);
+            _client.DefaultRequestHeaders.Add("User-Agent", SdkUserAgent);
         }
 
         #region CreateX
@@ -211,16 +227,6 @@ namespace QarnotSDK {
         }
 
         /// <summary>
-        /// Create a new disk.
-        /// </summary>
-        /// <param name="name">The name of the disk.</param>
-        /// <param name="ct">Optional token to cancel the request.</param>
-        /// <returns>A new disk.</returns>
-        public async Task<QDisk> CreateDiskAsync(string name, CancellationToken ct=default(CancellationToken)) {
-            return await QDisk.CreateAsync(this, name, create: true, ct: ct);
-        }
-
-        /// <summary>
         /// Create a new bucket.
         /// </summary>
         /// <param name="name">The name of the bucket.</param>
@@ -271,6 +277,26 @@ namespace QarnotSDK {
             var ret = new List<QTaskSummary>();
             foreach (var item in qapiTaskList) {
                 ret.Add(await QTaskSummary.CreateAsync(this, item));
+            }
+            return ret;
+        }
+
+        /// <summary>
+        /// Retrieve the tasks list with custom filtering.
+        /// </summary>
+        /// <param name="level">the qtask filter object</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A list of tasks.</returns>
+        public async Task<List<QTask>> RetrieveTasksAsync(QDataDetail<QTask> level, CancellationToken cancellationToken = default(CancellationToken)) {
+            var baseUri =  "tasks/search";
+            var response = await _client.PostAsJsonAsync<DataDetailApi<QTask>>(baseUri, level._dataDetailApi, cancellationToken);
+
+            await Utils.LookForErrorAndThrowAsync(_client, response);
+
+            var qapiTaskList = await response.Content.ReadAsAsync<List<TaskApi>>(cancellationToken);
+            var ret = new List<QTask>();
+            foreach (var item in qapiTaskList) {
+                ret.Add(await QTask.CreateAsync(this, item));
             }
             return ret;
         }
@@ -359,25 +385,52 @@ namespace QarnotSDK {
             var list = await response.Content.ReadAsAsync<List<PoolApi>>(cancellationToken);
             var ret = new List<QPoolSummary>();
             foreach (var item in list) {
-                ret.Add(new QPoolSummary(this, item));
+                ret.Add(await QPoolSummary.CreateAsync(this, item));
             }
             return ret;
         }
 
         /// <summary>
-        /// Retrieve the disks list.
+        /// Retrieve the pools list with custom filtering.
         /// </summary>
+        /// <param name="level">the qpool filter object</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        /// <returns>A list of disks.</returns>
-        public async Task<List<QDisk>> RetrieveDisksAsync(CancellationToken cancellationToken = default(CancellationToken)) {
-            var response = await _client.GetAsync("disks", cancellationToken);
+        /// <returns>A list of pools.</returns>
+        public async Task<List<QPool>> RetrievePoolsAsync(QDataDetail<QPool> level, CancellationToken cancellationToken = default(CancellationToken)) {
+            var baseUri =  "pools/search";
+            var response = await _client.PostAsJsonAsync<DataDetailApi<QPool>>(baseUri, level._dataDetailApi, cancellationToken);
 
             await Utils.LookForErrorAndThrowAsync(_client, response);
 
-            var list = await response.Content.ReadAsAsync<List<DiskApi>>(cancellationToken);
-            var ret = new List<QDisk>();
-            foreach (var item in list) {
-                ret.Add(new QDisk(this, item));
+            var qapiPoolList = await response.Content.ReadAsAsync<List<PoolApi>>(cancellationToken);
+            var ret = new List<QPool>();
+            foreach (var item in qapiPoolList) {
+                ret.Add(new QPool(this, item));
+            }
+            return ret;
+        }
+
+        /// <summary>
+        /// Retrieve the pools list filtered by tags.
+        /// </summary>
+        /// <param name="tags">list of tags for pool filtering.</param>
+        /// <param name="summary">Optional token to choose between full pools and pools summaries.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A list of pools.</returns>
+        public async Task<List<QPool>> RetrievePoolsByTagsAsync(List<string> tags, bool summary = true, CancellationToken cancellationToken = default(CancellationToken)) {
+            if(tags == null || tags.Count == 0)
+                return RetrievePoolsAsync(summary, cancellationToken).Result;
+            var baseUri = summary ? "pools/summaries?tag=" : "pools/?tag=";
+
+            var uri = baseUri + string.Join(",", tags.Select(tag => HttpUtility.UrlEncode(tag)));
+            var response = await _client.GetAsync(uri, cancellationToken);
+
+            await Utils.LookForErrorAndThrowAsync(_client, response);
+
+            var qapiPoolList = await response.Content.ReadAsAsync<List<PoolApi>>(cancellationToken);
+            var ret = new List<QPool>();
+            foreach (var item in qapiPoolList) {
+                ret.Add(await QPool.CreateAsync(this, item));
             }
             return ret;
         }
@@ -394,8 +447,9 @@ namespace QarnotSDK {
                 StorageUri = new Uri(s.Storage);
             }
 
+
             // S3Config
-            var s3Config = new Amazon.S3.AmazonS3Config();
+            var s3Config = new OverloadedS3config();
             s3Config.ServiceURL = StorageUri.ToString();
 
             // Setup the proxy from the HttpClientHandler
@@ -412,6 +466,7 @@ namespace QarnotSDK {
 
             return s3Client;
         }
+
 
         /// <summary>
         /// Retrieve the buckets list with each bucket file count and used space.
@@ -438,6 +493,7 @@ namespace QarnotSDK {
                 var tasks = new List<Task>();
                 foreach (var item in s3Response.Buckets) {
                     var b = new QBucket(this, item);
+
                     if (retrieveBucketStats) tasks.Add(b.UpdateAsync(cancellationToken));
                     ret.Add(b);
                 }
@@ -476,19 +532,6 @@ namespace QarnotSDK {
         }
 
         /// <summary>
-        /// Retrieve the storages list (buckets and disks).
-        /// </summary>
-        /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        /// <returns>A list of disks and buckets.</returns>
-        public async Task<List<QAbstractStorage>> RetrieveStoragesAsync(CancellationToken cancellationToken = default(CancellationToken)) {
-            var t1 = RetrieveDisksAsync(cancellationToken);
-            var t2 = RetrieveBucketsAsync(cancellationToken);
-            var ret = new List<QAbstractStorage>(await t1);
-            ret.AddRange(await t2);
-            return ret;
-        }
-
-        /// <summary>
         /// Retrieve the rest Api settings.
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
@@ -502,21 +545,21 @@ namespace QarnotSDK {
         }
 
         /// <summary>
-        /// Retrieve the user quotas and disks information for your account.
+        /// Retrieve the user quotas information for your account.
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        /// <returns>The quotas and disks information.</returns>
+        /// <returns>The quotas and buckets information.</returns>
         public async Task<UserInformation> RetrieveUserInformationAsync(CancellationToken cancellationToken = default(CancellationToken)) {
             return await RetrieveUserInformationAsync(true, cancellationToken);
         }
 
         /// <summary>
-        /// Retrieve the user quotas and disks information for your account.
+        /// Retrieve the user quotas and buckets information for your account.
         /// Note: BucketCount field is retrieved with a second request to the bucket Api.
         /// </summary>
         /// <param name="retrieveBucketCount">If set to false, the BucketCount field is not filled but the request is faster.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        /// <returns>The quotas and disks information without BucketCount.</returns>
+        /// <returns>The quotas and buckets information without BucketCount.</returns>
         public async Task<UserInformation> RetrieveUserInformationAsync(bool retrieveBucketCount, CancellationToken cancellationToken = default(CancellationToken)) {
             var response = await _client.GetAsync("info", cancellationToken);
 
@@ -611,6 +654,7 @@ namespace QarnotSDK {
             await Utils.LookForErrorAndThrowAsync(_client, response);
             var apiTask = await response.Content.ReadAsAsync<TaskApi>(cancellationToken);
             return await QTaskSummary.CreateAsync(this, apiTask);
+
         }
 
         /// <summary>
@@ -623,6 +667,7 @@ namespace QarnotSDK {
             var ret = await RetrievePoolsAsync(cancellationToken);
             return ret.Find(x => x.Name == name);
         }
+
 
         /// <summary>
         /// Retrieve a pool summary by its name.
@@ -661,16 +706,6 @@ namespace QarnotSDK {
             return await QPoolSummary.CreateAsync(this, apiPool);
         }
 
-        /// <summary>
-        /// Retrieve a disk by its name.
-        /// </summary>
-        /// <param name="name">Name of the disk to find.</param>
-        /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        /// <returns>The disk object for that name or null if it hasn't been found.</returns>
-        public async Task<QDisk> RetrieveDiskByNameAsync(string name, CancellationToken cancellationToken = default(CancellationToken)) {
-            var ret = await RetrieveDisksAsync(cancellationToken);
-            return ret.Find(x => x.Description == name);
-        }
         #endregion
 
         #region CreateXAsync
@@ -678,11 +713,10 @@ namespace QarnotSDK {
         /// Submit a list of task as a bulk.
         /// </summary>
         /// <param name="tasks">The task list to submit as a bulk.</param>
-        /// <param name="autoCreateResultDisk">Set to true to ensure that the result disk specified exists. If set to false and the result disk doesn't exist, this will result in an exception.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>void.</returns>
-        public async Task SubmitTasksAsync(List<QTask> tasks, bool autoCreateResultDisk = true, CancellationToken cancellationToken = default(CancellationToken)) {
-            await Task.WhenAll(tasks.Select(task => task.PreSubmitAsync(cancellationToken, autoCreateResultDisk)));
+        public async Task SubmitTasksAsync(List<QTask> tasks, CancellationToken cancellationToken = default(CancellationToken)) {
+            await Task.WhenAll(tasks.Select(task => task.PreSubmitAsync(cancellationToken)));
             var response = await _client.PostAsJsonAsync<List<TaskApi>>("tasks", tasks.Select(t => t._taskApi).ToList(), cancellationToken);
             var results = await response.Content.ReadAsAsync<List<QBulkTaskResponse>>(cancellationToken);
 
@@ -704,6 +738,7 @@ namespace QarnotSDK {
                 throw new QarnotApiException(errorMessage);
             }
         }
+
         #endregion
     }
 }
