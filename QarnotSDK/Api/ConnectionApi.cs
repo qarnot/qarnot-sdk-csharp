@@ -16,7 +16,7 @@ namespace QarnotSDK {
     }
 
     /// <summary>
-    /// Represents the quotas and disks information.
+    /// Represents the quotas and buckets information.
     /// </summary>
     public class UserInformation {
         /// <summary>
@@ -25,14 +25,6 @@ namespace QarnotSDK {
         public string Email;
 
         /// <summary>
-        /// Maximum number of disks the user is allowed to create.
-        /// </summary>
-        public int MaxDisk;
-        /// <summary>
-        /// Number of disks owned by the user.
-        /// </summary>
-        public int DiskCount;
-        /// <summary>
         /// Maximum number of buckets the user is allowed to create.
         /// </summary>
         public int MaxBucket;
@@ -40,25 +32,6 @@ namespace QarnotSDK {
         /// Number of buckets owned by the user.
         /// </summary>
         public int BucketCount = -1;
-
-        /// <summary>
-        /// Allowed quota in bytes for the user.
-        /// </summary>
-        [Obsolete("use QuotaBytesDisk")]
-        public long QuotaBytes;
-        /// <summary>
-        /// Currently used quota in bytes.
-        /// </summary>
-        [Obsolete("use UsedQuotaBytesDisk")]
-        public long UsedQuotaBytes;
-        /// <summary>
-        /// Allowed quota in bytes for the user.
-        /// </summary>
-        public long QuotaBytesDisk;
-        /// <summary>
-        /// Currently used quota in bytes.
-        /// </summary>
-        public long UsedQuotaBytesDisk;
 
         /// <summary>
         /// Allowed quota in bytes for the user.

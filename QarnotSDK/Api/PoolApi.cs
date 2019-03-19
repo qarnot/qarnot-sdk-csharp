@@ -234,6 +234,10 @@ namespace QarnotSDK {
         /// Total Network Output in Kbps.
         /// </summary>
         public float TotalNetworkOutKbps { get; set; }
+
+        /// <summary>
+        /// Total Network Output in Kbps.
+        /// </summary>
         public List<QPoolStatusPerRunningInstanceInfo> PerRunningInstanceInfo { get; set; }
 
         internal QPoolStatusRunningInstancesInfo() {
@@ -269,7 +273,6 @@ namespace QarnotSDK {
         public string Name { get; set; }
         public string Profile { get; set; }
         public uint InstanceCount { get; set; }
-        public List<string> ResourceDisks { get; set; }
         public List<string> ResourceBuckets { get; set; }
         public string State { get; set; }
         public List<QPoolError> Errors { get; set; }
@@ -287,7 +290,6 @@ namespace QarnotSDK {
             Constants = new List<KeyValHelper>();
             Constraints = new List<KeyValHelper>();
             Tags = new List<String>();
-            ResourceDisks = new List<String>();
             ResourceBuckets = new List<String>();
             Errors = new List<QPoolError>();
             ElasticProperty = new QPoolElasticProperty();

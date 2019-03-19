@@ -33,12 +33,7 @@ namespace QarnotSDK {
         /// </summary>
         public static readonly string FullyExecuting        = "FullyExecuting";
         /// <summary>
-        /// The results are being uploaded from the compute nodes to the result disk.
-        /// </summary>
-        [Obsolete("will be replaced by UploadingResults")]
-        public static readonly string DownloadingResults    = "DownloadingResults";
-        /// <summary>
-        /// The results are being uploaded from the compute nodes to the result disk.
+        /// The results are being uploaded from the compute nodes to the result bucket.
         /// </summary>
         public static readonly string UploadingResults      = "UploadingResults";
         /// <summary>
@@ -78,11 +73,11 @@ namespace QarnotSDK {
         public string Profile { get { return _taskApi.Profile; } }
 
         /// <summary>
-        /// Qarnot resources disks or buckets bound to this task.
+        /// Qarnot resources buckets bound to this task.
         /// Can be set only before the task submission.
         /// </summary>
         [InternalDataApiName(IsFilterable=false, IsSelectable=false)]
-        public List<QAbstractStorage> Resources {
+        public List<QBucket> Resources {
             get {
                 return _resources;
             }
@@ -91,18 +86,8 @@ namespace QarnotSDK {
             }
         }
 
-        private List<QAbstractStorage> _resources { get; set; }
+        private List<QBucket> _resources { get; set; }
 
-        /// <summary>
-        /// Qarnot resources disks bound to this task.
-        /// Can be set only before the task submission.
-        /// </summary>
-        [InternalDataApiName(IsFilterable=false, IsSelectable=false)]
-        public IEnumerable<QDisk> ResourcesDisks {
-            get {
-                return GetResources<QDisk>();
-            }
-        }
         /// <summary>
         /// Qarnot resources buckets bound to this task.
         /// Can be set only before the task submission.
@@ -110,16 +95,16 @@ namespace QarnotSDK {
         [InternalDataApiName(Name="ResourceBuckets", IsFilterable=false)]
         public IEnumerable<QBucket> ResourcesBuckets {
             get {
-                return GetResources<QBucket>();
+                return _resources;
             }
         }
 
         /// <summary>
-        /// Qarnot result disk or bucket bound to this task.
+        /// Qarnot result bucket bound to this task.
         /// Can be set only before the task submission.
         /// </summary>
         [InternalDataApiName(IsFilterable=false, IsSelectable=false)]
-        public QAbstractStorage Results {
+        public QBucket Results {
             get {
                 return _results;
             }
@@ -128,18 +113,7 @@ namespace QarnotSDK {
             }
         }
 
-        private QAbstractStorage _results { get; set; }
-
-        /// <summary>
-        /// Qarnot result disk bound to this task.
-        /// Can be set only before the task submission.
-        /// </summary>
-        [InternalDataApiName(IsFilterable=false, IsSelectable=false)]
-        public QDisk ResultsDisk {
-            get {
-                return GetResults<QDisk>();
-            }
-        }
+        private QBucket _results { get; set; }
 
         /// <summary>
         /// Qarnot result bucket bound to this task.
@@ -148,7 +122,7 @@ namespace QarnotSDK {
         [InternalDataApiName(Name="ResultBucket")]
         public QBucket ResultsBucket {
             get {
-                return GetResults<QBucket>();
+                return _results;
             }
         }
 
@@ -351,7 +325,7 @@ namespace QarnotSDK {
             : base (connection, new TaskApi()) {
             _taskApi.Name = name;
             _taskApi.Profile = profile;
-            _resources = new List<QAbstractStorage>();
+            _resources = new List<QBucket>();
             _taskApi.Shortname = shortname;
             _uri = "tasks/" + shortname;
         }
@@ -417,13 +391,13 @@ namespace QarnotSDK {
         }
 
         internal QTask() {
-            _resources = new List<QAbstractStorage>();
+            _resources = new List<QBucket>();
         }
 
         internal async new Task<QTask> InitializeAsync(Connection qapi, TaskApi taskApi) {
             await base.InitializeAsync(qapi, taskApi);
              _uri = "tasks/" + taskApi.Uuid.ToString();
-            if (_resources == null) _resources = new List<QAbstractStorage>();
+            if (_resources == null) _resources = new List<QBucket>();
             await SyncFromApiObjectAsync(taskApi);
             return this;
         }
@@ -494,8 +468,8 @@ namespace QarnotSDK {
         /// <param name="taskTimeoutSeconds">Optional number of second before abort is called.</param>
         /// <param name="ct">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public async Task RunAsync(int taskTimeoutSeconds=-1, CancellationToken ct =default(CancellationToken)) {
-            await SubmitAsync(ct, null, 0);
+        public async Task RunAsync(int taskTimeoutSeconds=-1, CancellationToken ct=default(CancellationToken)) {
+            await SubmitAsync(null, 0, ct);
             await WaitAsync(taskTimeoutSeconds, ct);
             if (taskTimeoutSeconds > 0)
                 await AbortAsync(ct);
@@ -537,62 +511,20 @@ namespace QarnotSDK {
             await Utils.LookForErrorAndThrowAsync(_api._client, response);
         }
 
-        /// <summary>
-        /// Submit this task.
-        /// </summary>
-        /// <param name="profile">The task profile, if not running inside a pool. Optional if the profile has already been defined in the constructor or if the task is bound to a pool, profile must be null.</param>
-        /// <param name="autoCreateResultDisk">Set to true to ensure that the result disk specified exists. If set to false and the result disk doesn't exist, this will result in an exception.</param>
-        /// <returns></returns>
-        public async Task SubmitAsync(string profile = null, bool autoCreateResultDisk = true) {
-            await SubmitAsync(default(CancellationToken), profile, 0, autoCreateResultDisk);
-        }
 
         /// <summary>
         /// Submit this task.
         /// </summary>
         /// <param name="profile">The task profile, if not running inside a pool. Optional if the profile has already been defined in the constructor or if the task is bound to a pool, profile must be null.</param>
         /// <param name="instanceCount">How many times the task have to run. Optional if the instance count has already been defined in the constructor, it can be set to 0.</param>
-        /// <param name="autoCreateResultDisk">Set to true to ensure that the result disk specified exists. If set to false and the result disk doesn't exist, this will result in an exception.</param>
-        /// <returns></returns>
-        public async Task SubmitAsync(string profile, uint instanceCount = 0, bool autoCreateResultDisk = true) {
-            await SubmitAsync(default(CancellationToken), profile, instanceCount, autoCreateResultDisk);
-        }
-
-        /// <summary>
-        /// Submit this task.
-        /// </summary>
-        /// <param name="profile">The task profile, if not running inside a pool. Optional if the profile has already been defined in the constructor or if the task is bound to a pool, profile must be null.</param>
-        /// <param name="range">Which instance ids of the task have to run. Optional if the instance count has already been defined in the constructor, it can be set to null.</param>
-        /// <param name="autoCreateResultDisk">Set to true to ensure that the result disk specified exists. If set to false and the result disk doesn't exist, this will result in an exception.</param>
-        /// <returns></returns>
-        public async Task SubmitAsync(string profile, AdvancedRanges range, bool autoCreateResultDisk = true) {
-            await SubmitAsync(default(CancellationToken), profile, range, autoCreateResultDisk);
-        }
-
-        /// <summary>
-        /// Submit this task.
-        /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        /// <param name="profile">The task profile, if not running inside a pool. Optional if the profile has already been defined in the constructor or if the task is bound to a pool, profile must be null.</param>
-        /// <param name="autoCreateResultDisk">Set to true to ensure that the result disk specified exists. If set to false and the result disk doesn't exist, this will result in an exception.</param>
         /// <returns></returns>
-        public async Task SubmitAsync(CancellationToken cancellationToken, string profile = null, bool autoCreateResultDisk = true) {
-            await SubmitAsync(cancellationToken, autoCreateResultDisk);
-        }
-
-        /// <summary>
-        /// Submit this task.
-        /// </summary>
-        /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        /// <param name="profile">The task profile, if not running inside a pool. Optional if the profile has already been defined in the constructor or if the task is bound to a pool, profile must be null.</param>
-        /// <param name="instanceCount">How many times the task will run. Optional if the instance count has already been defined in the constructor, it can be set to 0.</param>
-        /// <param name="autoCreateResultDisk">Set to true to ensure that the result disk specified exists. If set to false and the result disk doesn't exist, this will result in an exception.</param>
-        /// <returns></returns>
-        public async Task SubmitAsync(CancellationToken cancellationToken, string profile, uint instanceCount = 0, bool autoCreateResultDisk = true) {
+        public async Task SubmitAsync(string profile=null, uint instanceCount=0, CancellationToken cancellationToken=default(CancellationToken)) {
             if (profile != null) _taskApi.Profile = profile;
             if (instanceCount > 0) _taskApi.InstanceCount = instanceCount;
-            await SubmitAsync(cancellationToken, autoCreateResultDisk);
+            await SubmitAsync(cancellationToken);
         }
+
 
         /// <summary>
         /// Submit this task.
@@ -600,16 +532,15 @@ namespace QarnotSDK {
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <param name="profile">The task profile, if not running inside a pool. Optional if the profile has already been defined in the constructor or if the task is bound to a pool, profile must be null.</param>
         /// <param name="range">Which instance ids of the task have to run. Optional if the instance count has already been defined in the constructor, it can be set to null.</param>
-        /// <param name="autoCreateResultDisk">Set to true to ensure that the result disk specified exists. If set to false and the result disk doesn't exist, this will result in an exception.</param>
         /// <returns></returns>
-        public async Task SubmitAsync(CancellationToken cancellationToken, string profile, AdvancedRanges range, bool autoCreateResultDisk = true) {
+        public async Task SubmitAsync(string profile, AdvancedRanges range, CancellationToken cancellationToken=default(CancellationToken)) {
             if (profile != null) _taskApi.Profile = profile;
             if (range != null) _advancedRange = range;
             _taskApi.AdvancedRanges = _advancedRange.ToString();
-            await SubmitAsync(cancellationToken, autoCreateResultDisk);
+            await SubmitAsync(cancellationToken);
         }
 
-        internal async Task PreSubmitAsync(CancellationToken cancellationToken, bool autoCreateResultDisk = true) {
+        internal async Task PreSubmitAsync(CancellationToken cancellationToken) {
             if (_taskApi.InstanceCount > 0 && !String.IsNullOrEmpty(_taskApi.AdvancedRanges)) {
                 throw new Exception("Can't use at the same time an instance count and a range.");
             }
@@ -617,37 +548,23 @@ namespace QarnotSDK {
                 throw new Exception("An instance count or a range must be set to submit a task.");
             }
 
-            // Is a result disk defined?
+            // Is a result bucket defined?
             if (_results != null) {
-                var resultsQDisk = _results as QDisk;
-                if (resultsQDisk != null) {
-                    _taskApi.ResultDisk = resultsQDisk.Shortname;
+                if (_results != null) {
+                    _taskApi.ResultBucket = _results.Shortname;
                 } else {
-                    var resultsQBucket = _results as QBucket;
-                    if (resultsQBucket != null) {
-                        _taskApi.ResultBucket = resultsQBucket.Shortname;
-                        _taskApi.ResultDisk = null;
-                    } else {
-                        throw new Exception("Unknown IQStorage implementation");
-                    }
+                    throw new Exception("Unknown IQStorage implementation");
                 }
             }
 
-            // Build the resource disk list
-            _taskApi.ResourceDisks = new List<string>();
+            // Build the resource bucket list
+            _taskApi.ResourceBuckets = new List<string>();
             foreach (var item in _resources) {
-                var resQDisk = item as QDisk;
-                if (resQDisk != null) {
-                    _taskApi.ResourceDisks.Add(item.Shortname);
-                    _taskApi.ResourceBuckets.Clear();
+                var resQBucket = item as QBucket;
+                if (resQBucket != null) {
+                    _taskApi.ResourceBuckets.Add(resQBucket.Shortname);
                 } else {
-                    var resQBucket = item as QBucket;
-                    if (resQBucket != null) {
-                        _taskApi.ResourceBuckets.Add(resQBucket.Shortname);
-                        _taskApi.ResourceDisks.Clear();
-                    } else {
-                        throw new Exception("Unknown IQStorage implementation");
-                    }
+                    throw new Exception("Unknown IQStorage implementation");
                 }
             }
 
@@ -655,8 +572,8 @@ namespace QarnotSDK {
         }
 
 
-        private async Task SubmitAsync(CancellationToken cancellationToken, bool autoCreateResultDisk = true) {
-            await PreSubmitAsync(cancellationToken, autoCreateResultDisk);
+        private async Task SubmitAsync(CancellationToken cancellationToken) {
+            await PreSubmitAsync(cancellationToken);
             var response = await _api._client.PostAsJsonAsync<TaskApi>("tasks", _taskApi, cancellationToken);
             await Utils.LookForErrorAndThrowAsync(_api._client, response);
             var result = await response.Content.ReadAsAsync<TaskApi>(cancellationToken);
@@ -668,17 +585,17 @@ namespace QarnotSDK {
             _taskApi.Uuid = result.Uuid;
             _uri = "tasks/" + _taskApi.Uuid.ToString();
 
-            // Retrieve the task status once to update the other fields (result disk uuid etc..)
+            // Retrieve the task status once to update the other fields (result bucket uuid etc..)
             await UpdateStatusAsync(cancellationToken);
         }
 
         /// <summary>
         /// Update this task state and status.
         /// </summary>
-        /// <param name="updateDisksInfo">If set to true, the resources and results disk objects are also updated.</param>
+        /// <param name="updateQBucketsInfo">If set to true, the resources and results bucket objects are also updated.</param>
         /// <returns></returns>
-        public async Task UpdateStatusAsync(bool updateDisksInfo = true) {
-            await UpdateStatusAsync(default(CancellationToken), updateDisksInfo);
+        public async Task UpdateStatusAsync(bool updateQBucketsInfo = true) {
+            await UpdateStatusAsync(default(CancellationToken), updateQBucketsInfo);
         }
 
         private async Task SyncFromApiObjectAsync(TaskApi result) {
@@ -690,30 +607,18 @@ namespace QarnotSDK {
 
             // update the task resources
             var newResourcesCount = 0;
-            if (_taskApi.ResourceDisks != null) newResourcesCount += _taskApi.ResourceDisks.Count;
             if (_taskApi.ResourceBuckets != null) newResourcesCount += _taskApi.ResourceBuckets.Count;
 
             if (_resources.Count != newResourcesCount) {
                 _resources.Clear();
 
-                if (_taskApi.ResourceDisks != null) {
-                    foreach (var r in _taskApi.ResourceDisks) {
-                        _resources.Add(await QDisk.CreateAsync(_api, r, create: false));
-                    }
-                }
-
-                if (_taskApi.ResourceDisks != null) {
+                if (_taskApi.ResourceBuckets != null) {
                     foreach (var r in _taskApi.ResourceBuckets) {
                         _resources.Add(await QBucket.CreateAsync(_api, r, create: false));
                     }
                 }
             }
-
             // update the task result
-            if (_results == null && _taskApi.ResultDisk != null) {
-                _results = await QDisk.CreateAsync(_api, _taskApi.ResultDisk, create: false);
-            }
-
             if (_results == null && _taskApi.ResultBucket != null) {
                 _results = await QBucket.CreateAsync(_api, _taskApi.ResultBucket, create: false);
             }
@@ -723,16 +628,16 @@ namespace QarnotSDK {
         /// Update this task state and status.
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        /// <param name="updateDisksInfo">If set to true, the resources and results disk objects are also updated.</param>
+        /// <param name="updateQBucketsInfo">If set to true, the resources and results bucket objects are also updated.</param>
         /// <returns></returns>
-        public async Task UpdateStatusAsync(CancellationToken cancellationToken, bool updateDisksInfo = true) {
+        public async Task UpdateStatusAsync(CancellationToken cancellationToken, bool updateQBucketsInfo = true) {
             var response = await _api._client.GetAsync(_uri, cancellationToken); // get task status
             await Utils.LookForErrorAndThrowAsync(_api._client, response);
 
             var result = await response.Content.ReadAsAsync<TaskApi>();
             await SyncFromApiObjectAsync(result);
 
-            if (updateDisksInfo) {
+            if (updateQBucketsInfo) {
                 foreach (var r in _resources) {
                     await r.UpdateAsync(cancellationToken);
                 }
@@ -755,7 +660,7 @@ namespace QarnotSDK {
             try {
                 if (_api.IsReadOnly) throw new Exception("Can't delete tasks, this connection is configured in read-only mode");
 
-                var resourcesToDelete = new List<QAbstractStorage>();
+                var resourcesToDelete = new List<QBucket>();
                 QAbstractStorage resultToDelete = null;
 
                 if(purgeResources)
@@ -843,16 +748,6 @@ namespace QarnotSDK {
                 }
             }
             return null;
-        }
-
-        private IEnumerable<T> GetResources<T>() where T : QAbstractStorage {
-            foreach (var d in _resources) {
-                if (d is T) yield return ((T)d);
-            }
-        }
-        private T GetResults<T>() where T : QAbstractStorage {
-            if (_results is T) return (T)_results;
-            return default(T);
         }
         #endregion
     }

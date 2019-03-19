@@ -228,16 +228,14 @@ namespace QarnotSDK {
 
     internal class TaskApi {
         public override string ToString() {
-            return string.Format("[TaskApi: Name={0}, Profile={1}, InstanceCount={2}, ResultDisk={3}, State={4}, SnapshotInterval={5}, CreationDate={6}, Uuid={7}]", Name, Profile, InstanceCount, ResultDisk, State, SnapshotInterval, CreationDate, Uuid);
+            return string.Format("[TaskApi: Name={0}, Profile={1}, InstanceCount={2}, State={3}, SnapshotInterval={4}, CreationDate={5}, Uuid={6}]", Name, Profile, InstanceCount, State, SnapshotInterval, CreationDate, Uuid);
         }
 
         public string Name { get; set; }
         public string Profile { get; set; }
         public string PoolUuid { get; set; }
         public uint InstanceCount { get; set; }
-        public List<string> ResourceDisks { get; set; }
         public List<string> ResourceBuckets { get; set; }
-        public string ResultDisk { get; set; }
         public string ResultBucket { get; set; }
         public string State { get; set; }
         public List<QTaskError> Errors { get; set; }
@@ -261,7 +259,6 @@ namespace QarnotSDK {
             Constants = new List<KeyValHelper>();
             Constraints = new List<KeyValHelper>();
             Tags = new List<String>();
-            ResourceDisks = new List<String>();
             ResourceBuckets = new List<String>();
             Errors = new List<QTaskError>();
             CompletedInstances = new List<QTaskCompletedInstance>();

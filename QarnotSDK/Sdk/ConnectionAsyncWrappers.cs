@@ -7,21 +7,6 @@ using System;
 namespace QarnotSDK {
     public partial class Connection {
         #region CreateX
-
-        /// <summary>
-        /// Create a new disk.
-        /// </summary>
-        /// <param name="name">The name of the disk.</param>
-        /// <param name="ct">Optional token to cancel the request.</param>
-        /// <returns>A new disk.</returns>
-        public QDisk CreateDisk(string name, CancellationToken ct=default(CancellationToken)) {
-            try {
-                return CreateDiskAsync(name, ct).Result;
-            } catch (AggregateException ex) {
-                throw ex.InnerException;
-            }
-        }
-
         /// <summary>
         /// Create a new bucket.
         /// </summary>
@@ -40,12 +25,11 @@ namespace QarnotSDK {
         /// Submit a list of task as a bulk.
         /// </summary>
         /// <param name="tasks">The task list to submit as a bulk.</param>
-        /// <param name="autoCreateResultDisk">Set to true to ensure that the result disk specified exists. If set to false and the result disk doesn't exist, this will result in an exception.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>void.</returns>
-        public void SubmitTasks(List<QTask> tasks, bool autoCreateResultDisk = true, CancellationToken cancellationToken = default(CancellationToken)) {
+        public void SubmitTasks(List<QTask> tasks, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
-                SubmitTasksAsync(tasks, autoCreateResultDisk, cancellationToken).Wait();
+                SubmitTasksAsync(tasks, cancellationToken).Wait();
             } catch (AggregateException ex) {
                 throw ex.InnerException;
             }
@@ -196,19 +180,6 @@ namespace QarnotSDK {
         }
 
         /// <summary>
-        /// Retrieve the list of disks.
-        /// </summary>
-        /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        /// <returns>A list of disks.</returns>
-        public List<QDisk> RetrieveDisks(CancellationToken cancellationToken = default(CancellationToken)) {
-            try {
-                return RetrieveDisksAsync(cancellationToken).Result;
-            } catch (AggregateException ex) {
-                throw ex.InnerException;
-            }
-        }
-
-        /// <summary>
         /// Retrieve the bucket
         /// </summary>
         /// <param name="bucketName">Unique name of the bucket to retrieve.</param>
@@ -264,25 +235,11 @@ namespace QarnotSDK {
             }
         }
 
-
         /// <summary>
-        /// Retrieve the storages list (buckets and disks).
+        /// Retrieve the user quotas and buckets information for your account.
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        /// <returns>A list of disks and buckets.</returns>
-        public List<QAbstractStorage> RetrieveStorages(CancellationToken cancellationToken = default(CancellationToken)) {
-            try {
-                return RetrieveStoragesAsync(cancellationToken).Result;
-            } catch (AggregateException ex) {
-                throw ex.InnerException;
-            }
-        }
-
-        /// <summary>
-        /// Retrieve the user quotas and disks information for your account.
-        /// </summary>
-        /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        /// <returns>The quotas and disks information.</returns>
+        /// <returns>The quotas and buckets information.</returns>
         public UserInformation RetrieveUserInformation(CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 return RetrieveUserInformationAsync(cancellationToken).Result;
@@ -292,12 +249,12 @@ namespace QarnotSDK {
         }
 
         /// <summary>
-        /// Retrieve the user quotas and disks information for your account.
+        /// Retrieve the user quotas and buckets information for your account.
         /// Note: BucketCount field is retrieved with a second request to the bucket Api.
         /// </summary>
         /// <param name="retrieveBucketCount">If set to false, the BucketCount field is not filled but the request is faster.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        /// <returns>The quotas and disks information without BucketCount.</returns>
+        /// <returns>The quotas and buckets information without BucketCount.</returns>
         public UserInformation RetrieveUserInformation(bool retrieveBucketCount, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 return RetrieveUserInformationAsync(retrieveBucketCount, cancellationToken).Result;
@@ -442,20 +399,6 @@ namespace QarnotSDK {
         public QPoolSummary RetrievePoolSummaryByUuid(string uuid, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 return RetrievePoolSummaryByUuidAsync(uuid, cancellationToken).Result;
-            } catch (AggregateException ex) {
-                throw ex.InnerException;
-            }
-        }
-
-        /// <summary>
-        /// Retrieve a disk by its name.
-        /// </summary>
-        /// <param name="name">Name of the disk to find.</param>
-        /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        /// <returns>The disk object for that name or null if it hasn't been found.</returns>
-        public QDisk RetrieveDiskByName(string name, CancellationToken cancellationToken = default(CancellationToken)) {
-            try {
-                return RetrieveDiskByNameAsync(name, cancellationToken).Result;
             } catch (AggregateException ex) {
                 throw ex.InnerException;
             }

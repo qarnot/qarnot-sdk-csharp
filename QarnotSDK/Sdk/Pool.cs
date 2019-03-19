@@ -58,11 +58,11 @@ namespace QarnotSDK
         [InternalDataApiName(Name="Profile")]
         public string Profile { get { return _poolApi.Profile; } }
         /// <summary>
-        /// Qarnot resources disks or buckets bound to this pool.
+        /// Qarnot resources buckets bound to this pool.
         /// Can be set only before the pool start.
         /// </summary>
         [InternalDataApiName(IsFilterable=false, IsSelectable=false)]
-        public List<QAbstractStorage> Resources {
+        public List<QBucket> Resources {
             get {
                 return _resources;
             }
@@ -71,18 +71,7 @@ namespace QarnotSDK
             }
         }
 
-        private List<QAbstractStorage> _resources { get; set; }
-
-        /// <summary>
-        /// Qarnot resources disks bound to this pool.
-        /// Can be set only before the pool start.
-        /// </summary>
-        [InternalDataApiName(IsFilterable=false)]
-        public IEnumerable<QDisk> ResourcesDisks {
-            get {
-                return GetResources<QDisk>();
-            }
-        }
+        private List<QBucket> _resources { get; set; }
 
         /// <summary>
         /// Qarnot resources buckets bound to this pool.
@@ -91,7 +80,7 @@ namespace QarnotSDK
         [InternalDataApiName(Name="ResourceBuckets", IsFilterable=false)]
         public IEnumerable<QBucket> ResourcesBuckets {
             get {
-                return GetResources<QBucket>();
+                return _resources;
             }
         }
 
@@ -248,7 +237,7 @@ namespace QarnotSDK
             _poolApi.Name = name;
             _poolApi.Profile = profile;
             _poolApi.InstanceCount = initialNodeCount;
-            _resources = new List<QAbstractStorage>();
+            _resources = new List<QBucket>();
 
             if (shortname != default(string)) {
                 _poolApi.Shortname = shortname;
@@ -270,14 +259,14 @@ namespace QarnotSDK
 
         internal QPool(Connection qapi, PoolApi poolApi) : base(qapi, poolApi) {
             _uri = "pools/" + poolApi.Uuid.ToString();
-            if (_resources == null) _resources = new List<QAbstractStorage>();
+            if (_resources == null) _resources = new List<QBucket>();
             SyncFromApiObjectAsync(poolApi).Wait();
         }
 
         internal async new Task<QPool> InitializeAsync(Connection qapi, PoolApi poolApi) {
             await base.InitializeAsync(qapi, poolApi);
              _uri = "pools/" + poolApi.Uuid.ToString();
-            if (_resources == null) _resources = new List<QAbstractStorage>();
+            if (_resources == null) _resources = new List<QBucket>();
             await SyncFromApiObjectAsync(poolApi);
             return this;
         }
@@ -369,20 +358,12 @@ namespace QarnotSDK
         /// <param name="initialNodeCount">The number of compute nodes this pool will have. Optional if it has already been defined in the constructor.</param>
         /// <returns></returns>
         public async Task StartAsync(CancellationToken cancellationToken, string profile = null, uint initialNodeCount = 0) {
-            _poolApi.ResourceDisks = new List<string>();
+            _poolApi.ResourceBuckets = new List<string>();
             foreach (var item in _resources) {
-                var resQDisk = item as QDisk;
-                if (resQDisk != null) {
-                    _poolApi.ResourceDisks.Add(item.Shortname);
-                    _poolApi.ResourceBuckets.Clear();
+                if (item != null) {
+                    _poolApi.ResourceBuckets.Add(item.Shortname);
                 } else {
-                    var resQBucket = item as QBucket;
-                    if (resQBucket != null) {
-                        _poolApi.ResourceBuckets.Add(resQBucket.Shortname);
-                        _poolApi.ResourceDisks.Clear();
-                    } else {
-                        throw new Exception("Unknown IQStorage implementation");
-                    }
+                    throw new Exception("Unknown null bucket");
                 }
             }
 
@@ -402,7 +383,7 @@ namespace QarnotSDK
             _poolApi.Uuid = result.Uuid;
             _uri = "pools/" + _poolApi.Uuid.ToString();
 
-            // Retrieve the pool status once to update the other fields (result disk uuid etc..)
+            // Retrieve the pool status once to update the other fields (result bucket uuid etc..)
             await UpdateStatusAsync(cancellationToken);
         }
 
@@ -410,27 +391,20 @@ namespace QarnotSDK
         /// <summary>
         /// Update this pool state and status.
         /// </summary>
-        /// <param name="updateDisksInfo">If set to true, the resources disk objects are also updated.</param>
+        /// <param name="updateQBucketsInfo">If set to true, the resources qbucket objects are also updated.</param>
         /// <returns></returns>
-        public async Task UpdateStatusAsync(bool updateDisksInfo = false) {
-            await UpdateStatusAsync(default(CancellationToken), updateDisksInfo);
+        public async Task UpdateStatusAsync(bool updateQBucketsInfo = false) {
+            await UpdateStatusAsync(default(CancellationToken), updateQBucketsInfo);
         }
 
         private async Task SyncFromApiObjectAsync(PoolApi result) {
             _poolApi = result;
 
             var newResourcesCount = 0;
-            if (_poolApi.ResourceDisks != null) newResourcesCount += _poolApi.ResourceDisks.Count;
             if (_poolApi.ResourceBuckets != null) newResourcesCount += _poolApi.ResourceBuckets.Count;
 
             if (_resources.Count != newResourcesCount) {
                 _resources.Clear();
-
-                if (_poolApi.ResourceDisks != null) {
-                    foreach (var r in _poolApi.ResourceDisks) {
-                        _resources.Add(await QDisk.CreateAsync(_api, r, create: false));
-                    }
-                }
 
                 if (_poolApi.ResourceBuckets != null) {
                     foreach (var r in _poolApi.ResourceBuckets) {
@@ -444,16 +418,16 @@ namespace QarnotSDK
         /// Update this pool state and status.
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        /// <param name="updateDisksInfo">If set to true, the resources disk objects are also updated.</param>
+        /// <param name="updateQBucketsInfo">If set to true, the resources bucket objects are also updated.</param>
         /// <returns></returns>
-        public async Task UpdateStatusAsync(CancellationToken cancellationToken, bool updateDisksInfo = false) {
+        public async Task UpdateStatusAsync(CancellationToken cancellationToken, bool updateQBucketsInfo = false) {
             var response = await _api._client.GetAsync(_uri, cancellationToken); // get pool status
             await Utils.LookForErrorAndThrowAsync(_api._client, response);
 
             var result = await response.Content.ReadAsAsync<PoolApi>(cancellationToken);
             await SyncFromApiObjectAsync(result);
 
-            if (updateDisksInfo) {
+            if (updateQBucketsInfo) {
                 foreach(var r in _resources) {
                     await r.UpdateAsync(cancellationToken);
                 }
@@ -525,12 +499,6 @@ namespace QarnotSDK
                 }
             }
             return null;
-        }
-
-        private IEnumerable<T> GetResources<T>() where T : QAbstractStorage {
-            foreach (var d in _resources) {
-                if (d is T) yield return ((T)d);
-            }
         }
         #endregion
     }

@@ -41,11 +41,11 @@ namespace QarnotSDK
         /// <summary>
         /// Update this pool state and status.
         /// </summary>
-        /// <param name="updateDisksInfo">If set to true, the resources disk objects are also updated.</param>
+        /// <param name="updateQBucketsInfo">If set to true, the resources bucket objects are also updated.</param>
         /// <returns></returns>
-        public void UpdateStatus(bool updateDisksInfo = false) {
+        public void UpdateStatus(bool updateQBucketsInfo = false) {
             try {
-                UpdateStatusAsync(updateDisksInfo).Wait();
+                UpdateStatusAsync(updateQBucketsInfo).Wait();
             } catch (AggregateException ex) {
                 throw ex.InnerException;
             }
@@ -55,11 +55,11 @@ namespace QarnotSDK
         /// Update this pool state and status.
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        /// <param name="updateDisksInfo">If set to true, the resources disk objects are also updated.</param>
+        /// <param name="updateQBucketsInfo">If set to true, the resources bucket objects are also updated.</param>
         /// <returns></returns>
-        public void UpdateStatus(CancellationToken cancellationToken, bool updateDisksInfo = false) {
+        public void UpdateStatus(CancellationToken cancellationToken, bool updateQBucketsInfo = false) {
             try {
-                UpdateStatusAsync(cancellationToken, updateDisksInfo).Wait();
+                UpdateStatusAsync(cancellationToken, updateQBucketsInfo).Wait();
             } catch (AggregateException ex) {
                 throw ex.InnerException;
             }

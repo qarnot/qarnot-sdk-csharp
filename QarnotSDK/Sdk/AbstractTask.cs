@@ -90,8 +90,8 @@ namespace QarnotSDK {
 
         #region resource updates/snapshots
         /// <summary>
-        /// Request made on a running task to re-sync the resource disks to the compute nodes.
-        ///  1 - Upload new files on your resource disk,
+        /// Request made on a running task to re-sync the resource buckets to the compute nodes.
+        ///  1 - Upload new files on your resource bucket,
         ///  2 - Call this method,
         ///  3 - The new files will appear on all the compute nodes in the $DOCKER_WORKDIR folder
         /// Note: There is no way to know when the files are effectively transfered. This information is available on the compute node only.
@@ -106,9 +106,9 @@ namespace QarnotSDK {
         }
 
         /// <summary>
-        /// Request made on a running task to sync the result files in $DOCKER_WORKDIR on the compute node to the result disk.
+        /// Request made on a running task to sync the result files in $DOCKER_WORKDIR on the compute node to the result bucket.
         /// Note: There is no way to know when all the results are effectively transfered. This information is available by monitoring the
-        /// task ResultsCount or by checking the result disk.
+        /// task ResultsCount or by checking the result bucket.
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>

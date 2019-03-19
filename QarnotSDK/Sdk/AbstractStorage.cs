@@ -5,10 +5,36 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+
+
 namespace QarnotSDK {
+
+    /// <summary>
+    /// Represents the type of an entry (file, executable or folder) in a QBucket.
+    /// </summary>
+    [Flags]
+    [JsonConverter(typeof(StringEnumConverter))]
+    public enum FileFlags {
+        /// <summary>
+        /// A file
+        /// </summary>
+        File = 1,
+        /// <summary>
+        /// A directory
+        /// </summary>
+        Directory = 2,
+        /// <summary>
+        /// An executable file
+        /// </summary>
+        ExecutableFile = 3
+    }
+
+
     /// <summary>
     /// Represents an entry (file or folder) in a storage.
-    /// This class is abstract, use one of the final implementations: QDiskEntry or QBucketEntry.
+    /// This class is abstract, use one of the final implementations: QBucketEntry.
     /// </summary>
     public abstract class QAbstractStorageEntry {
         static internal int ReadBufferSize { get; set;} = 1 * 1024 * 1024;
@@ -70,7 +96,7 @@ namespace QarnotSDK {
 
     /// <summary>
     /// Represents an abstract class to a resource or result storage class.
-    /// Two classes implement this interface: QDisk and QBucket
+    /// One classe implement this interface: QBucket
     /// </summary>
     public abstract partial class QAbstractStorage {
         /// <summary>
@@ -80,7 +106,7 @@ namespace QarnotSDK {
         /// <summary>
         /// A storage unique identifier.
         /// Note: For a bucket, the unique id is the bucket name.
-        ///  For a disk, the unique id is the disk Uuid.
+        ///  For a bucket, the unique id is the bucket Uuid.
         /// </summary>
         public abstract string UniqueId { get; }
         /// <summary>
