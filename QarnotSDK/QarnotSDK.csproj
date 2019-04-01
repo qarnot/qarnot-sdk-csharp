@@ -3,7 +3,7 @@
     <RootNamespace>QarnotSDK</RootNamespace>
     <AssemblyName>QarnotSDK</AssemblyName>
     <Version>1.3.0-beta</Version>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
     <OutputType>Library</OutputType>
     <Authors>Qarnot computing</Authors>
     <Description>SDK allowing the use of the Qarnot platform.</Description>
@@ -26,11 +26,25 @@
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
     <DocumentationFile>bin\Release\QarnotSDK.XML</DocumentationFile>
+
   </PropertyGroup>
+  <!-- Common Deps -->
   <ItemGroup>
-    <PackageReference Include="AWSSDK.Core" Version="3.3.31.7" />
-    <PackageReference Include="AWSSDK.S3" Version="3.3.31.15" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.7" />
+    <PackageReference Include="AWSSDK.Core" Version="3.3.100.3" />
+    <PackageReference Include="AWSSDK.S3" Version="3.3.101.1" />
+    <Reference Include="System.Web" />
+  </ItemGroup>
+  <!-- NET45 Deps -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net45'">
+  </ItemGroup>
+  <!-- NETSTANDARD 2.0 Deps -->
+  <!-- <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'"></ItemGroup> -->
+  <!-- Config files -->
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="packages.config" />
+    <None Include="QarnotSDK.nuspec" />
   </ItemGroup>
 </Project>
