@@ -77,12 +77,12 @@ namespace QarnotSDK {
         /// Can be set only before the task submission.
         /// </summary>
         [InternalDataApiName(IsFilterable=false, IsSelectable=false)]
-        public List<QBucket> Resources {
+        public List<QAbstractStorage> Resources {
             get {
-                return _resources;
+                return _resources.Select(bucket => (QAbstractStorage) bucket).ToList();
             }
             set {
-                _resources = value;
+                _resources = QBucket.GetBucketsFromResources(value);
             }
         }
 
@@ -104,12 +104,12 @@ namespace QarnotSDK {
         /// Can be set only before the task submission.
         /// </summary>
         [InternalDataApiName(IsFilterable=false, IsSelectable=false)]
-        public QBucket Results {
+        public QAbstractStorage Results {
             get {
                 return _results;
             }
             set {
-                _results = value;
+                _results = QBucket.GetBucketFromResource(value);
             }
         }
 
@@ -664,7 +664,7 @@ namespace QarnotSDK {
                 QAbstractStorage resultToDelete = null;
 
                 if(purgeResources)
-                    resourcesToDelete = this.Resources;
+                    resourcesToDelete = this._resources;
 
                 if (purgeResults)
                     resultToDelete = this.Results;

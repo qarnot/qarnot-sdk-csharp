@@ -259,6 +259,21 @@ namespace QarnotSDK {
             return await new QBucket().InitializeAsync(qapi, shortname, create, ct);
         }
 
+        internal static  List<QBucket> GetBucketsFromResources(IEnumerable<QAbstractStorage> storages) {
+            var buckets = new List<QBucket>();
+            if (storages != null) {
+                foreach (var d in storages) {
+                    if (d is QBucket) buckets.Add((QBucket)d);
+                }
+            }
+            return buckets;
+        }
+
+        internal static QBucket GetBucketFromResource(QAbstractStorage storage) {
+            if (storage is QBucket) return (QBucket)storage;
+            return null;
+        }
+
         /// <summary>
         /// Create the bucket.
         /// </summary>

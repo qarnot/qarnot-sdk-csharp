@@ -62,12 +62,12 @@ namespace QarnotSDK
         /// Can be set only before the pool start.
         /// </summary>
         [InternalDataApiName(IsFilterable=false, IsSelectable=false)]
-        public List<QBucket> Resources {
+        public List<QAbstractStorage> Resources {
             get {
-                return _resources;
+                return _resources.Select(bucket => (QAbstractStorage) bucket).ToList();
             }
             set {
-                _resources = value;
+                _resources = QBucket.GetBucketsFromResources(value);
             }
         }
 
@@ -450,7 +450,7 @@ namespace QarnotSDK
                 var response = await _api._client.DeleteAsync(_uri, cancellationToken);
                 await Utils.LookForErrorAndThrowAsync(_api._client, response);
 
-                if (purgeResources) await Task.WhenAll(Resources.Select(r => r.DeleteAsync(cancellationToken)));
+                if (purgeResources) await Task.WhenAll(_resources.Select(r => r.DeleteAsync(cancellationToken)));
             } catch (QarnotApiResourceNotFoundException ex) {
                 if (failIfDoesntExist) throw ex;
             }
