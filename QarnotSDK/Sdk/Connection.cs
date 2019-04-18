@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Web;
 using System.Net.Http;
+using System.Reflection;
 using System.Net.Http.Headers;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -16,6 +17,19 @@ namespace QarnotSDK {
         internal HttpClient _client;
         internal HttpClientHandler _httpClientHandler;
         internal RetryHandler _retryHandler;
+
+        /// <summary>
+        /// Overload class of the AmazonS3Config to be able to overload
+        /// some getters (user-agent, etc...)
+        /// </summary>
+        private class OverloadedS3config: Amazon.S3.AmazonS3Config {
+
+            /// <summary>
+            /// overload the AmazonS3Config user agent to append a qarnot version
+            /// </summary>
+            /// <value>the qarnot sdk and s3 sdk user agent</value>
+            public override string UserAgent { get => $"{Connection.SdkUserAgent} {base.UserAgent}"; }
+        }
 
         /// <summary>
         /// Specify if the Api has the shortname feature to retrieve the tasks/pools by name.
@@ -80,11 +94,20 @@ namespace QarnotSDK {
         public List<long> StorageAvailablePartSizes {
             get; set;
         } = new List<long>() { 0 };
+
         /// <summary>
         /// Maximum number of retries in case of transient error.
         /// Default is 3 times.
         /// </summary>
         public int MaxRetry { get { return _retryHandler.MaxRetries; } set { _retryHandler.MaxRetries = value; } }
+
+        /// <summary>
+        /// Sdk user agent: adding references to the current version to trace bugs and usages
+        /// </summary>
+        private static string SdkUserAgent { get {
+                return $"qarnot-sdk-csharp/{Assembly.GetExecutingAssembly().GetName().Version}";
+            }
+        }
 
         /// <summary>
         /// Construct a new Connection object using your token.
@@ -123,6 +146,7 @@ namespace QarnotSDK {
             _client.DefaultRequestHeaders.Clear();
             _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(Token);
+            _client.DefaultRequestHeaders.Add("User-Agent", SdkUserAgent);
         }
 
         #region CreateX
@@ -394,8 +418,9 @@ namespace QarnotSDK {
                 StorageUri = new Uri(s.Storage);
             }
 
+
             // S3Config
-            var s3Config = new Amazon.S3.AmazonS3Config();
+            var s3Config = new OverloadedS3config();
             s3Config.ServiceURL = StorageUri.ToString();
 
             // Setup the proxy from the HttpClientHandler
