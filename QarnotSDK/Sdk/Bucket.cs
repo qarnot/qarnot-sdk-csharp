@@ -366,9 +366,7 @@ namespace QarnotSDK {
                         InputStream = sourceStream,
                         AutoCloseStream = false,
                         PartSize = _api.StorageUploadPartSize,
-                        Key = remoteFile,
-                        StorageClass = Amazon.S3.S3StorageClass.ReducedRedundancy,
-                        CannedACL = Amazon.S3.S3CannedACL.PublicRead
+                        Key = remoteFile
                     };
 
                     var fileTransferUtility = new Amazon.S3.Transfer.TransferUtility(s3Client);
