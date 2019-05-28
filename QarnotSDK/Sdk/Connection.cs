@@ -142,6 +142,19 @@ namespace QarnotSDK {
         }
 
         #region CreateX
+
+        /// <summary>
+        /// Create a new job.
+        /// </summary>
+        /// <param name="name">The job name.</param>
+        /// <param name="pool">The pool we want the job to be attached to.</param>
+        /// <param name="UseTaskDependencies">Bool to allow use of dependencies for tasks in this job.</param>
+        /// <returns>A new job.</returns>
+        public QJob CreateJob(string name, QPool pool=null, bool UseTaskDependencies=false)
+        {
+            return new QJob(this, name, pool, UseTaskDependencies);
+        }
+
         /// <summary>
         /// Create a new Pool.
         /// A pool is a running set of nodes where you can execute tasks.
@@ -224,6 +237,34 @@ namespace QarnotSDK {
         public QTask CreateTask(string name, QPool pool, AdvancedRanges range, string shortname = default(string)) {
             var task = new QTask(this, name, pool, range, shortname);
             return task;
+        }
+
+        /// <summary>
+        /// Create a new Task attached to a job.
+        /// The newly created task has to be submitted.
+        /// </summary>
+        /// <param name="name">The name of the task.</param>
+        /// <param name="job">The job, the task will be attached to.</param>
+        /// <param name="instanceCount">How many times the task have to run.</param>
+        /// <param name="shortname">optional unique friendly shortname of the task.</param>
+        /// <param name="profile">optional task profile when using a job detached from a pool.</param>
+        /// <returns>A new task.</returns>
+        public QTask CreateTask(string name, QJob job, uint instanceCount, string shortname = default(string), string profile = default(string)) {
+            return new QTask(this, name, job, instanceCount, shortname, profile);
+        }
+
+        /// <summary>
+        /// Create a new Task attached to a job.
+        /// The newly created task has to be submitted.
+        /// </summary>
+        /// <param name="name">The name of the task.</param>
+        /// <param name="job">The job, the task will be attached to.</param>        
+        /// <param name="range">Which instance ids of the task have to run.</param>
+        /// <param name="shortname">optional unique friendly shortname of the task.</param>
+        /// <param name="profile">optional task profile when using a job detached from a pool.</param> 
+        /// <returns>A new task.</returns>
+        public QTask CreateTask(string name, QJob job, AdvancedRanges range, string shortname = default(string), string profile = default(string)) {
+            return new QTask(this, name, job, range, shortname, profile);
         }
 
         /// <summary>
@@ -431,6 +472,44 @@ namespace QarnotSDK {
             var ret = new List<QPool>();
             foreach (var item in qapiPoolList) {
                 ret.Add(await QPool.CreateAsync(this, item));
+            }
+            return ret;
+        }
+
+        /// <summary>
+        /// Retrieve the jobs list with custom filtering.
+        /// </summary>
+        /// <param name="level">the qjob filter object</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A list of jobs.</returns>
+        public async Task<List<QJob>> RetrieveJobsAsync(QDataDetail<QJob> level, CancellationToken cancellationToken = default(CancellationToken)) {
+            var baseUri =  "jobs/search";
+            var response = await _client.PostAsJsonAsync<DataDetailApi<QJob>>(baseUri, level._dataDetailApi, cancellationToken);
+
+            await Utils.LookForErrorAndThrowAsync(_client, response);
+
+            var qjoblist = await response.Content.ReadAsAsync<List<JobApi>>(cancellationToken);
+            var ret = new List<QJob>();
+            foreach (var item in qjoblist) {
+                ret.Add(new QJob(this, item));
+            }
+            return ret;
+        }
+
+        /// <summary>
+        /// Retrieve the job list.
+        /// </summary>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A list of jobs.</returns>
+        public async Task<List<QJob>> RetrieveJobsAsync(CancellationToken cancellationToken = default(CancellationToken))
+        {
+            var response = await _client.GetAsync("jobs", cancellationToken);
+            await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
+
+            var list = await response.Content.ReadAsAsync<List<JobApi>>(cancellationToken);
+            var ret = new List<QJob>();
+            foreach (var item in list) {
+                ret.Add(new QJob(this, item));
             }
             return ret;
         }

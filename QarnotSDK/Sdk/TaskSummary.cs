@@ -122,6 +122,7 @@ namespace QarnotSDK {
             _taskApi = result;
             if (_taskApi.AdvancedRanges != null) _advancedRange = new AdvancedRanges(_taskApi.AdvancedRanges);
             else _advancedRange = null;
+            await Task.FromResult(0);
         }
 
         #region helpers
