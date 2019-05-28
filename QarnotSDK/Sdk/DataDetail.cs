@@ -322,6 +322,23 @@ namespace QarnotSDK
         }
 
         /// <summary>
+        /// Logical Like regex filter
+        /// </summary>
+        /// <param name="property">the property to filter</param>
+        /// <param name="value">the regex value it should match</param>
+        /// <returns>the filter</returns>
+        public static QFilter<T> Like<VType>(Expression<Func<T, VType>> property, VType value)
+        {
+            var internalFilter = new UnitValueLeaf<T, VType>
+            {
+                Field = DataDetailHelper.GetAPIFilterPropertyName(property),
+                Operator = Leaf<T>.FilterOperator.Like,
+                Value = value
+            };
+            return new QFilter<T>() { _filterApi = internalFilter };
+        }
+
+        /// <summary>
         /// Logical Greater than filter
         /// </summary>
         /// <param name="property">the property to filter</param>
