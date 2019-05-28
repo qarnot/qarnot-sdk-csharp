@@ -2,7 +2,7 @@
   <PropertyGroup>
     <RootNamespace>QarnotSDK</RootNamespace>
     <AssemblyName>QarnotSDK</AssemblyName>
-    <Version>2.0.0</Version>
+    <Version>2.1.0-delta</Version>
     <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
     <OutputType>Library</OutputType>
     <Authors>Qarnot computing</Authors>
@@ -30,7 +30,6 @@
   </PropertyGroup>
   <!-- Common Deps -->
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.7" />
     <PackageReference Include="AWSSDK.Core" Version="3.3.100.3" />
     <PackageReference Include="AWSSDK.S3" Version="3.3.101.1" />
@@ -38,9 +37,12 @@
   </ItemGroup>
   <!-- NET45 Deps -->
   <ItemGroup Condition="'$(TargetFramework)' == 'net45'">
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
   </ItemGroup>
   <!-- NETSTANDARD 2.0 Deps -->
-  <!-- <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'"></ItemGroup> -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
+  </ItemGroup>
   <!-- Config files -->
   <ItemGroup>
     <None Include="app.config" />
