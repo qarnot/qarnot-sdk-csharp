@@ -50,7 +50,7 @@ namespace QarnotSDK {
             _api = qapi;
             _uri = "pools/" + poolApi.Uuid.ToString();
             _poolApi = poolApi;
-            return this;
+            return await Task.FromResult<AQPool>(this);
         }
 
         #region public methods
@@ -62,8 +62,8 @@ namespace QarnotSDK {
         [Obsolete("use CloseAsync")]
         public async Task StopAsync(CancellationToken cancellationToken = default(CancellationToken)) {
             if (_api.IsReadOnly) throw new Exception("Can't stop pools, this connection is configured in read-only mode");
-            var response = await _api._client.DeleteAsync(_uri, cancellationToken);
-            await Utils.LookForErrorAndThrowAsync(_api._client, response);
+            using (var response = await _api._client.DeleteAsync(_uri, cancellationToken))
+                await Utils.LookForErrorAndThrowAsync(_api._client, response);
         }
 
         /// <summary>
@@ -73,8 +73,8 @@ namespace QarnotSDK {
         /// <returns></returns>
         public async Task CloseAsync(CancellationToken cancellationToken = default(CancellationToken)) {
             if (_api.IsReadOnly) throw new Exception("Can't close pools, this connection is configured in read-only mode");
-            var response = await _api._client.PostAsync(_uri + "/close", null, cancellationToken);
-            await Utils.LookForErrorAndThrowAsync(_api._client, response);
+            using (var response = await _api._client.PostAsync(_uri + "/close", null, cancellationToken))
+                await Utils.LookForErrorAndThrowAsync(_api._client, response);
         }
 
         /// <summary>

@@ -8,6 +8,7 @@ namespace QarnotSDK
     {
         public SelectApi<T> Select;
         public FilterApi<T> Filter;
+        public int? MaximumResults;
     }
 
     internal class SelectApi<T>
@@ -42,14 +43,15 @@ namespace QarnotSDK
     {
         public class FilterOperator
         {
-            public static string Equal = "Equal";
-            public static string NotEqual = "NotEqual";
-            public static string In = "In";
-            public static string NotIn = "NotIn";
-            public static string LessThanOrEqual = "LessThanOrEqual";
-            public static string LessThan = "LessThan";
-            public static string GreaterThanOrEqual = "GreaterThanOrEqual";
-            public static string GreaterThan = "GreaterThan";
+            public static readonly string Equal = "Equal";
+            public static readonly string NotEqual = "NotEqual";
+            public static readonly string In = "In";
+            public static readonly string NotIn = "NotIn";
+            public static readonly string LessThanOrEqual = "LessThanOrEqual";
+            public static readonly string LessThan = "LessThan";
+            public static readonly string GreaterThanOrEqual = "GreaterThanOrEqual";
+            public static readonly string GreaterThan = "GreaterThan";
+            public static readonly string Like = "Like";
         }
 
         public string Field;

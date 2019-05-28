@@ -55,6 +55,10 @@ namespace QarnotSDK {
     /// </summary>
     public partial class QTask : AQTask {
 
+        /// <summary>
+        /// boolean to register if the task is attached to a job without a pool
+        /// </summary>
+        private bool _useStandaloneJob = false;
         private AdvancedRanges _advancedRange = null;
         /// <summary>
         /// The task shortname identifier. The shortname is provided by the user. It has to be unique.
@@ -215,6 +219,25 @@ namespace QarnotSDK {
         }
 
         /// <summary>
+        /// Allow the automatic resize of the pool
+        /// </summary>
+        [InternalDataApiName(Name="Dependencies.DependsOn")]
+        public List<Guid> DependsOn {
+            get
+            {
+                if (_taskApi.Dependencies == null || _taskApi.Dependencies.DependsOn.IsNullOrEmpty())
+                    return new List<Guid>();
+                return _taskApi.Dependencies.DependsOn.ToList();
+            }
+            set
+            {
+                if (_taskApi.Dependencies == null)
+                    _taskApi.Dependencies = new Dependency();
+                _taskApi.Dependencies.DependsOn = value.ToList();
+            }
+        }
+
+        /// <summary>
         /// The delay in seconds between two periodic snapshots.
         /// Once the task is running, use the SnapshotPeriodic method to update.
         /// </summary>
@@ -226,10 +249,29 @@ namespace QarnotSDK {
         }
 
         /// <summary>
+        /// The pool id where the task is running or default Guid if the task doesn't belong to a pool.
+        /// </summary>
+        [InternalDataApiName(Name="PoolUuid")]
+        public Guid PoolUuid { get { return _taskApi.PoolUuid.IsNullOrEmpty() ? Guid.Empty : new Guid(_taskApi.PoolUuid); } }
+
+        /// <summary>
         /// The pool where the task is running or null if the task doesn't belong to a pool.
         /// </summary>
         [InternalDataApiName(IsFilterable=false, IsSelectable=false)]
-        public QPool Pool { get { return (_taskApi.PoolUuid == null || _taskApi.PoolUuid == Guid.Empty.ToString()) ? null : new QPool(_api, new Guid(_taskApi.PoolUuid)); } }
+        public QPool Pool { get { return (_taskApi.PoolUuid.IsNullOrEmpty() || _taskApi.PoolUuid == Guid.Empty.ToString()) ? null : new QPool(_api, new Guid(_taskApi.PoolUuid)); } }
+
+
+        /// <summary>
+        /// The job id where the task is running or default Guid if the task is not attached to a job.
+        /// </summary>
+        [InternalDataApiName(Name="JobUuid")]
+        public Guid JobUuid { get { return _taskApi.JobUuid.IsNullOrEmpty() ? Guid.Empty : new Guid(_taskApi.JobUuid); } }
+
+        /// <summary>
+        /// The job the task is attached to or null if the task isn't attached to a job.
+        /// </summary>
+        [InternalDataApiName(IsFilterable=false, IsSelectable=false)]
+        public QJob Job { get { return (_taskApi.JobUuid.IsNullOrEmpty() || _taskApi.JobUuid == Guid.Empty.ToString()) ? null : new QJob(_api, new Guid(_taskApi.JobUuid)); } }
 
         /// <summary>
         /// True if the task is completed or false if the task is still running or deploying.
@@ -380,6 +422,40 @@ namespace QarnotSDK {
             _taskApi.AdvancedRanges = _advancedRange.ToString();
         }
 
+
+        /// <summary>
+        /// Create a new task inside an existing job.
+        /// </summary>
+        /// <param name="connection">The inner connection object.</param>
+        /// <param name="name">The task name.</param>
+        /// <param name="job">The job where this task will run.</param>
+        /// <param name="instanceCount">How many times the task have to run. If not specified, it must be given when the task is submitted.</param>
+        /// <param name="shortname">optional unique friendly shortname of the task.</param>
+        /// <param name="profile">profile for the task.(should be use with a job not attached to a pool)</param>
+        public QTask(Connection connection, string name, QJob job, uint instanceCount = 0, string shortname = default(string),
+            string profile=default(string)) : this(connection, name, profile, instanceCount, shortname)
+        {
+            _taskApi.JobUuid = job.Uuid.ToString();
+
+            if (job.PoolUuid == default(Guid))
+                _useStandaloneJob = true;
+        }
+
+        /// <summary>
+        /// Create a new task inside of an existing job.
+        /// </summary>
+        /// <param name="connection">The inner connection object.</param>
+        /// <param name="name">The task shortname.</param>
+        /// <param name="job">The job where this task will run.</param>
+        /// <param name="range">Which instance ids of the task have to run. If not specified, it must be given when the task is submitted.</param>
+        /// <param name="shortname">optional unique friendly shortname of the task.</param>
+        /// <param name="profile">profile for the task.(should be use with a job not attached to a pool)</param>
+        public QTask(Connection connection, string name, QJob job, AdvancedRanges range, string shortname = default(string),
+            string profile=default(string)) : this(connection, name, job, 0, shortname, profile) {
+            _advancedRange = range ?? new AdvancedRanges(null);
+            _taskApi.AdvancedRanges = _advancedRange.ToString();
+        }
+
         /// <summary>
         /// Create a task object given an existing Uuid.
         /// </summary>
@@ -393,7 +469,6 @@ namespace QarnotSDK {
         internal QTask() {
             _resources = new List<QBucket>();
         }
-
         internal async new Task<QTask> InitializeAsync(Connection qapi, TaskApi taskApi) {
             await base.InitializeAsync(qapi, taskApi);
              _uri = "tasks/" + taskApi.Uuid.ToString();
@@ -407,6 +482,31 @@ namespace QarnotSDK {
         }
 
         #region public methods
+
+        /// <summary>
+        /// Set the task depencencies.
+        /// The task need to be in a job with depencendies activated
+        /// </summary>
+        /// <param name="guids">list of task guids this task depends on.</param>
+        public void SetTaskDependencies(params Guid [] guids)
+        {
+            if (_taskApi.Dependencies == null)
+                _taskApi.Dependencies = new Dependency();
+            _taskApi.Dependencies.DependsOn = guids.ToList();
+        }
+
+        /// <summary>
+        /// Set the task depencencies.
+        /// The task need to be in a job with depencendies activated
+        /// </summary>
+        /// <param name="tasks">list of task this task depends on.</param>
+        public void SetTaskDependencies(params QTask [] tasks)
+        {
+            if (_taskApi.Dependencies == null)
+                _taskApi.Dependencies = new Dependency();
+            _taskApi.Dependencies.DependsOn = tasks.Select(t => t.Uuid).ToList();
+        }
+
         /// <summary>
         /// Set the a list of tags for the task.
         /// </summary>
@@ -507,8 +607,8 @@ namespace QarnotSDK {
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
         public async Task CommitAsync(CancellationToken cancellationToken = default(CancellationToken)) {
-            var response = await _api._client.PutAsJsonAsync<TaskApi>("tasks", _taskApi, cancellationToken);
-            await Utils.LookForErrorAndThrowAsync(_api._client, response);
+            using (var response = await _api._client.PutAsJsonAsync<TaskApi>("tasks", _taskApi, cancellationToken))
+                await Utils.LookForErrorAndThrowAsync(_api._client, response);
         }
 
 
@@ -547,6 +647,15 @@ namespace QarnotSDK {
             if (_taskApi.InstanceCount == 0 && String.IsNullOrEmpty(_taskApi.AdvancedRanges)) {
                 throw new Exception("An instance count or a range must be set to submit a task.");
             }
+            if (_taskApi.JobUuid == default(string) && _taskApi.Dependencies != null && !_taskApi.Dependencies.DependsOn.IsNullOrEmpty()) {
+                throw new Exception("A task not attached to a job can not use dependency.");
+            }
+            if (_useStandaloneJob  && _taskApi.Profile == default(string)) {
+                throw new Exception("A task attached to a job without a pool should have a profile.");
+            }
+            if (_taskApi.JobUuid != default(string) && !_useStandaloneJob  && _taskApi.Profile != default(string)) {
+                throw new Exception("A task attached to a job with a pool can not have a profile.");
+            }
 
             // Is a result bucket defined?
             if (_results != null) {
@@ -569,15 +678,17 @@ namespace QarnotSDK {
             }
 
             if (_api.IsReadOnly) throw new Exception("Can't submit tasks, this connection is configured in read-only mode");
+            await Task.FromResult(0);
         }
-
 
         private async Task SubmitAsync(CancellationToken cancellationToken) {
             await PreSubmitAsync(cancellationToken);
-            var response = await _api._client.PostAsJsonAsync<TaskApi>("tasks", _taskApi, cancellationToken);
-            await Utils.LookForErrorAndThrowAsync(_api._client, response);
-            var result = await response.Content.ReadAsAsync<TaskApi>(cancellationToken);
-            await PostSubmitAsync(result, cancellationToken);
+            using (var response = await _api._client.PostAsJsonAsync<TaskApi>("tasks", _taskApi, cancellationToken))
+            {
+                await Utils.LookForErrorAndThrowAsync(_api._client, response);
+                var result = await response.Content.ReadAsAsync<TaskApi>(cancellationToken);
+                await PostSubmitAsync(result, cancellationToken);
+            }
         }
 
         internal async Task PostSubmitAsync(TaskApi result, CancellationToken cancellationToken) {
@@ -631,18 +742,20 @@ namespace QarnotSDK {
         /// <param name="updateQBucketsInfo">If set to true, the resources and results bucket objects are also updated.</param>
         /// <returns></returns>
         public async Task UpdateStatusAsync(CancellationToken cancellationToken, bool updateQBucketsInfo = true) {
-            var response = await _api._client.GetAsync(_uri, cancellationToken); // get task status
-            await Utils.LookForErrorAndThrowAsync(_api._client, response);
+            using (var response = await _api._client.GetAsync(_uri, cancellationToken)) // get task status
+            {
+                await Utils.LookForErrorAndThrowAsync(_api._client, response);
 
-            var result = await response.Content.ReadAsAsync<TaskApi>();
-            await SyncFromApiObjectAsync(result);
+                var result = await response.Content.ReadAsAsync<TaskApi>();
+                await SyncFromApiObjectAsync(result);
 
-            if (updateQBucketsInfo) {
-                foreach (var r in _resources) {
-                    await r.UpdateAsync(cancellationToken);
-                }
-                if (_results != null) {
-                    await _results.UpdateAsync(cancellationToken);
+                if (updateQBucketsInfo) {
+                    foreach (var r in _resources) {
+                        await r.UpdateAsync(cancellationToken);
+                    }
+                    if (_results != null) {
+                        await _results.UpdateAsync(cancellationToken);
+                    }
                 }
             }
         }
@@ -669,9 +782,8 @@ namespace QarnotSDK {
                 if (purgeResults)
                     resultToDelete = this.Results;
 
-                var response = await _api._client.DeleteAsync(_uri, cancellationToken);
-                await Utils.LookForErrorAndThrowAsync(_api._client, response);
-
+                using (var response = await _api._client.DeleteAsync(_uri, cancellationToken))
+                    await Utils.LookForErrorAndThrowAsync(_api._client, response);
 
                 var deleteTasks = resourcesToDelete.Select(r => r.DeleteAsync(cancellationToken)).ToList();
                 if (resultToDelete != null) deleteTasks.Add(resultToDelete.DeleteAsync(cancellationToken));
@@ -756,13 +868,44 @@ namespace QarnotSDK {
     /// Represents an unified an simplified version of a task instance status.
     /// </summary>
     public class QTaskInstanceStatus {
+        /// <summary>
+        /// Retrieve the instance state.
+        /// </summary>
         public string State { get; private set; }
+
+        /// <summary>
+        /// Retrieve the instance error
+        /// </summary>
         public QTaskError Error { get; private set; }
+
+        /// <summary>
+        /// Retrieve the instance progress indicator
+        /// </summary>
         public float Progress { get; private set; }
+
+        /// <summary>
+        /// Instance execution time(in seconds).
+        /// </summary>
         public float ExecutionTimeSec { get; private set; }
+
+        /// <summary>
+        /// Instance execution time frequency(in seconds.ghz).
+        /// </summary>
         public float ExecutionTimeGHz { get; private set; }
+
+        /// <summary>
+        /// Retrieve the instance wall time(in seconds).
+        /// </summary>
         public float WallTimeSec { get; private set; }
+
+        /// <summary>
+        /// Informations about the running instances.(see QTaskStatusPerRunningInstanceInfo)
+        /// </summary>
         public QTaskStatusPerRunningInstanceInfo RunningInstanceInfo {get; private set; }
+
+        /// <summary>
+        /// Informations about completed instances (see QTaskCompletedInstance)
+        /// </summary>
         public QTaskCompletedInstance CompletedInstanceInfo { get; private set; }
 
         internal QTaskInstanceStatus(QTaskStatusPerRunningInstanceInfo i) {

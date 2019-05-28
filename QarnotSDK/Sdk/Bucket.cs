@@ -232,6 +232,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="connection">The inner connection object.</param>
         /// <param name="shortname">The bucket name.</param>
+        /// <param name="create">bool, to create the resource on the api too.</param>
         public QBucket(Connection connection, string shortname, bool create=true) {
             _api = connection;
             Shortname = shortname;
@@ -402,8 +403,10 @@ namespace QarnotSDK {
                     BucketName = Shortname,
                     Key = remoteFile,
                 };
-                var s3Response = await s3Client.GetObjectAsync(s3Request, cancellationToken);
-                return s3Response.ResponseStream;
+                var s = new MemoryStream();
+                using (var s3Response = await s3Client.GetObjectAsync(s3Request, cancellationToken))
+                    s3Response.ResponseStream.CopyTo(s);
+                return s;
             }
         }
 
@@ -420,15 +423,15 @@ namespace QarnotSDK {
             using (var s3Client = await _api.GetS3ClientAsync(cancellationToken)) {
                 if (remotePath.EndsWith("/")) {
                     // It's a 'folder', we have to delete all the sub keys first
-                    var s3ListRequest = new Amazon.S3.Model.ListObjectsV2Request {
+                    var s3ListRequest = new Amazon.S3.Model.ListObjectsRequest {
                         BucketName = Shortname,
                         MaxKeys = 1000,
                         Prefix = remotePath == "/" ? "":remotePath,
                     };
 
-                    Amazon.S3.Model.ListObjectsV2Response s3ListResponse;
+                    Amazon.S3.Model.ListObjectsResponse s3ListResponse;
                     do {
-                        s3ListResponse = await s3Client.ListObjectsV2Async(s3ListRequest, cancellationToken);
+                        s3ListResponse = await s3Client.ListObjectsAsync(s3ListRequest, cancellationToken);
 
                         var s3DeleteRequest = new Amazon.S3.Model.DeleteObjectsRequest {
                             BucketName = Shortname,
@@ -438,7 +441,8 @@ namespace QarnotSDK {
 
                         await s3Client.DeleteObjectsAsync(s3DeleteRequest, cancellationToken);
 
-                        s3ListRequest.ContinuationToken = s3ListRequest.ContinuationToken;
+                        s3ListRequest.Marker = s3ListResponse.NextMarker;
+
                     } while (s3ListResponse.IsTruncated);
                 }
 
@@ -452,29 +456,28 @@ namespace QarnotSDK {
         }
 
         /// <summary>
-        /// List the files and folders.
+        /// List the files and folders entries in the corresponding folder.
         /// </summary>
         /// <param name="remoteFolder">The folder to list.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>A list of QAbstractStorageEntry</returns>
-        public override async Task<List<QAbstractStorageEntry>> ListEntriesAsync(string remoteFolder, CancellationToken cancellationToken = default(CancellationToken)) {
+        public override async Task<List<QAbstractStorageEntry>> ListEntriesAsync(string remoteFolder="", CancellationToken cancellationToken = default(CancellationToken)) {
             if (remoteFolder == null || remoteFolder == "/")
                 remoteFolder = "";
             if (remoteFolder.Length != 0 && !remoteFolder.EndsWith("/"))
                 remoteFolder += '/';
 
             using (var s3Client = await _api.GetS3ClientAsync(cancellationToken)) {
-                var s3Request = new Amazon.S3.Model.ListObjectsV2Request {
+                var s3Request = new Amazon.S3.Model.ListObjectsRequest {
                     BucketName = Shortname,
                     MaxKeys = 1000,
-                    Delimiter = "/",
                     Prefix = remoteFolder
                 };
 
                 var files = new List<QAbstractStorageEntry>();
-                Amazon.S3.Model.ListObjectsV2Response s3Response;
+                Amazon.S3.Model.ListObjectsResponse s3Response;
                 do {
-                    s3Response = await s3Client.ListObjectsV2Async(s3Request, cancellationToken);
+                    s3Response = await s3Client.ListObjectsAsync(s3Request, cancellationToken);
 
                     foreach (var obj in s3Response.CommonPrefixes) {
                         // Folders
@@ -487,7 +490,38 @@ namespace QarnotSDK {
                         files.Add(new QBucketEntry(obj, _api.StorageUploadPartSize, _api.StorageAvailablePartSizes));
                     }
 
-                    s3Request.ContinuationToken = s3Request.ContinuationToken;
+                    s3Request.Marker = s3Response.NextMarker;
+                } while (s3Response.IsTruncated);
+
+                return files;
+            }
+        }
+
+        /// <summary>
+        /// List all files and folders from the root of the bucket.
+        /// </summary>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A list of QAbstractStorageEntry</returns>
+        public override async Task<List<QAbstractStorageEntry>> ListFilesAsync(CancellationToken cancellationToken = default(CancellationToken)) {
+            using (var s3Client = await _api.GetS3ClientAsync(cancellationToken)) {
+                var s3Request = new Amazon.S3.Model.ListObjectsRequest {
+                    BucketName = Shortname,
+                    MaxKeys = 1000,
+                };
+
+                var files = new List<QAbstractStorageEntry>();
+                Amazon.S3.Model.ListObjectsResponse s3Response;
+                do {
+                    s3Response = await s3Client.ListObjectsAsync(s3Request, cancellationToken);
+                    foreach (var obj in s3Response.S3Objects) {
+                        if (obj.Key.EndsWith("/")) // folder
+                            files.Add(new QBucketEntry(obj.Key));
+                        else// files
+                            files.Add(new QBucketEntry(obj, _api.StorageUploadPartSize, _api.StorageAvailablePartSizes));
+                    }
+
+                    // handle pagination
+                    s3Request.Marker = s3Response.NextMarker;
                 } while (s3Response.IsTruncated);
 
                 return files;

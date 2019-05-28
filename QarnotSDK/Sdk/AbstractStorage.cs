@@ -152,12 +152,19 @@ namespace QarnotSDK {
         public abstract Task UpdateAsync(CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        /// List the files and folders.
+        /// List the files and folders entries in the corresponding folder.
         /// </summary>
         /// <param name="remoteFolder">The folder to list.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>A list of QFile</returns>
         public abstract Task<List<QAbstractStorageEntry>> ListEntriesAsync(string remoteFolder, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// List all the files and folders from the root of the bucket.
+        /// </summary>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A list of QFile</returns>
+        public abstract Task<List<QAbstractStorageEntry>> ListFilesAsync(CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Delete a file or folder in this storage.
