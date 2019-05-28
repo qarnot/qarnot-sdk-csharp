@@ -180,6 +180,33 @@ namespace QarnotSDK {
         }
 
         /// <summary>
+        /// Retrieve the list of jobs.
+        /// </summary>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A list of jobs.</returns>
+        public List<QJob> RetrieveJobs(CancellationToken cancellationToken = default(CancellationToken)) {
+            try {
+                return RetrieveJobsAsync(cancellationToken).Result;
+            } catch (AggregateException ex) {
+                throw ex.InnerException;
+            }
+        }
+
+        /// <summary>
+        /// Retrieve the jobs list with custom filtering.
+        /// </summary>
+        /// <param name="level">the sjob filter object</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A list of jobs.</returns>
+        public List<QJob> RetrieveJobs(QDataDetail<QJob> level, CancellationToken cancellationToken = default(CancellationToken)) {
+            try {
+                return RetrieveJobsAsync(level, cancellationToken).Result;
+            } catch (AggregateException ex) {
+                throw ex.InnerException;
+            }
+        }
+
+        /// <summary>
         /// Retrieve the bucket
         /// </summary>
         /// <param name="bucketName">Unique name of the bucket to retrieve.</param>

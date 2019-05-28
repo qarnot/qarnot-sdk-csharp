@@ -47,10 +47,10 @@ namespace QarnotSDK {
         }
 
         internal virtual async Task<AQTask> InitializeAsync(Connection qapi, TaskApi taskApi) {
-             _api = qapi;
+            _api = qapi;
             _uri = "tasks/" + taskApi.Uuid.ToString();
             _taskApi = taskApi;
-            return this;
+            return await Task.FromResult(this);
         }
 
         #region public methods

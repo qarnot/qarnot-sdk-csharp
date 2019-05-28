@@ -249,16 +249,59 @@ namespace QarnotSDK {
     /// Represents the status of a running pool.
     /// </summary>
     public class QPoolStatus {
+        /// <summary>
+        /// Retrieve the instance download progress indicator
+        /// </summary>
         public float DownloadProgress { get; set; }
+
+        /// <summary>
+        /// Retrieve the instance execution progress indicator
+        /// </summary>
         public float ExecutionProgress { get; set; }
+
+        /// <summary>
+        /// Retrieve the instance execution upload indicator
+        /// </summary>
         public float UploadProgress { get; set; }
+
+        /// <summary>
+        /// The pool instance number.
+        /// </summary>
         public uint InstanceCount { get; set; }
+
+        /// <summary>
+        /// Download time (in second)
+        /// </summary>
         public long DownloadTimeSec { get; set; }
+
+        /// <summary>
+        /// Execution time (in second)
+        /// </summary>
         public long ExecutionTimeSec { get; set; }
+
+        /// <summary>
+        /// Upload time (in second)
+        /// </summary>
         public long UploadTimeSec { get; set; }
+
+        /// <summary>
+        /// Range for the succeeded instances
+        /// </summary>
         public string SucceededRange { get; set; }
+
+        /// <summary>
+        /// Range for the executed instances
+        /// </summary>
         public string ExecutedRange { get; set; }
+
+        /// <summary>
+        /// Range for the failed instances
+        /// </summary>
         public string FailedRange { get; set; }
+
+        /// <summary>
+        /// Running instances information(see QPoolStatusRunningInstancesInfo)
+        /// </summary>
         public QPoolStatusRunningInstancesInfo RunningInstancesInfo { get; set; }
 
         internal QPoolStatus() {

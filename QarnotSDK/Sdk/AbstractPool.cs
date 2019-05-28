@@ -50,7 +50,7 @@ namespace QarnotSDK {
             _api = qapi;
             _uri = "pools/" + poolApi.Uuid.ToString();
             _poolApi = poolApi;
-            return this;
+            return await Task.FromResult<AQPool>(this);
         }
 
         #region public methods
