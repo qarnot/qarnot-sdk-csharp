@@ -133,19 +133,21 @@ namespace QarnotSDK
             }
         }
 
+        private Dictionary<string, string> _constants { get; set; }
+
         /// <summary>
         /// The Pool constants.
         /// </summary>
         [InternalDataApiName(Name="Constants", IsFilterable=false)]
         public Dictionary<string, string> Constants {
             get {
-                var constants = _poolApi.Constants;
-                if (constants == null)
-                    return new Dictionary<string, string>();
-
-                return constants.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+                if (_constants == null)
+                    _constants = new Dictionary<string, string>();
+                return _constants;
             }
         }
+
+        private Dictionary<string, string> _constraints { get; set; }
 
         /// <summary>
         /// The pool constraints.
@@ -153,11 +155,9 @@ namespace QarnotSDK
         [InternalDataApiName(Name="Constraints", IsFilterable=false)]
         public Dictionary<string, string> Constraints {
             get {
-                var constraints = _poolApi.Constraints;
-                if (constraints == null)
-                    return new Dictionary<string, string>();
-
-                return constraints.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+                if (_constraints == null)
+                    _constraints = new Dictionary<string, string>();
+                return _constraints;
             }
         }
 
@@ -238,6 +238,8 @@ namespace QarnotSDK
             _poolApi.Profile = profile;
             _poolApi.InstanceCount = initialNodeCount;
             _resources = new List<QBucket>();
+            _constants = new Dictionary<string, string>();
+            _constraints = new Dictionary<string, string>();
 
             if (shortname != default(string)) {
                 _poolApi.Shortname = shortname;
@@ -260,13 +262,17 @@ namespace QarnotSDK
         internal QPool(Connection qapi, PoolApi poolApi) : base(qapi, poolApi) {
             _uri = "pools/" + poolApi.Uuid.ToString();
             if (_resources == null) _resources = new List<QBucket>();
+            if (_constants == null) _constants = new Dictionary<string, string>();
+            if (_constraints == null) _constraints = new Dictionary<string, string>();
             SyncFromApiObjectAsync(poolApi).Wait();
         }
 
         internal async new Task<QPool> InitializeAsync(Connection qapi, PoolApi poolApi) {
             await base.InitializeAsync(qapi, poolApi);
-             _uri = "pools/" + poolApi.Uuid.ToString();
+            _uri = "pools/" + poolApi.Uuid.ToString();
             if (_resources == null) _resources = new List<QBucket>();
+            if (_constants == null) _constants = new Dictionary<string, string>();
+            if (_constraints == null) _constraints = new Dictionary<string, string>();
             await SyncFromApiObjectAsync(poolApi);
             return this;
         }
@@ -336,8 +342,16 @@ namespace QarnotSDK
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
         public async Task CommitAsync(CancellationToken cancellationToken = default(CancellationToken)) {
-            var response = await _api._client.PutAsJsonAsync<PoolApi>("pools", _poolApi, cancellationToken);
-            await Utils.LookForErrorAndThrowAsync(_api._client, response);
+            // build the constants
+            _poolApi.Constants = new List<KeyValHelper>();
+            foreach(var c in _constants) { _poolApi.Constants.Add(new KeyValHelper(c.Key, c.Value)); }
+
+            // build the constraints
+            _poolApi.Constraints = new List<KeyValHelper>();
+            foreach(var c in _constraints) { _poolApi.Constraints.Add(new KeyValHelper(c.Key, c.Value)); }
+
+            using (var response = await _api._client.PutAsJsonAsync<PoolApi>("pools", _poolApi, cancellationToken))
+                await Utils.LookForErrorAndThrowAsync(_api._client, response);
         }
 
         /// <summary>
@@ -358,6 +372,14 @@ namespace QarnotSDK
         /// <param name="initialNodeCount">The number of compute nodes this pool will have. Optional if it has already been defined in the constructor.</param>
         /// <returns></returns>
         public async Task StartAsync(CancellationToken cancellationToken, string profile = null, uint initialNodeCount = 0) {
+            // build the constants
+            _poolApi.Constants = new List<KeyValHelper>();
+            foreach(var c in _constants) { _poolApi.Constants.Add(new KeyValHelper(c.Key, c.Value)); }
+
+            // build the constraints
+            _poolApi.Constraints = new List<KeyValHelper>();
+            foreach(var c in _constraints) { _poolApi.Constraints.Add(new KeyValHelper(c.Key, c.Value)); }
+
             _poolApi.ResourceBuckets = new List<string>();
             foreach (var item in _resources) {
                 if (item != null) {
@@ -375,13 +397,15 @@ namespace QarnotSDK
             }
 
             if (_api.IsReadOnly) throw new Exception("Can't start pools, this connection is configured in read-only mode");
-            var response = await _api._client.PostAsJsonAsync<PoolApi> ("pools", _poolApi, cancellationToken);
-            await Utils.LookForErrorAndThrowAsync(_api._client, response);
+            using (var response = await _api._client.PostAsJsonAsync<PoolApi> ("pools", _poolApi, cancellationToken))
+            {
+                await Utils.LookForErrorAndThrowAsync(_api._client, response);
 
-            // Update the pool Uuid
-            var result = await response.Content.ReadAsAsync<PoolApi>(cancellationToken);
-            _poolApi.Uuid = result.Uuid;
-            _uri = "pools/" + _poolApi.Uuid.ToString();
+                // Update the pool Uuid
+                var result = await response.Content.ReadAsAsync<PoolApi>(cancellationToken);
+                _poolApi.Uuid = result.Uuid;
+                _uri = "pools/" + _poolApi.Uuid.ToString();
+            }
 
             // Retrieve the pool status once to update the other fields (result bucket uuid etc..)
             await UpdateStatusAsync(cancellationToken);
@@ -399,6 +423,12 @@ namespace QarnotSDK
 
         private async Task SyncFromApiObjectAsync(PoolApi result) {
             _poolApi = result;
+
+            // update constants
+            _constants = result.Constants?.ToDictionary(kv => kv.Key, kv => kv.Value) ?? new Dictionary<string, string>(); 
+
+            // update constraints
+            _constraints = result.Constraints?.ToDictionary(kv => kv.Key, kv => kv.Value) ?? new Dictionary<string, string>(); 
 
             var newResourcesCount = 0;
             if (_poolApi.ResourceBuckets != null) newResourcesCount += _poolApi.ResourceBuckets.Count;
@@ -421,11 +451,12 @@ namespace QarnotSDK
         /// <param name="updateQBucketsInfo">If set to true, the resources bucket objects are also updated.</param>
         /// <returns></returns>
         public async Task UpdateStatusAsync(CancellationToken cancellationToken, bool updateQBucketsInfo = false) {
-            var response = await _api._client.GetAsync(_uri, cancellationToken); // get pool status
-            await Utils.LookForErrorAndThrowAsync(_api._client, response);
-
-            var result = await response.Content.ReadAsAsync<PoolApi>(cancellationToken);
-            await SyncFromApiObjectAsync(result);
+            using (var response = await _api._client.GetAsync(_uri, cancellationToken)) // get pool status
+            {
+                await Utils.LookForErrorAndThrowAsync(_api._client, response);
+                var result = await response.Content.ReadAsAsync<PoolApi>(cancellationToken);
+                await SyncFromApiObjectAsync(result);
+            }
 
             if (updateQBucketsInfo) {
                 foreach(var r in _resources) {
@@ -447,8 +478,8 @@ namespace QarnotSDK
             try {
                 if (_api.IsReadOnly) throw new Exception("Can't delete pools, this connection is configured in read-only mode");
 
-                var response = await _api._client.DeleteAsync(_uri, cancellationToken);
-                await Utils.LookForErrorAndThrowAsync(_api._client, response);
+                using (var response = await _api._client.DeleteAsync(_uri, cancellationToken))
+                    await Utils.LookForErrorAndThrowAsync(_api._client, response);
 
                 if (purgeResources) await Task.WhenAll(_resources.Select(r => r.DeleteAsync(cancellationToken)));
             } catch (QarnotApiResourceNotFoundException ex) {
@@ -507,12 +538,39 @@ namespace QarnotSDK
     /// Represents an unified an simplified version of a pool node status.
     /// </summary>
     public class QPoolNodeStatus {
+        /// <summary>
+        /// Retrieve the instance state.
+        /// </summary>
         public string State { get; set; }
+
+        /// <summary>
+        /// Retrieve the instance error
+        /// </summary>
         public QPoolError Error { get; set; }
+
+        /// <summary>
+        /// Retrieve the instance progress indicator
+        /// </summary>
         public float Progress { get; set; }
+
+        /// <summary>
+        /// Instance execution time(in seconds).
+        /// </summary>
         public float ExecutionTimeSec { get; set; }
+
+        /// <summary>
+        /// Instance execution time frequency(in seconds.ghz).
+        /// </summary>
         public float ExecutionTimeGHz { get; set; }
+
+        /// <summary>
+        /// Retrieve the instance wall time(in seconds).
+        /// </summary>
         public float WallTimeSec { get; set; }
+
+        /// <summary>
+        /// Informations about running instances (see QPoolStatusPerRunningInstanceInfo)
+        /// </summary>
         public QPoolStatusPerRunningInstanceInfo RunningNodeInfo { get; private set; }
 
         internal QPoolNodeStatus(QPoolStatusPerRunningInstanceInfo i) {

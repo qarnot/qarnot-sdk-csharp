@@ -49,7 +49,7 @@ namespace QarnotSDK {
         }
 
         /// <summary>
-        /// List the files and folders.
+        /// List the files and folders entries in the corresponding folder. 
         /// </summary>
         /// <param name="remoteFolder">The folder to list.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
@@ -57,6 +57,19 @@ namespace QarnotSDK {
         public List<QAbstractStorageEntry> ListEntries(string remoteFolder, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 return ListEntriesAsync(remoteFolder, cancellationToken).Result;
+            } catch (AggregateException ex) {
+                throw ex.InnerException;
+            }
+        }
+
+        /// <summary>
+        /// List all the files and folders from the root of the bucket.
+        /// </summary>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A list of QFile</returns>
+        public List<QAbstractStorageEntry> ListFiles(CancellationToken cancellationToken = default(CancellationToken)) {
+            try {
+                return ListFilesAsync(cancellationToken).Result;
             } catch (AggregateException ex) {
                 throw ex.InnerException;
             }
@@ -84,9 +97,20 @@ namespace QarnotSDK {
         /// <param name="remoteFile">The destination file name in this storage.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public void UploadStream(Stream sourceStream, string remoteFile, CancellationToken cancellationToken = default(CancellationToken)) {
+        public void UploadStream(Stream sourceStream, string remoteFile, CancellationToken cancellationToken = default(CancellationToken))
+            => UploadStream(sourceStream, remoteFile, pathDirectorySeparator: Path.DirectorySeparatorChar, cancellationToken: cancellationToken);
+
+        /// <summary>
+        /// Write a stream to a file in this storage.
+        /// </summary>
+        /// <param name="sourceStream">The source stream.</param>
+        /// <param name="remoteFile">The destination file name in this storage.</param>
+        /// <param name="pathDirectorySeparator">PathDirectorySeprator char that will change the remote file path to match the folder hierarchy.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns></returns>
+        public void UploadStream(Stream sourceStream, string remoteFile, char pathDirectorySeparator, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
-                UploadStreamAsync(sourceStream, remoteFile, cancellationToken).Wait();
+                UploadStreamAsync(sourceStream, remoteFile, pathDirectorySeparator, cancellationToken).Wait();
             } catch (AggregateException ex) {
                 throw ex.InnerException;
             }
@@ -98,9 +122,19 @@ namespace QarnotSDK {
         /// <param name="remoteFile">The source file name in this storage.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>A stream with the file's data.</returns>
-        public Stream DownloadStream(string remoteFile, CancellationToken cancellationToken = default(CancellationToken)) {
+        public Stream DownloadStream(string remoteFile, CancellationToken cancellationToken = default(CancellationToken))
+            => DownloadStream(remoteFile, pathDirectorySeparator: Path.DirectorySeparatorChar, cancellationToken: cancellationToken);
+
+        /// <summary>
+        /// Get a stream on a file in this storage.
+        /// </summary>
+        /// <param name="remoteFile">The source file name in this storage.</param>
+        /// <param name="pathDirectorySeparator">Platform separator directory for provided path.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A stream with the file's data.</returns>
+        public Stream DownloadStream(string remoteFile,  char pathDirectorySeparator, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
-                return DownloadStreamAsync(remoteFile, cancellationToken).Result;
+                return DownloadStreamAsync(remoteFile, pathDirectorySeparator, cancellationToken).Result;
             } catch (AggregateException ex) {
                 throw ex.InnerException;
             }

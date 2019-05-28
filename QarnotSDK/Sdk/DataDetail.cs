@@ -105,12 +105,22 @@ namespace QarnotSDK
         }
 
         /// <summary>
+        /// Maximum results number
+        /// </summary>
+        /// <value>the maximum result for the query</value>
+        public int? MaximumResults
+        {
+            get => _dataDetailApi.MaximumResults;
+            set => _dataDetailApi.MaximumResults = value;
+        }
+
+        /// <summary>
         /// Override to string
         /// </summary>
         /// <returns>string format</returns>
         public override string ToString()
         {
-            return $"<Select: {Select}, Filter: {Filter}>";
+            return $"<Select: {Select}, Filter: {Filter}, MaxNumber: {MaximumResults}>";
         }
     }
 
@@ -316,6 +326,23 @@ namespace QarnotSDK
             {
                 Field = DataDetailHelper.GetAPIFilterPropertyName(property),
                 Operator = Leaf<T>.FilterOperator.GreaterThanOrEqual,
+                Value = value
+            };
+            return new QFilter<T>() { _filterApi = internalFilter };
+        }
+
+        /// <summary>
+        /// Logical Like regex filter
+        /// </summary>
+        /// <param name="property">the property to filter</param>
+        /// <param name="value">the regex value it should match</param>
+        /// <returns>the filter</returns>
+        public static QFilter<T> Like<VType>(Expression<Func<T, VType>> property, VType value)
+        {
+            var internalFilter = new UnitValueLeaf<T, VType>
+            {
+                Field = DataDetailHelper.GetAPIFilterPropertyName(property),
+                Operator = Leaf<T>.FilterOperator.Like,
                 Value = value
             };
             return new QFilter<T>() { _filterApi = internalFilter };

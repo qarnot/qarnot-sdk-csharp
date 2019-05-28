@@ -74,8 +74,8 @@ namespace QarnotSDK {
             }
             else {
                 try {
-                    var response = await _api._client.DeleteAsync(_uri, cancellationToken);
-                    await Utils.LookForErrorAndThrowAsync(_api._client, response);
+                    using (var response = await _api._client.DeleteAsync(_uri, cancellationToken))
+                        await Utils.LookForErrorAndThrowAsync(_api._client, response);
                 } catch (QarnotApiResourceNotFoundException ex) {
                     if (failIfDoesntExist) throw ex;
                 }
@@ -91,11 +91,12 @@ namespace QarnotSDK {
         /// <param name="ct">Optional token to cancel the request.</param>
         /// </summary>
         public async Task<QPool> GetFullQPoolAsync(CancellationToken ct = default(CancellationToken)) {
-            var response = await _api._client.GetAsync(_uri, ct);
-            await Utils.LookForErrorAndThrowAsync(_api._client, response);
-
-            var result = await response.Content.ReadAsAsync<PoolApi>();
-            return await QPool.CreateAsync(Connection, result);
+            using (var response = await _api._client.GetAsync(_uri, ct))
+            {
+                await Utils.LookForErrorAndThrowAsync(_api._client, response);
+                var result = await response.Content.ReadAsAsync<PoolApi>();
+                return await QPool.CreateAsync(Connection, result);
+            }
         }
     }
 }

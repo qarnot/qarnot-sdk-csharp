@@ -152,12 +152,19 @@ namespace QarnotSDK {
         public abstract Task UpdateAsync(CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        /// List the files and folders.
+        /// List the files and folders entries in the corresponding folder.
         /// </summary>
         /// <param name="remoteFolder">The folder to list.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>A list of QFile</returns>
         public abstract Task<List<QAbstractStorageEntry>> ListEntriesAsync(string remoteFolder, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// List all the files and folders from the root of the bucket.
+        /// </summary>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A list of QFile</returns>
+        public abstract Task<List<QAbstractStorageEntry>> ListFilesAsync(CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Delete a file or folder in this storage.
@@ -177,12 +184,31 @@ namespace QarnotSDK {
         public abstract Task UploadStreamAsync(Stream sourceStream, string remoteFile, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
+        /// Write a stream to a file in this storage.
+        /// </summary>
+        /// <param name="sourceStream">The source stream.</param>
+        /// <param name="remoteFile">The destination file name in this storage.</param>
+        /// <param name="pathDirectorySeparator">Platform separator directory for provided path.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns></returns>
+        public abstract Task UploadStreamAsync(Stream sourceStream, string remoteFile, char pathDirectorySeparator, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
         /// Get a stream on a file in this storage.
         /// </summary>
         /// <param name="remoteFile">The source file name in this storage.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>A stream with the file's data.</returns>
         public abstract Task<Stream> DownloadStreamAsync(string remoteFile, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Get a stream on a file in this storage.
+        /// </summary>
+        /// <param name="remoteFile">The source file name in this storage.</param>
+        /// <param name="pathDirectorySeparator">Platform separator directory for provided path.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A stream with the file's data.</returns>
+        public abstract Task<Stream> DownloadStreamAsync(string remoteFile, char pathDirectorySeparator, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Upload a local file to a file in this storage.
