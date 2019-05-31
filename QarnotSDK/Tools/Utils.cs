@@ -1,11 +1,13 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Net.Http;
 
 namespace QarnotSDK {
     internal static class Utils
     {
-        internal static async Task LookForErrorAndThrowAsync(HttpClient client, HttpResponseMessage response)
+        internal static async Task LookForErrorAndThrowAsync(HttpClient client, HttpResponseMessage response,
+            CancellationToken ct = default(CancellationToken))
         {
             if (!response.IsSuccessStatusCode) {
                 //System.Diagnostics.StackTrace t = new System.Diagnostics.StackTrace();
@@ -13,7 +15,7 @@ namespace QarnotSDK {
                 // First try to retrieve the error returned by the API
                 Error e;
                 try {
-                    e = await response.Content.ReadAsAsync<Error>();
+                    e = await response.Content.ReadAsAsync<Error>(cancellationToken: ct);
                 } catch (Exception ex) {
                     e = new Error();
                     e.Message = ex.Message;

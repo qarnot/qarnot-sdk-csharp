@@ -265,7 +265,7 @@ namespace QarnotSDK
 
         internal async new Task<QPool> InitializeAsync(Connection qapi, PoolApi poolApi) {
             await base.InitializeAsync(qapi, poolApi);
-             _uri = "pools/" + poolApi.Uuid.ToString();
+            _uri = "pools/" + poolApi.Uuid.ToString();
             if (_resources == null) _resources = new List<QBucket>();
             await SyncFromApiObjectAsync(poolApi);
             return this;
