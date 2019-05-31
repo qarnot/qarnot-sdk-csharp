@@ -8,7 +8,7 @@ namespace QarnotSDK
     {
         public string Name { get; set; }
         public Guid Uuid { get; set; }
-        public Guid PoolUuid { get; set; }
+        public string PoolUuid { get; set; }
         public string State { get; set; }
         public DateTime CreationDate { get; set; }
         public DateTime LastModified { get; set; }

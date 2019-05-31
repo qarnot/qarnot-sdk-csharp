@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using System.Net.Http;
 
 namespace QarnotSDK {
@@ -42,6 +44,10 @@ namespace QarnotSDK {
                         throw new QarnotApiException(e.Message, inner, response);
                 }
             }
+        }
+        internal static bool IsNullOrEmpty<T>(this IEnumerable<T> collection)
+        {
+            return (collection == null || collection.Count() < 1);
         }
     }
 }

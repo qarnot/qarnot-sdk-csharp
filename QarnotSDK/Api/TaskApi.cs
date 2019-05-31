@@ -234,6 +234,7 @@ namespace QarnotSDK {
         public string Name { get; set; }
         public string Profile { get; set; }
         public string PoolUuid { get; set; }
+        public string JobUuid { get; set; }
         public uint InstanceCount { get; set; }
         public List<string> ResourceBuckets { get; set; }
         public string ResultBucket { get; set; }
@@ -254,6 +255,7 @@ namespace QarnotSDK {
         public string SnapshotBlacklist { get; set; }
         public string ResultsWhitelist { get; set; }
         public string ResultsBlacklist { get; set; }
+        public Dependency Dependencies { get; set; }
 
         internal TaskApi() {
             Constants = new List<KeyValHelper>();
@@ -268,6 +270,15 @@ namespace QarnotSDK {
     internal class Snapshot {
         public int Interval { get; set; }
         internal Snapshot() {
+        }
+    }
+
+    internal class Dependency
+    {
+        public List<Guid> DependsOn { get; set; }
+        internal Dependency()
+        {
+            DependsOn = new List<Guid>();
         }
     }
 }

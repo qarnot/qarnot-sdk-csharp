@@ -73,7 +73,7 @@ namespace QarnotSDK {
         /// The related pool uuid
         /// </summary>
         [InternalDataApiName(Name="PoolUuid")]
-        public Guid PoolUuid { get => _jobApi.PoolUuid; }
+        public Guid PoolUuid { get => _jobApi.PoolUuid.IsNullOrEmpty() ? default(Guid) : new Guid(_jobApi.PoolUuid); }
 
         /// <summary>
         /// Retrieve the job state (see QJobStates).
@@ -114,9 +114,9 @@ namespace QarnotSDK {
         {
             get
             {
-                if (_jobApi.PoolUuid == null || _jobApi.PoolUuid == Guid.Empty)
+                if (_jobApi.PoolUuid.IsNullOrEmpty())
                     return null;
-                return new QPool(_api, _jobApi.PoolUuid);
+                return new QPool(_api, new Guid(_jobApi.PoolUuid));
             }
         }
 
@@ -134,12 +134,24 @@ namespace QarnotSDK {
         /// <param name="name">The job name.</param>
         /// <param name="pool">The pool we want the job to be attached to.</param>
         /// <param name="UseTaskDependencies">Bool to allow use of dependencies for tasks in this job.</param>
-        public QJob(Connection connection, string name=default(string), QPool pool=null, bool UseTaskDependencies=false)
+        public QJob(Connection connection, string name = default(string), QPool pool=null, bool UseTaskDependencies=false)
             : this (connection, new JobApi())
         {
             _jobApi.Name = name;
-            _jobApi.PoolUuid = pool.Uuid;
+            if (pool != null)
+                _jobApi.PoolUuid = pool.Uuid.ToString();
             _jobApi.UseDependencies = UseTaskDependencies;
+        }
+
+        /// <summary>
+        /// Create a job object given an existing Uuid.
+        /// </summary>
+        /// <param name="connection">The inner connection object.</param>
+        /// <param name="uuid">The Uuid of an already existing job.</param>
+        public QJob(Connection connection, Guid uuid) : this(connection, new JobApi())
+        {
+            _uri = "jobs/" + uuid.ToString();
+            _jobApi.Uuid = uuid;
         }
 
         /// <summary>
@@ -162,7 +174,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public async Task UpdateStatusAsync(CancellationToken cancellationToken) {
+        public async Task UpdateStatusAsync(CancellationToken cancellationToken = default(CancellationToken)) {
             var response = await _api._client.GetAsync(_uri, cancellationToken);
             await Utils.LookForErrorAndThrowAsync(_api._client, response, cancellationToken);
             var result = await response.Content.ReadAsAsync<JobApi>(cancellationToken);
@@ -186,7 +198,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public async Task DeleteAsync(CancellationToken cancellationToken)
+        public async Task DeleteAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             if (_api.IsReadOnly) throw new Exception("Can't delete jobs, this connection is configured in read-only mode");
             var response = await _api._client.DeleteAsync(_uri, cancellationToken);
@@ -195,7 +207,7 @@ namespace QarnotSDK {
 
         #region internals
 
-        internal async Task PostSubmitAsync(JobApi result, CancellationToken cancellationToken)
+        internal async Task PostSubmitAsync(JobApi result, CancellationToken cancellationToken = default(CancellationToken))
          {
             _jobApi.Uuid = result.Uuid;
             _uri = "jobs/" + _jobApi.Uuid.ToString();

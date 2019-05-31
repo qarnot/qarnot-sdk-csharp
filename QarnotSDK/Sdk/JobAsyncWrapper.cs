@@ -33,7 +33,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public void UpdateStatus(CancellationToken cancellationToken) {
+        public void UpdateStatus(CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 SubmitAsync(cancellationToken).Wait();
             } catch (AggregateException ex) {
@@ -60,7 +60,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public void Delete(CancellationToken cancellationToken)
+        public void Delete(CancellationToken cancellationToken = default(CancellationToken))
         {
             try {
                 DeleteAsync(cancellationToken).Wait();
