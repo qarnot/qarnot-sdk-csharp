@@ -507,12 +507,39 @@ namespace QarnotSDK
     /// Represents an unified an simplified version of a pool node status.
     /// </summary>
     public class QPoolNodeStatus {
+        /// <summary>
+        /// Retrieve the instance state.
+        /// </summary>
         public string State { get; set; }
+
+        /// <summary>
+        /// Retrieve the instance error
+        /// </summary>
         public QPoolError Error { get; set; }
+
+        /// <summary>
+        /// Retrieve the instance progress indicator
+        /// </summary>
         public float Progress { get; set; }
+
+        /// <summary>
+        /// Instance execution time(in seconds).
+        /// </summary>
         public float ExecutionTimeSec { get; set; }
+
+        /// <summary>
+        /// Instance execution time frequency(in seconds.ghz).
+        /// </summary>
         public float ExecutionTimeGHz { get; set; }
+
+        /// <summary>
+        /// Retrieve the instance wall time(in seconds).
+        /// </summary>
         public float WallTimeSec { get; set; }
+
+        /// <summary>
+        /// Informations about running instances (see QPoolStatusPerRunningInstanceInfo)
+        /// </summary>
         public QPoolStatusPerRunningInstanceInfo RunningNodeInfo { get; private set; }
 
         internal QPoolNodeStatus(QPoolStatusPerRunningInstanceInfo i) {

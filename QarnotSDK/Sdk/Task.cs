@@ -665,6 +665,7 @@ namespace QarnotSDK {
             }
 
             if (_api.IsReadOnly) throw new Exception("Can't submit tasks, this connection is configured in read-only mode");
+            await Task.FromResult(0);
         }
 
         private async Task SubmitAsync(CancellationToken cancellationToken) {
@@ -851,13 +852,44 @@ namespace QarnotSDK {
     /// Represents an unified an simplified version of a task instance status.
     /// </summary>
     public class QTaskInstanceStatus {
+        /// <summary>
+        /// Retrieve the instance state.
+        /// </summary>
         public string State { get; private set; }
+
+        /// <summary>
+        /// Retrieve the instance error
+        /// </summary>
         public QTaskError Error { get; private set; }
+
+        /// <summary>
+        /// Retrieve the instance progress indicator
+        /// </summary>
         public float Progress { get; private set; }
+
+        /// <summary>
+        /// Instance execution time(in seconds).
+        /// </summary>
         public float ExecutionTimeSec { get; private set; }
+
+        /// <summary>
+        /// Instance execution time frequency(in seconds.ghz).
+        /// </summary>
         public float ExecutionTimeGHz { get; private set; }
+
+        /// <summary>
+        /// Retrieve the instance wall time(in seconds).
+        /// </summary>
         public float WallTimeSec { get; private set; }
+
+        /// <summary>
+        /// Informations about the running instances.(see QTaskStatusPerRunningInstanceInfo)
+        /// </summary>
         public QTaskStatusPerRunningInstanceInfo RunningInstanceInfo {get; private set; }
+
+        /// <summary>
+        /// Informations about completed instances (see QTaskCompletedInstance)
+        /// </summary>
         public QTaskCompletedInstance CompletedInstanceInfo { get; private set; }
 
         internal QTaskInstanceStatus(QTaskStatusPerRunningInstanceInfo i) {

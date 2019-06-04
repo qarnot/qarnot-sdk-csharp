@@ -232,6 +232,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="connection">The inner connection object.</param>
         /// <param name="shortname">The bucket name.</param>
+        /// <param name="create">bool, to create the resource on the api too.</param>
         public QBucket(Connection connection, string shortname, bool create=true) {
             _api = connection;
             Shortname = shortname;

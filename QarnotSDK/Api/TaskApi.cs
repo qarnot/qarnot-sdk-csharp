@@ -170,18 +170,71 @@ namespace QarnotSDK {
     /// Represents the statistics of a running task.
     /// </summary>
     public class QTaskStatusRunningInstancesInfo {
+
+        /// <summary>
+        /// Time at which this information has been reported
+        /// </summary>
         public DateTime Timestamp { get; set; }
+
+        /// <summary>
+        /// Average running instance frequency (in Ghz).
+        /// </summary>
         public float AverageFrequencyGHz { get; set; }
+
+        /// <summary>
+        /// Maximum running instance frequency (in Ghz).
+        /// </summary>
         public float MaxFrequencyGHz { get; set; }
+
+        /// <summary>
+        /// Minimum running instance frequency (in Ghz).
+        /// </summary>
         public float MinFrequencyGHz { get; set; }
+
+        /// <summary>
+        /// Average running instance frequency (in Ghz).
+        /// </summary>
         public float AverageMaxFrequencyGHz { get; set; }
+
+        /// <summary>
+        /// Average running instance cpu usage.
+        /// </summary>
         public float AverageCpuUsage { get; set; }
+
+        /// <summary>
+        /// Average running instance power indicator.
+        /// The power indicator shows a ratio between actual frequency and maximum frequenc 
+        /// </summary>
         public float ClusterPowerIndicator { get; set; }
+
+        /// <summary>
+        /// Average running instance memory usage
+        /// </summary>
         public float AverageMemoryUsage { get; set; }
+
+        /// <summary>
+        /// Average running instance network in (in kbps)
+        /// </summary>
         public float AverageNetworkInKbps { get; set; }
+
+        /// <summary>
+        /// Average running instance network out (in kbps)
+        /// </summary>
         public float AverageNetworkOutKbps { get; set; }
+
+        /// <summary>
+        /// Total running instance network in (in kbps)
+        /// </summary>
         public float TotalNetworkInKbps { get; set; }
+
+        /// <summary>
+        /// Total running instance network out (in kbps)
+        /// </summary>
         public float TotalNetworkOutKbps { get; set; }
+
+        /// <summary>
+        /// Running instance information (see QTaskStatusPerRunningInstanceInfo)
+        /// </summary>
         public List<QTaskStatusPerRunningInstanceInfo> PerRunningInstanceInfo { get; set; }
 
         internal QTaskStatusRunningInstancesInfo() {
@@ -193,16 +246,59 @@ namespace QarnotSDK {
     /// Represents the status of a running task.
     /// </summary>
     public class QTaskStatus {
+        /// <summary>
+        /// Retrieve the instance download progress indicator
+        /// </summary>
         public float DownloadProgress { get; set; }
+
+        /// <summary>
+        /// Retrieve the instance execution progress indicator
+        /// </summary>
         public float ExecutionProgress { get; set; }
+
+        /// <summary>
+        /// Retrieve the instance execution upload indicator
+        /// </summary>
         public float UploadProgress { get; set; }
+
+        /// <summary>
+        /// The task instance number.
+        /// </summary>
         public uint InstanceCount { get; set; }
+
+        /// <summary>
+        /// Download time (in second)
+        /// </summary>
         public long DownloadTimeSec { get; set; }
+
+        /// <summary>
+        /// Execution time (in second)
+        /// </summary>
         public long ExecutionTimeSec { get; set; }
+
+        /// <summary>
+        /// Upload time (in second)
+        /// </summary>
         public long UploadTimeSec { get; set; }
+
+        /// <summary>
+        /// Range for the succeeded instances
+        /// </summary>
         public string SucceededRange { get; set; }
+
+        /// <summary>
+        /// Range for the executed instances
+        /// </summary>
         public string ExecutedRange { get; set; }
+
+        /// <summary>
+        /// Range for the failed instances
+        /// </summary>
         public string FailedRange { get; set; }
+
+        /// <summary>
+        /// Running instances information(see QTaskStatusRunningInstancesInfo)
+        /// </summary>
         public QTaskStatusRunningInstancesInfo RunningInstancesInfo { get; set; }
 
         internal QTaskStatus() {
@@ -213,13 +309,45 @@ namespace QarnotSDK {
     /// Represents the status and the statistics of a completed task instance.
     /// </summary>
     public class QTaskCompletedInstance {
+
+        /// <summary>
+        /// The instance id.
+        /// </summary>
         public UInt32 InstanceId { get; set; }
+
+        /// <summary>
+        /// Instance wall time (in second)
+        /// </summary>
         public float WallTimeSec { get; set; }
+
+        /// <summary>
+        /// Instance execution time (in second)
+        /// </summary>
         public float ExecTimeSec { get; set; }
+
+        /// <summary>
+        /// Instance execution time frequency
+        /// </summary>
         public float ExecTimeSecGhz { get; set; }
+
+        /// <summary>
+        /// Completed instance memory peak (in Mb)
+        /// </summary>
         public float PeakMemoryMB { get; set; }
+
+        /// <summary>
+        /// Completed instance state
+        /// </summary>
         public string State { get; set; }
+
+        /// <summary>
+        /// Completed instance error
+        /// </summary>
         public QTaskError Error { get; set; }
+
+        /// <summary>
+        /// Completed instance average frequency (in Ghz)
+        /// </summary>
         public float AverageGhz { get; set; }
 
         internal QTaskCompletedInstance() {
