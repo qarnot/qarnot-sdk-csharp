@@ -13,6 +13,7 @@ namespace QarnotSDK
         public DateTime CreationDate { get; set; }
         public DateTime LastModified { get; set; }
         public bool UseDependencies {get; set; }
+        public Nullable<TimeSpan> MaxWallTime { get; set; }
 
         internal JobApi()
         {

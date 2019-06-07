@@ -35,7 +35,7 @@ namespace QarnotSDK {
         /// <returns></returns>
         public void UpdateStatus(CancellationToken cancellationToken = default(CancellationToken)) {
             try {
-                SubmitAsync(cancellationToken).Wait();
+                UpdateStatusAsync(cancellationToken).Wait();
             } catch (AggregateException ex) {
                 throw ex.InnerException;
             }

@@ -105,6 +105,27 @@ namespace QarnotSDK {
             set => _jobApi.UseDependencies = value;
         }
 
+        /// <summary>
+        /// Wall time limit for the job execution.
+        /// Once this this time duration exceeded, the whole job will terminate
+        /// and the tasks linked will be canceled
+        /// </summary>
+        [InternalDataApiName(Name="MaxWallTime", IsFilterable=false, IsSelectable=false)]
+        public TimeSpan MaximumWallTime
+        {
+            get
+            {
+                if (_jobApi.MaxWallTime.HasValue)
+                    return _jobApi.MaxWallTime.Value;
+                return default(TimeSpan);
+            }
+            set
+            {
+                _jobApi.MaxWallTime = value;
+            }
+        }
+
+
 
         /// <summary>
         /// The pool the job is attached to. null if the job is not attached to a pool. 
