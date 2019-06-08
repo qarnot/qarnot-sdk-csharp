@@ -2,7 +2,7 @@
   <PropertyGroup>
     <RootNamespace>QarnotSDK</RootNamespace>
     <AssemblyName>QarnotSDK</AssemblyName>
-    <Version>2.0.0</Version>
+    <Version>2.1.0-alpha</Version>
     <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
     <OutputType>Library</OutputType>
     <Authors>Qarnot computing</Authors>
