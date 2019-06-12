@@ -125,8 +125,6 @@ namespace QarnotSDK {
             }
         }
 
-
-
         /// <summary>
         /// The pool the job is attached to. null if the job is not attached to a pool. 
         /// </summary>

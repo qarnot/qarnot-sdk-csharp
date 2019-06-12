@@ -249,10 +249,23 @@ namespace QarnotSDK {
         }
 
         /// <summary>
+        /// The pool id where the task is running or default Guid if the task doesn't belong to a pool.
+        /// </summary>
+        [InternalDataApiName(Name="PoolUuid")]
+        public Guid PoolUuid { get { return _taskApi.PoolUuid.IsNullOrEmpty() ? Guid.Empty : new Guid(_taskApi.PoolUuid); } }
+
+        /// <summary>
         /// The pool where the task is running or null if the task doesn't belong to a pool.
         /// </summary>
         [InternalDataApiName(IsFilterable=false, IsSelectable=false)]
         public QPool Pool { get { return (_taskApi.PoolUuid.IsNullOrEmpty() || _taskApi.PoolUuid == Guid.Empty.ToString()) ? null : new QPool(_api, new Guid(_taskApi.PoolUuid)); } }
+
+
+        /// <summary>
+        /// The job id where the task is running or default Guid if the task is not attached to a job.
+        /// </summary>
+        [InternalDataApiName(Name="JobUuid")]
+        public Guid JobUuid { get { return _taskApi.JobUuid.IsNullOrEmpty() ? Guid.Empty : new Guid(_taskApi.JobUuid); } }
 
         /// <summary>
         /// The job the task is attached to or null if the task isn't attached to a job.
