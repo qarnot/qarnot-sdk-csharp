@@ -70,6 +70,16 @@ namespace QarnotSDK {
         }
 
         /// <summary>
+        /// The Job unique shortname
+        /// </summary>
+        [InternalDataApiName(Name="ShortName")]
+        public string ShortName 
+        {
+            get => _jobApi.ShortName;
+            set => _jobApi.ShortName = value;
+        }
+
+        /// <summary>
         /// The related pool uuid
         /// </summary>
         [InternalDataApiName(Name="PoolUuid")]
@@ -152,14 +162,17 @@ namespace QarnotSDK {
         /// <param name="connection">The inner connection object.</param>
         /// <param name="name">The job name.</param>
         /// <param name="pool">The pool we want the job to be attached to.</param>
+        /// <param name="shortname">The pool unique shortname.</param>
         /// <param name="UseTaskDependencies">Bool to allow use of dependencies for tasks in this job.</param>
-        public QJob(Connection connection, string name = default(string), QPool pool=null, bool UseTaskDependencies=false)
+        public QJob(Connection connection, string name, QPool pool=null, string shortname=default(string), bool UseTaskDependencies=false)
             : this (connection, new JobApi())
         {
             _jobApi.Name = name;
+            _jobApi.ShortName = shortname;
             if (pool != null)
                 _jobApi.PoolUuid = pool.Uuid.ToString();
             _jobApi.UseDependencies = UseTaskDependencies;
+            _uri = "jobs/" + _jobApi.ShortName;
         }
 
         /// <summary>

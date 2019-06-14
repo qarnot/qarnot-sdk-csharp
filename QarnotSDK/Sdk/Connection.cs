@@ -150,9 +150,9 @@ namespace QarnotSDK {
         /// <param name="pool">The pool we want the job to be attached to.</param>
         /// <param name="UseTaskDependencies">Bool to allow use of dependencies for tasks in this job.</param>
         /// <returns>A new job.</returns>
-        public QJob CreateJob(string name, QPool pool=null, bool UseTaskDependencies=false)
+        public QJob CreateJob(string name, QPool pool=null, string shortname=default(string), bool UseTaskDependencies=false)
         {
-            return new QJob(this, name, pool, UseTaskDependencies);
+            return new QJob(this, name, pool, shortname, UseTaskDependencies);
         }
 
         /// <summary>
@@ -733,7 +733,20 @@ namespace QarnotSDK {
             await Utils.LookForErrorAndThrowAsync(_client, response);
             var apiTask = await response.Content.ReadAsAsync<TaskApi>(cancellationToken);
             return await QTaskSummary.CreateAsync(this, apiTask);
+        }
 
+
+        /// <summary>
+        /// Retrieve a job by its uuid or shortname.
+        /// </summary>
+        /// <param name="uuid">uuid or shortname of the job to find.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>The job object for that uuid or null if it hasn't been found.</returns>
+        public async Task<QJob> RetrieveJobByUuidAsync(string uuid, CancellationToken cancellationToken = default(CancellationToken)) {
+            var response = await _client.GetAsync($"jobs/{uuid}", cancellationToken);
+            await Utils.LookForErrorAndThrowAsync(_client, response);
+            var apiJob = await response.Content.ReadAsAsync<JobApi>(cancellationToken);
+            return new QJob (this, apiJob);
         }
 
         /// <summary>

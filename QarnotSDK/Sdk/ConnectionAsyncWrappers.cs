@@ -376,6 +376,20 @@ namespace QarnotSDK {
         }
 
         /// <summary>
+        /// Retrieve a job by its uuid or shortname.
+        /// </summary>
+        /// <param name="uuid">uuid or shortname of the job to find.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>The job object for that uuid or null if it hasn't been found.</returns>
+        public QJob RetrieveJobByUuid(string uuid, CancellationToken cancellationToken = default(CancellationToken)) {
+            try {
+                return RetrieveJobByUuidAsync(uuid, cancellationToken).Result;
+            } catch (AggregateException ex) {
+                throw ex.InnerException;
+            }
+        }
+
+        /// <summary>
         /// Retrieve a pool by its name.
         /// </summary>
         /// <param name="name">Name of the pool to find.</param>
