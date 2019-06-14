@@ -58,12 +58,13 @@ namespace QarnotSDK {
         /// <summary>
         /// Delete the job. If the job is active, the job is terminated and deleted.
         /// </summary>
+        /// <param name="force">Optional boolean to force inner tasks to be deleted.</param> 
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public void Delete(CancellationToken cancellationToken = default(CancellationToken))
+        public void Delete(bool force = false, CancellationToken cancellationToken = default(CancellationToken))
         {
             try {
-                DeleteAsync(cancellationToken).Wait();
+                DeleteAsync(force, cancellationToken).Wait();
             } catch (AggregateException ex) {
                 throw ex.InnerException;
             }

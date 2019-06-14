@@ -228,12 +228,16 @@ namespace QarnotSDK {
         /// <summary>
         /// Delete the job. If the job is active, the job is terminated and deleted.
         /// </summary>
+        /// <param name="force">Optional boolean to force inner tasks to be deleted.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public async Task DeleteAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public async Task DeleteAsync(bool force=false, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (_api.IsReadOnly) throw new Exception("Can't delete jobs, this connection is configured in read-only mode");
-            var response = await _api._client.DeleteAsync(_uri, cancellationToken);
+            var deleteUri = _uri;
+            if (force)
+                deleteUri += "?force=true";
+            var response = await _api._client.DeleteAsync(deleteUri, cancellationToken);
             await Utils.LookForErrorAndThrowAsync(_api._client, response, cancellationToken);
         }
 
