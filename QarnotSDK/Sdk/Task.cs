@@ -607,8 +607,8 @@ namespace QarnotSDK {
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
         public async Task CommitAsync(CancellationToken cancellationToken = default(CancellationToken)) {
-            var response = await _api._client.PutAsJsonAsync<TaskApi>("tasks", _taskApi, cancellationToken);
-            await Utils.LookForErrorAndThrowAsync(_api._client, response);
+            using (var response = await _api._client.PutAsJsonAsync<TaskApi>("tasks", _taskApi, cancellationToken))
+                await Utils.LookForErrorAndThrowAsync(_api._client, response);
         }
 
 
@@ -683,10 +683,12 @@ namespace QarnotSDK {
 
         private async Task SubmitAsync(CancellationToken cancellationToken) {
             await PreSubmitAsync(cancellationToken);
-            var response = await _api._client.PostAsJsonAsync<TaskApi>("tasks", _taskApi, cancellationToken);
-            await Utils.LookForErrorAndThrowAsync(_api._client, response);
-            var result = await response.Content.ReadAsAsync<TaskApi>(cancellationToken);
-            await PostSubmitAsync(result, cancellationToken);
+            using (var response = await _api._client.PostAsJsonAsync<TaskApi>("tasks", _taskApi, cancellationToken))
+            {
+                await Utils.LookForErrorAndThrowAsync(_api._client, response);
+                var result = await response.Content.ReadAsAsync<TaskApi>(cancellationToken);
+                await PostSubmitAsync(result, cancellationToken);
+            }
         }
 
         internal async Task PostSubmitAsync(TaskApi result, CancellationToken cancellationToken) {
@@ -740,18 +742,20 @@ namespace QarnotSDK {
         /// <param name="updateQBucketsInfo">If set to true, the resources and results bucket objects are also updated.</param>
         /// <returns></returns>
         public async Task UpdateStatusAsync(CancellationToken cancellationToken, bool updateQBucketsInfo = true) {
-            var response = await _api._client.GetAsync(_uri, cancellationToken); // get task status
-            await Utils.LookForErrorAndThrowAsync(_api._client, response);
+            using (var response = await _api._client.GetAsync(_uri, cancellationToken)) // get task status
+            {
+                await Utils.LookForErrorAndThrowAsync(_api._client, response);
 
-            var result = await response.Content.ReadAsAsync<TaskApi>();
-            await SyncFromApiObjectAsync(result);
+                var result = await response.Content.ReadAsAsync<TaskApi>();
+                await SyncFromApiObjectAsync(result);
 
-            if (updateQBucketsInfo) {
-                foreach (var r in _resources) {
-                    await r.UpdateAsync(cancellationToken);
-                }
-                if (_results != null) {
-                    await _results.UpdateAsync(cancellationToken);
+                if (updateQBucketsInfo) {
+                    foreach (var r in _resources) {
+                        await r.UpdateAsync(cancellationToken);
+                    }
+                    if (_results != null) {
+                        await _results.UpdateAsync(cancellationToken);
+                    }
                 }
             }
         }
@@ -778,9 +782,8 @@ namespace QarnotSDK {
                 if (purgeResults)
                     resultToDelete = this.Results;
 
-                var response = await _api._client.DeleteAsync(_uri, cancellationToken);
-                await Utils.LookForErrorAndThrowAsync(_api._client, response);
-
+                using (var response = await _api._client.DeleteAsync(_uri, cancellationToken))
+                    await Utils.LookForErrorAndThrowAsync(_api._client, response);
 
                 var deleteTasks = resourcesToDelete.Select(r => r.DeleteAsync(cancellationToken)).ToList();
                 if (resultToDelete != null) deleteTasks.Add(resultToDelete.DeleteAsync(cancellationToken));

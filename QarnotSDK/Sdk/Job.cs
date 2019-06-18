@@ -195,10 +195,12 @@ namespace QarnotSDK {
         {
             if (_api.IsReadOnly) throw new Exception("Can't submit jobs, this connection is configured in read-only mode");
 
-            var response = await _api._client.PostAsJsonAsync<JobApi>("jobs", _jobApi, cancellationToken);
-            await Utils.LookForErrorAndThrowAsync(_api._client, response,cancellationToken);
-            var result = await response.Content.ReadAsAsync<JobApi>(cancellationToken);
-            await PostSubmitAsync(result, cancellationToken);
+            using (var response = await _api._client.PostAsJsonAsync<JobApi>("jobs", _jobApi, cancellationToken))
+            {
+                await Utils.LookForErrorAndThrowAsync(_api._client, response,cancellationToken);
+                var result = await response.Content.ReadAsAsync<JobApi>(cancellationToken);
+                await PostSubmitAsync(result, cancellationToken);
+            }
         }
 
         /// <summary>
@@ -207,10 +209,12 @@ namespace QarnotSDK {
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
         public async Task UpdateStatusAsync(CancellationToken cancellationToken = default(CancellationToken)) {
-            var response = await _api._client.GetAsync(_uri, cancellationToken);
-            await Utils.LookForErrorAndThrowAsync(_api._client, response, cancellationToken);
-            var result = await response.Content.ReadAsAsync<JobApi>(cancellationToken);
-            _jobApi = result;
+            using (var response = await _api._client.GetAsync(_uri, cancellationToken))
+            {
+                await Utils.LookForErrorAndThrowAsync(_api._client, response, cancellationToken);
+                var result = await response.Content.ReadAsAsync<JobApi>(cancellationToken);
+                _jobApi = result;
+            }
         }
 
         /// <summary>
@@ -221,8 +225,8 @@ namespace QarnotSDK {
         public async Task TerminateAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             if (_api.IsReadOnly) throw new Exception("Can't terminate jobs, this connection is configured in read-only mode");
-            var response = await _api._client.PostAsync(_uri + "/terminate", null, cancellationToken);
-            await Utils.LookForErrorAndThrowAsync(_api._client, response, cancellationToken);
+            using (var response = await _api._client.PostAsync(_uri + "/terminate", null, cancellationToken))
+                await Utils.LookForErrorAndThrowAsync(_api._client, response, cancellationToken);
         }
 
         /// <summary>
@@ -237,8 +241,8 @@ namespace QarnotSDK {
             var deleteUri = _uri;
             if (force)
                 deleteUri += "?force=true";
-            var response = await _api._client.DeleteAsync(deleteUri, cancellationToken);
-            await Utils.LookForErrorAndThrowAsync(_api._client, response, cancellationToken);
+            using (var response = await _api._client.DeleteAsync(deleteUri, cancellationToken))
+                await Utils.LookForErrorAndThrowAsync(_api._client, response, cancellationToken);
         }
 
         #region internals

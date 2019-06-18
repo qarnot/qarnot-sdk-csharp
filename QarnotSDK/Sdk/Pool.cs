@@ -336,8 +336,8 @@ namespace QarnotSDK
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
         public async Task CommitAsync(CancellationToken cancellationToken = default(CancellationToken)) {
-            var response = await _api._client.PutAsJsonAsync<PoolApi>("pools", _poolApi, cancellationToken);
-            await Utils.LookForErrorAndThrowAsync(_api._client, response);
+            using (var response = await _api._client.PutAsJsonAsync<PoolApi>("pools", _poolApi, cancellationToken))
+                await Utils.LookForErrorAndThrowAsync(_api._client, response);
         }
 
         /// <summary>
@@ -375,13 +375,15 @@ namespace QarnotSDK
             }
 
             if (_api.IsReadOnly) throw new Exception("Can't start pools, this connection is configured in read-only mode");
-            var response = await _api._client.PostAsJsonAsync<PoolApi> ("pools", _poolApi, cancellationToken);
-            await Utils.LookForErrorAndThrowAsync(_api._client, response);
+            using (var response = await _api._client.PostAsJsonAsync<PoolApi> ("pools", _poolApi, cancellationToken))
+            {
+                await Utils.LookForErrorAndThrowAsync(_api._client, response);
 
-            // Update the pool Uuid
-            var result = await response.Content.ReadAsAsync<PoolApi>(cancellationToken);
-            _poolApi.Uuid = result.Uuid;
-            _uri = "pools/" + _poolApi.Uuid.ToString();
+                // Update the pool Uuid
+                var result = await response.Content.ReadAsAsync<PoolApi>(cancellationToken);
+                _poolApi.Uuid = result.Uuid;
+                _uri = "pools/" + _poolApi.Uuid.ToString();
+            }
 
             // Retrieve the pool status once to update the other fields (result bucket uuid etc..)
             await UpdateStatusAsync(cancellationToken);
@@ -421,11 +423,12 @@ namespace QarnotSDK
         /// <param name="updateQBucketsInfo">If set to true, the resources bucket objects are also updated.</param>
         /// <returns></returns>
         public async Task UpdateStatusAsync(CancellationToken cancellationToken, bool updateQBucketsInfo = false) {
-            var response = await _api._client.GetAsync(_uri, cancellationToken); // get pool status
-            await Utils.LookForErrorAndThrowAsync(_api._client, response);
-
-            var result = await response.Content.ReadAsAsync<PoolApi>(cancellationToken);
-            await SyncFromApiObjectAsync(result);
+            using (var response = await _api._client.GetAsync(_uri, cancellationToken)) // get pool status
+            {
+                await Utils.LookForErrorAndThrowAsync(_api._client, response);
+                var result = await response.Content.ReadAsAsync<PoolApi>(cancellationToken);
+                await SyncFromApiObjectAsync(result);
+            }
 
             if (updateQBucketsInfo) {
                 foreach(var r in _resources) {
@@ -447,8 +450,8 @@ namespace QarnotSDK
             try {
                 if (_api.IsReadOnly) throw new Exception("Can't delete pools, this connection is configured in read-only mode");
 
-                var response = await _api._client.DeleteAsync(_uri, cancellationToken);
-                await Utils.LookForErrorAndThrowAsync(_api._client, response);
+                using (var response = await _api._client.DeleteAsync(_uri, cancellationToken))
+                    await Utils.LookForErrorAndThrowAsync(_api._client, response);
 
                 if (purgeResources) await Task.WhenAll(_resources.Select(r => r.DeleteAsync(cancellationToken)));
             } catch (QarnotApiResourceNotFoundException ex) {
