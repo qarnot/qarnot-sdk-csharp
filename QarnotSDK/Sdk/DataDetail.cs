@@ -105,12 +105,22 @@ namespace QarnotSDK
         }
 
         /// <summary>
+        /// Maximum results number
+        /// </summary>
+        /// <value>the maximum result for the query</value>
+        public int? MaximumResults
+        {
+            get => _dataDetailApi.MaximumResults;
+            set => _dataDetailApi.MaximumResults = value;
+        }
+
+        /// <summary>
         /// Override to string
         /// </summary>
         /// <returns>string format</returns>
         public override string ToString()
         {
-            return $"<Select: {Select}, Filter: {Filter}>";
+            return $"<Select: {Select}, Filter: {Filter}, MaxNumber: {MaximumResults}>";
         }
     }
 

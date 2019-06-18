@@ -8,6 +8,7 @@ namespace QarnotSDK
     {
         public SelectApi<T> Select;
         public FilterApi<T> Filter;
+        public int? MaximumResults;
     }
 
     internal class SelectApi<T>
