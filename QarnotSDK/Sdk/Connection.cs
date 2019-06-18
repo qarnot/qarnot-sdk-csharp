@@ -16,7 +16,7 @@ namespace QarnotSDK {
     public partial class Connection {
         internal HttpClient _client;
         internal HttpClientHandler _httpClientHandler;
-        internal RetryHandler _retryHandler;
+        internal IRetryHandler _retryHandler;
 
         /// <summary>
         /// Overload class of the AmazonS3Config to be able to overload
@@ -94,6 +94,12 @@ namespace QarnotSDK {
         public int MaxRetry { get { return _retryHandler.MaxRetries; } set { _retryHandler.MaxRetries = value; } }
 
         /// <summary>
+        /// Interval between retries (in milliseconds).
+        /// Default is 500 ms.
+        /// </summary>
+        public int RetryInterval { get { return _retryHandler.RetryInterval; } set { _retryHandler.RetryInterval = value; } }
+
+        /// <summary>
         /// Sdk user agent: adding references to the current version to trace bugs and usages
         /// </summary>
         private static string SdkUserAgent { get {
@@ -126,13 +132,22 @@ namespace QarnotSDK {
         /// <param name="storageUri">Storage Uri, should be null or https://storage.qarnot.com </param>
         /// <param name="token">The api token available at https://account.qarnot.com </param>
         /// <param name="httpClientHandler">An optional HttpClientHandler if you need to setup a proxy for example.</param>
-        public Connection(string uri, string storageUri, string token, HttpClientHandler httpClientHandler = null) {
+        /// <param name="retryHandler">An optional IRetryHandler if you need to setup retry for transient error (default to exponential).</param>
+        public Connection(string uri, string storageUri, string token, HttpClientHandler httpClientHandler = null, IRetryHandler retryHandler = null) {
             Uri = new Uri(uri);
             if (storageUri != null) StorageUri = new Uri(storageUri);
             Token = token;
             StorageSecretKey = token;
-            _httpClientHandler = httpClientHandler == null ? new HttpClientHandler():httpClientHandler;
-            _retryHandler = new RetryHandler(_httpClientHandler, 3);
+            _httpClientHandler = httpClientHandler ?? new HttpClientHandler();
+
+            if (retryHandler != null)
+            {
+                retryHandler.InnerHandler = _httpClientHandler;
+                _retryHandler = retryHandler;
+            }
+            else
+                _retryHandler = new ExponentialRetryHandler(_httpClientHandler);
+
             _client = new HttpClient(_retryHandler);
             _client.BaseAddress = Uri;
             _client.DefaultRequestHeaders.Clear();
