@@ -112,7 +112,9 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="token">The Api token available at https://account.qarnot.com </param>
         /// <param name="httpClientHandler">An optional HttpClientHandler if you need to setup a proxy for example.</param>
-        public Connection(string token, HttpClientHandler httpClientHandler = null) : this("https://api.qarnot.com", token, httpClientHandler) {
+        /// <param name="retryHandler">An optional IRetryHandler if you need to setup retry for transient error (default to exponential).</param>
+        public Connection(string token, HttpClientHandler httpClientHandler = null, IRetryHandler retryHandler = null)
+            : this("https://api.qarnot.com", token, httpClientHandler, retryHandler) {
         }
 
         /// <summary>
@@ -121,7 +123,9 @@ namespace QarnotSDK {
         /// <param name="uri">Api Uri, should be https://api.qarnot.com </param>
         /// <param name="token">The Api token available at https://account.qarnot.com </param>
         /// <param name="httpClientHandler">An optional HttpClientHandler if you need to setup a proxy for example.</param>
-        public Connection(string uri, string token, HttpClientHandler httpClientHandler = null) : this(uri, null, token, httpClientHandler) {
+        /// <param name="retryHandler">An optional IRetryHandler if you need to setup retry for transient error (default to exponential).</param> 
+        public Connection(string uri, string token, HttpClientHandler httpClientHandler = null, IRetryHandler retryHandler = null)
+            : this(uri, null, token, httpClientHandler, retryHandler) {
         }
 
         /// <summary>
@@ -163,6 +167,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="name">The job name.</param>
         /// <param name="pool">The pool we want the job to be attached to.</param>
+        /// <param name="shortname">The pool unique shortname.</param>
         /// <param name="UseTaskDependencies">Bool to allow use of dependencies for tasks in this job.</param>
         /// <returns>A new job.</returns>
         public QJob CreateJob(string name, QPool pool=null, string shortname=default(string), bool UseTaskDependencies=false)
