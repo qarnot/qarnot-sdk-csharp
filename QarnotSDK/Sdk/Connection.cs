@@ -561,7 +561,8 @@ namespace QarnotSDK {
             // S3Config
             var s3Config = new OverloadedS3config()
             {
-                ServiceURL = StorageUri.ToString()
+                ServiceURL = StorageUri.ToString(),
+                SignatureVersion = "2"
             };
 
             // Setup the proxy from the HttpClientHandler

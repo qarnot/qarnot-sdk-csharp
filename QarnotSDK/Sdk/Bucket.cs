@@ -403,8 +403,10 @@ namespace QarnotSDK {
                     BucketName = Shortname,
                     Key = remoteFile,
                 };
-                var s3Response = await s3Client.GetObjectAsync(s3Request, cancellationToken);
-                return s3Response.ResponseStream;
+                var s = new MemoryStream();
+                using (var s3Response = await s3Client.GetObjectAsync(s3Request, cancellationToken))
+                    s3Response.ResponseStream.CopyTo(s);
+                return s;
             }
         }
 
@@ -421,15 +423,15 @@ namespace QarnotSDK {
             using (var s3Client = await _api.GetS3ClientAsync(cancellationToken)) {
                 if (remotePath.EndsWith("/")) {
                     // It's a 'folder', we have to delete all the sub keys first
-                    var s3ListRequest = new Amazon.S3.Model.ListObjectsV2Request {
+                    var s3ListRequest = new Amazon.S3.Model.ListObjectsRequest {
                         BucketName = Shortname,
                         MaxKeys = 1000,
                         Prefix = remotePath == "/" ? "":remotePath,
                     };
 
-                    Amazon.S3.Model.ListObjectsV2Response s3ListResponse;
+                    Amazon.S3.Model.ListObjectsResponse s3ListResponse;
                     do {
-                        s3ListResponse = await s3Client.ListObjectsV2Async(s3ListRequest, cancellationToken);
+                        s3ListResponse = await s3Client.ListObjectsAsync(s3ListRequest, cancellationToken);
 
                         var s3DeleteRequest = new Amazon.S3.Model.DeleteObjectsRequest {
                             BucketName = Shortname,
@@ -439,7 +441,8 @@ namespace QarnotSDK {
 
                         await s3Client.DeleteObjectsAsync(s3DeleteRequest, cancellationToken);
 
-                        s3ListRequest.ContinuationToken = s3ListRequest.ContinuationToken;
+                        s3ListRequest.Marker = s3ListResponse.NextMarker;
+
                     } while (s3ListResponse.IsTruncated);
                 }
 
@@ -465,7 +468,7 @@ namespace QarnotSDK {
                 remoteFolder += '/';
 
             using (var s3Client = await _api.GetS3ClientAsync(cancellationToken)) {
-                var s3Request = new Amazon.S3.Model.ListObjectsV2Request {
+                var s3Request = new Amazon.S3.Model.ListObjectsRequest {
                     BucketName = Shortname,
                     MaxKeys = 1000,
                     Delimiter = "/",
@@ -473,9 +476,9 @@ namespace QarnotSDK {
                 };
 
                 var files = new List<QAbstractStorageEntry>();
-                Amazon.S3.Model.ListObjectsV2Response s3Response;
+                Amazon.S3.Model.ListObjectsResponse s3Response;
                 do {
-                    s3Response = await s3Client.ListObjectsV2Async(s3Request, cancellationToken);
+                    s3Response = await s3Client.ListObjectsAsync(s3Request, cancellationToken);
 
                     foreach (var obj in s3Response.CommonPrefixes) {
                         // Folders
@@ -488,7 +491,7 @@ namespace QarnotSDK {
                         files.Add(new QBucketEntry(obj, _api.StorageUploadPartSize, _api.StorageAvailablePartSizes));
                     }
 
-                    s3Request.ContinuationToken = s3Request.ContinuationToken;
+                    s3Request.Marker = s3Response.NextMarker;
                 } while (s3Response.IsTruncated);
 
                 return files;
