@@ -49,7 +49,7 @@ namespace QarnotSDK {
         }
 
         /// <summary>
-        /// List the files and folders.
+        /// List the files and folders entries in the corresponding folder. 
         /// </summary>
         /// <param name="remoteFolder">The folder to list.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
@@ -57,6 +57,19 @@ namespace QarnotSDK {
         public List<QAbstractStorageEntry> ListEntries(string remoteFolder, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 return ListEntriesAsync(remoteFolder, cancellationToken).Result;
+            } catch (AggregateException ex) {
+                throw ex.InnerException;
+            }
+        }
+
+        /// <summary>
+        /// List all the files and folders from the root of the bucket.
+        /// </summary>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A list of QFile</returns>
+        public List<QAbstractStorageEntry> ListFiles(CancellationToken cancellationToken = default(CancellationToken)) {
+            try {
+                return ListFilesAsync(cancellationToken).Result;
             } catch (AggregateException ex) {
                 throw ex.InnerException;
             }

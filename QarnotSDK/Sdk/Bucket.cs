@@ -456,12 +456,12 @@ namespace QarnotSDK {
         }
 
         /// <summary>
-        /// List the files and folders.
+        /// List the files and folders entries in the corresponding folder.
         /// </summary>
         /// <param name="remoteFolder">The folder to list.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>A list of QAbstractStorageEntry</returns>
-        public override async Task<List<QAbstractStorageEntry>> ListEntriesAsync(string remoteFolder, CancellationToken cancellationToken = default(CancellationToken)) {
+        public override async Task<List<QAbstractStorageEntry>> ListEntriesAsync(string remoteFolder="", CancellationToken cancellationToken = default(CancellationToken)) {
             if (remoteFolder == null || remoteFolder == "/")
                 remoteFolder = "";
             if (remoteFolder.Length != 0 && !remoteFolder.EndsWith("/"))
@@ -471,7 +471,6 @@ namespace QarnotSDK {
                 var s3Request = new Amazon.S3.Model.ListObjectsRequest {
                     BucketName = Shortname,
                     MaxKeys = 1000,
-                    Delimiter = "/",
                     Prefix = remoteFolder
                 };
 
@@ -491,6 +490,37 @@ namespace QarnotSDK {
                         files.Add(new QBucketEntry(obj, _api.StorageUploadPartSize, _api.StorageAvailablePartSizes));
                     }
 
+                    s3Request.Marker = s3Response.NextMarker;
+                } while (s3Response.IsTruncated);
+
+                return files;
+            }
+        }
+
+        /// <summary>
+        /// List all files and folders from the root of the bucket.
+        /// </summary>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A list of QAbstractStorageEntry</returns>
+        public override async Task<List<QAbstractStorageEntry>> ListFilesAsync(CancellationToken cancellationToken = default(CancellationToken)) {
+            using (var s3Client = await _api.GetS3ClientAsync(cancellationToken)) {
+                var s3Request = new Amazon.S3.Model.ListObjectsRequest {
+                    BucketName = Shortname,
+                    MaxKeys = 1000,
+                };
+
+                var files = new List<QAbstractStorageEntry>();
+                Amazon.S3.Model.ListObjectsResponse s3Response;
+                do {
+                    s3Response = await s3Client.ListObjectsAsync(s3Request, cancellationToken);
+                    foreach (var obj in s3Response.S3Objects) {
+                        if (obj.Key.EndsWith("/")) // folder
+                            files.Add(new QBucketEntry(obj.Key));
+                        else// files
+                            files.Add(new QBucketEntry(obj, _api.StorageUploadPartSize, _api.StorageAvailablePartSizes));
+                    }
+
+                    // handle pagination
                     s3Request.Marker = s3Response.NextMarker;
                 } while (s3Response.IsTruncated);
 
