@@ -188,6 +188,8 @@ namespace QarnotSDK {
             }
         }
 
+        private Dictionary<string, string> _constants { get; set; }
+
         /// <summary>
         /// The task constants.
         /// </summary>
@@ -195,13 +197,13 @@ namespace QarnotSDK {
         [InternalDataApiName(Name="Constants")]
         public Dictionary<string, string> Constants {
             get {
-                var constants = _taskApi.Constants;
-                if (constants == null)
-                    return new Dictionary<string, string>();
-
-                return constants.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+                if (_constants == null)
+                    _constants = new Dictionary<string, string>();
+                return _constants;
             }
         }
+
+        private Dictionary<string, string> _constraints { get; set; }
 
         /// <summary>
         /// The task constraints.
@@ -210,11 +212,9 @@ namespace QarnotSDK {
         [InternalDataApiName(Name="Constraints")]
         public Dictionary<string, string> Constraints {
             get {
-                var constraints = _taskApi.Constraints;
-                if (constraints == null)
-                    return new Dictionary<string, string>();
-
-                return constraints.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+                if (_constraints == null)
+                    _constraints = new Dictionary<string, string>();
+                return _constraints;
             }
         }
 
@@ -522,7 +522,8 @@ namespace QarnotSDK {
         /// <param name="value">Constant value.</param>
         [Obsolete("use SetConstant")]
         public void AddConstant(string name, string value) {
-            _taskApi.Constants.Add(new KeyValHelper(name, value));
+            if (_constants == null) _constants = new Dictionary<string, string>();
+            _constants.Add(name, value);
         }
 
         /// <summary>
@@ -531,16 +532,8 @@ namespace QarnotSDK {
         /// <param name="name">Constant name.</param>
         /// <param name="value">Constant value. If null, the constant is not added or deleted.</param>
         public void SetConstant(string name, string value) {
-            // First, check if the constant already exists
-            var c = _taskApi.Constants.Find(x => x.Key == name);
-            if (c != null) {
-                // Exists, just replace or delete
-                if (value == null) _taskApi.Constants.Remove(c);
-                else c.Value = value;
-                return;
-            }
-            // Doesn't exist, just add
-            if (value != null) _taskApi.Constants.Add(new KeyValHelper(name, value));
+            if (_constants == null) _constants = new Dictionary<string, string>();
+            _constants.Add(name, value);
         }
 
         /// <summary>
@@ -549,16 +542,8 @@ namespace QarnotSDK {
         /// <param name="name">Constraint name.</param>
         /// <param name="value">Constraint value. If null, the constraint is not added or deleted.</param>
         public void SetConstraint(string name, string value) {
-            // First, check if the constraints already exists
-            var c = _taskApi.Constraints.Find(x => x.Key == name);
-            if (c != null) {
-                // Exists, just replace or delete
-                if (value == null) _taskApi.Constraints.Remove(c);
-                else c.Value = value;
-                return;
-            }
-            // Doesn't exist, just add
-            if (value != null) _taskApi.Constraints.Add(new KeyValHelper(name, value));
+            if (_constraints == null) _constraints = new Dictionary<string, string>();
+            _constraints.Add(name, value);
         }
 
 
@@ -607,6 +592,15 @@ namespace QarnotSDK {
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
         public async Task CommitAsync(CancellationToken cancellationToken = default(CancellationToken)) {
+            // build the constants
+            _taskApi.Constants = new List<KeyValHelper>();
+            foreach(var c in _constants) { _taskApi.Constants.Add(new KeyValHelper(c.Key, c.Value)); }
+
+            // build the constraints
+            _taskApi.Constraints = new List<KeyValHelper>();
+            foreach(var c in _constraints) { _taskApi.Constraints.Add(new KeyValHelper(c.Key, c.Value)); }
+
+
             using (var response = await _api._client.PutAsJsonAsync<TaskApi>("tasks", _taskApi, cancellationToken))
                 await Utils.LookForErrorAndThrowAsync(_api._client, response);
         }
@@ -666,6 +660,14 @@ namespace QarnotSDK {
                 }
             }
 
+            // build the constants
+            _taskApi.Constants = new List<KeyValHelper>();
+            foreach(var c in _constants) { _taskApi.Constants.Add(new KeyValHelper(c.Key, c.Value)); }
+
+            // build the constraints
+            _taskApi.Constraints = new List<KeyValHelper>();
+            foreach(var c in _constraints) { _taskApi.Constraints.Add(new KeyValHelper(c.Key, c.Value)); }
+
             // Build the resource bucket list
             _taskApi.ResourceBuckets = new List<string>();
             foreach (var item in _resources) {
@@ -692,7 +694,7 @@ namespace QarnotSDK {
         }
 
         internal async Task PostSubmitAsync(TaskApi result, CancellationToken cancellationToken) {
-             // Update the task Uuid
+            // Update the task Uuid
             _taskApi.Uuid = result.Uuid;
             _uri = "tasks/" + _taskApi.Uuid.ToString();
 
@@ -715,6 +717,12 @@ namespace QarnotSDK {
             // update task range
             if (_taskApi.AdvancedRanges != null) _advancedRange = new AdvancedRanges(_taskApi.AdvancedRanges);
             else _advancedRange = null;
+
+            // update constants
+            _constants = result.Constants?.ToDictionary(kv => kv.Key, kv => kv.Value) ?? new Dictionary<string, string>(); 
+
+            // update constraints
+            _constraints = result.Constraints?.ToDictionary(kv => kv.Key, kv => kv.Value) ?? new Dictionary<string, string>(); 
 
             // update the task resources
             var newResourcesCount = 0;

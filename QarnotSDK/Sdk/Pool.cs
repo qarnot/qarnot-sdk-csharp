@@ -133,19 +133,21 @@ namespace QarnotSDK
             }
         }
 
+        private Dictionary<string, string> _constants { get; set; }
+
         /// <summary>
         /// The Pool constants.
         /// </summary>
         [InternalDataApiName(Name="Constants", IsFilterable=false)]
         public Dictionary<string, string> Constants {
             get {
-                var constants = _poolApi.Constants;
-                if (constants == null)
-                    return new Dictionary<string, string>();
-
-                return constants.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+                if (_constants == null)
+                    _constants = new Dictionary<string, string>();
+                return _constants;
             }
         }
+
+        private Dictionary<string, string> _constraints { get; set; }
 
         /// <summary>
         /// The pool constraints.
@@ -153,11 +155,9 @@ namespace QarnotSDK
         [InternalDataApiName(Name="Constraints", IsFilterable=false)]
         public Dictionary<string, string> Constraints {
             get {
-                var constraints = _poolApi.Constraints;
-                if (constraints == null)
-                    return new Dictionary<string, string>();
-
-                return constraints.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+                if (_constraints == null)
+                    _constraints = new Dictionary<string, string>();
+                return _constraints;
             }
         }
 
@@ -336,6 +336,14 @@ namespace QarnotSDK
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
         public async Task CommitAsync(CancellationToken cancellationToken = default(CancellationToken)) {
+            // build the constants
+            _poolApi.Constants = new List<KeyValHelper>();
+            foreach(var c in _constants) { _poolApi.Constants.Add(new KeyValHelper(c.Key, c.Value)); }
+
+            // build the constraints
+            _poolApi.Constraints = new List<KeyValHelper>();
+            foreach(var c in _constraints) { _poolApi.Constraints.Add(new KeyValHelper(c.Key, c.Value)); }
+
             using (var response = await _api._client.PutAsJsonAsync<PoolApi>("pools", _poolApi, cancellationToken))
                 await Utils.LookForErrorAndThrowAsync(_api._client, response);
         }
@@ -358,6 +366,14 @@ namespace QarnotSDK
         /// <param name="initialNodeCount">The number of compute nodes this pool will have. Optional if it has already been defined in the constructor.</param>
         /// <returns></returns>
         public async Task StartAsync(CancellationToken cancellationToken, string profile = null, uint initialNodeCount = 0) {
+            // build the constants
+            _poolApi.Constants = new List<KeyValHelper>();
+            foreach(var c in _constants) { _poolApi.Constants.Add(new KeyValHelper(c.Key, c.Value)); }
+
+            // build the constraints
+            _poolApi.Constraints = new List<KeyValHelper>();
+            foreach(var c in _constraints) { _poolApi.Constraints.Add(new KeyValHelper(c.Key, c.Value)); }
+
             _poolApi.ResourceBuckets = new List<string>();
             foreach (var item in _resources) {
                 if (item != null) {
@@ -401,6 +417,12 @@ namespace QarnotSDK
 
         private async Task SyncFromApiObjectAsync(PoolApi result) {
             _poolApi = result;
+
+            // update constants
+            _constants = result.Constants?.ToDictionary(kv => kv.Key, kv => kv.Value) ?? new Dictionary<string, string>(); 
+
+            // update constraints
+            _constraints = result.Constraints?.ToDictionary(kv => kv.Key, kv => kv.Value) ?? new Dictionary<string, string>(); 
 
             var newResourcesCount = 0;
             if (_poolApi.ResourceBuckets != null) newResourcesCount += _poolApi.ResourceBuckets.Count;
