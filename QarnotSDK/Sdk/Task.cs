@@ -683,7 +683,7 @@ namespace QarnotSDK {
             await Task.FromResult(0);
         }
 
-        private async Task SubmitAsync(CancellationToken cancellationToken) {
+        private async Task SubmitAsync(CancellationToken cancellationToken=default(CancellationToken)) {
             await PreSubmitAsync(cancellationToken);
             using (var response = await _api._client.PostAsJsonAsync<TaskApi>("tasks", _taskApi, cancellationToken))
             {
