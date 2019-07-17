@@ -238,6 +238,8 @@ namespace QarnotSDK
             _poolApi.Profile = profile;
             _poolApi.InstanceCount = initialNodeCount;
             _resources = new List<QBucket>();
+            _constants = new Dictionary<string, string>();
+            _constraints = new Dictionary<string, string>();
 
             if (shortname != default(string)) {
                 _poolApi.Shortname = shortname;
@@ -260,6 +262,8 @@ namespace QarnotSDK
         internal QPool(Connection qapi, PoolApi poolApi) : base(qapi, poolApi) {
             _uri = "pools/" + poolApi.Uuid.ToString();
             if (_resources == null) _resources = new List<QBucket>();
+            if (_constants == null) _constants = new Dictionary<string, string>();
+            if (_constraints == null) _constraints = new Dictionary<string, string>();
             SyncFromApiObjectAsync(poolApi).Wait();
         }
 
@@ -267,6 +271,8 @@ namespace QarnotSDK
             await base.InitializeAsync(qapi, poolApi);
             _uri = "pools/" + poolApi.Uuid.ToString();
             if (_resources == null) _resources = new List<QBucket>();
+            if (_constants == null) _constants = new Dictionary<string, string>();
+            if (_constraints == null) _constraints = new Dictionary<string, string>();
             await SyncFromApiObjectAsync(poolApi);
             return this;
         }

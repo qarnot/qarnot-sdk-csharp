@@ -368,6 +368,8 @@ namespace QarnotSDK {
             _taskApi.Name = name;
             _taskApi.Profile = profile;
             _resources = new List<QBucket>();
+            _constants = new Dictionary<string, string>();
+            _constraints = new Dictionary<string, string>();
             _taskApi.Shortname = shortname;
             _uri = "tasks/" + shortname;
         }
@@ -468,11 +470,15 @@ namespace QarnotSDK {
 
         internal QTask() {
             _resources = new List<QBucket>();
+            _constants = new Dictionary<string, string>();
+            _constraints = new Dictionary<string, string>();
         }
         internal async new Task<QTask> InitializeAsync(Connection qapi, TaskApi taskApi) {
             await base.InitializeAsync(qapi, taskApi);
              _uri = "tasks/" + taskApi.Uuid.ToString();
             if (_resources == null) _resources = new List<QBucket>();
+            if (_constants == null) _constants = new Dictionary<string, string>();
+            if (_constraints == null) _constraints = new Dictionary<string, string>();
             await SyncFromApiObjectAsync(taskApi);
             return this;
         }
