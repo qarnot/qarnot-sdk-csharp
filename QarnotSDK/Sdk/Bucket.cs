@@ -405,7 +405,11 @@ namespace QarnotSDK {
                 };
                 var s = new MemoryStream();
                 using (var s3Response = await s3Client.GetObjectAsync(s3Request, cancellationToken))
-                    s3Response.ResponseStream.CopyTo(s);
+                using (Stream responseStream = s3Response.ResponseStream)
+                {
+                    await responseStream.CopyToAsync(s);
+                    s.Seek(0,System.IO.SeekOrigin.Begin);
+                }
                 return s;
             }
         }
