@@ -198,6 +198,8 @@ namespace QarnotSDK {
         private long _usedSpaceBytes;
         private int _fileCount;
 
+        private static readonly char S3DirectorySeparator = '/';
+
         /// <summary>
         /// The bucket name.
         /// </summary>
@@ -362,14 +364,27 @@ namespace QarnotSDK {
         /// <param name="remoteFile">The destination file name in this bucket.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public override async Task UploadStreamAsync(Stream sourceStream, string remoteFile, CancellationToken cancellationToken = default(CancellationToken)) {
-            if (_api.IsReadOnly) throw new Exception("Can't upload to buckets, this connection is configured in read-only mode");
+        public override async Task UploadStreamAsync(Stream sourceStream, string remoteFile, CancellationToken cancellationToken = default(CancellationToken))
+            => await UploadStreamAsync(sourceStream, remoteFile, pathDirectorySeparator: Path.DirectorySeparatorChar, cancellationToken: cancellationToken);
 
+
+        /// <summary>
+        /// Write a stream to a file in this bucket.
+        /// </summary>
+        /// <param name="sourceStream">The source stream.</param>
+        /// <param name="remoteFile">The destination file name in this bucket.</param>
+        /// <param name="pathDirectorySeparator">PathDirectorySeparator char that will change the remote file path to match the folder hierarchy ('/' on linux, '\' on windows).</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns></returns>
+        public override async Task UploadStreamAsync(Stream sourceStream, string remoteFile, char pathDirectorySeparator, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            if (_api.IsReadOnly) throw new Exception("Can't upload to buckets, this connection is configured in read-only mode");
+            string remoteS3FileKey = pathDirectorySeparator == default(char) ? remoteFile : remoteFile.Replace(pathDirectorySeparator, S3DirectorySeparator);
             if (_api.StorageUploadPartSize <= 0) {
                 using (var s3Client = await _api.GetS3ClientAsync(cancellationToken)) {
                     var s3Request = new Amazon.S3.Model.PutObjectRequest {
                         BucketName = Shortname,
-                        Key = remoteFile,
+                        Key = remoteS3FileKey,
                         InputStream = sourceStream,
                         AutoCloseStream = false
                     };
@@ -382,11 +397,11 @@ namespace QarnotSDK {
                         InputStream = sourceStream,
                         AutoCloseStream = false,
                         PartSize = _api.StorageUploadPartSize,
-                        Key = remoteFile
+                        Key = remoteS3FileKey
                     };
 
-                    var fileTransferUtility = new Amazon.S3.Transfer.TransferUtility(s3Client);
-                    await fileTransferUtility.UploadAsync(fileTransferUtilityRequest, cancellationToken);
+                    using (var fileTransferUtility = new Amazon.S3.Transfer.TransferUtility(s3Client))
+                        await fileTransferUtility.UploadAsync(fileTransferUtilityRequest, cancellationToken);
                 }
             }
         }

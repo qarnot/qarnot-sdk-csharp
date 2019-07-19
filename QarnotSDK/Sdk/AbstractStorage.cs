@@ -184,6 +184,16 @@ namespace QarnotSDK {
         public abstract Task UploadStreamAsync(Stream sourceStream, string remoteFile, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
+        /// Write a stream to a file in this storage.
+        /// </summary>
+        /// <param name="sourceStream">The source stream.</param>
+        /// <param name="remoteFile">The destination file name in this storage.</param>
+        /// <param name="pathDirectorySeparator">Platform separator directory for provided path.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns></returns>
+        public abstract Task UploadStreamAsync(Stream sourceStream, string remoteFile, char pathDirectorySeparator, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
         /// Get a stream on a file in this storage.
         /// </summary>
         /// <param name="remoteFile">The source file name in this storage.</param>

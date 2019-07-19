@@ -97,9 +97,20 @@ namespace QarnotSDK {
         /// <param name="remoteFile">The destination file name in this storage.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public void UploadStream(Stream sourceStream, string remoteFile, CancellationToken cancellationToken = default(CancellationToken)) {
+        public void UploadStream(Stream sourceStream, string remoteFile, CancellationToken cancellationToken = default(CancellationToken))
+            => UploadStream(sourceStream, remoteFile, pathDirectorySeparator: Path.DirectorySeparatorChar, cancellationToken: cancellationToken);
+
+        /// <summary>
+        /// Write a stream to a file in this storage.
+        /// </summary>
+        /// <param name="sourceStream">The source stream.</param>
+        /// <param name="remoteFile">The destination file name in this storage.</param>
+        /// <param name="pathDirectorySeparator">PathDirectorySeprator char that will change the remote file path to match the folder hierarchy.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns></returns>
+        public void UploadStream(Stream sourceStream, string remoteFile, char pathDirectorySeparator, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
-                UploadStreamAsync(sourceStream, remoteFile, cancellationToken).Wait();
+                UploadStreamAsync(sourceStream, remoteFile, pathDirectorySeparator, cancellationToken).Wait();
             } catch (AggregateException ex) {
                 throw ex.InnerException;
             }
