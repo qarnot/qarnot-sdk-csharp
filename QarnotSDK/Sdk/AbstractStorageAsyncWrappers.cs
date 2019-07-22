@@ -122,9 +122,19 @@ namespace QarnotSDK {
         /// <param name="remoteFile">The source file name in this storage.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>A stream with the file's data.</returns>
-        public Stream DownloadStream(string remoteFile, CancellationToken cancellationToken = default(CancellationToken)) {
+        public Stream DownloadStream(string remoteFile, CancellationToken cancellationToken = default(CancellationToken))
+            => DownloadStream(remoteFile, pathDirectorySeparator: Path.DirectorySeparatorChar, cancellationToken: cancellationToken);
+
+        /// <summary>
+        /// Get a stream on a file in this storage.
+        /// </summary>
+        /// <param name="remoteFile">The source file name in this storage.</param>
+        /// <param name="pathDirectorySeparator">Platform separator directory for provided path.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A stream with the file's data.</returns>
+        public Stream DownloadStream(string remoteFile,  char pathDirectorySeparator, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
-                return DownloadStreamAsync(remoteFile, cancellationToken).Result;
+                return DownloadStreamAsync(remoteFile, pathDirectorySeparator, cancellationToken).Result;
             } catch (AggregateException ex) {
                 throw ex.InnerException;
             }

@@ -412,11 +412,22 @@ namespace QarnotSDK {
         /// <param name="remoteFile">The source file name in this bucket.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>A stream with the file's data.</returns>
-        public override async Task<Stream> DownloadStreamAsync(string remoteFile, CancellationToken cancellationToken = default(CancellationToken)) {
+        public override async Task<Stream> DownloadStreamAsync(string remoteFile, CancellationToken cancellationToken = default(CancellationToken))
+            => await DownloadStreamAsync(remoteFile, pathDirectorySeparator: Path.DirectorySeparatorChar, cancellationToken: cancellationToken);
+
+        /// <summary>
+        /// Get a stream on a file in this bucket.
+        /// </summary>
+        /// <param name="remoteFile">The source file name in this bucket.</param>
+        /// <param name="pathDirectorySeparator">PathDirectorySeparator char that will change the remote file path to match the folder hierarchy ('/' on linux, '\' on windows).</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A stream with the file's data.</returns>
+        public override async Task<Stream> DownloadStreamAsync(string remoteFile, char pathDirectorySeparator, CancellationToken cancellationToken = default(CancellationToken)) {
             using (var s3Client = await _api.GetS3ClientAsync(cancellationToken)) {
+                string remoteS3FileKey = pathDirectorySeparator == default(char) ? remoteFile : remoteFile.Replace(pathDirectorySeparator, S3DirectorySeparator);
                 var s3Request = new Amazon.S3.Model.GetObjectRequest {
                     BucketName = Shortname,
-                    Key = remoteFile,
+                    Key = remoteS3FileKey,
                 };
                 var s = new MemoryStream();
                 using (var s3Response = await s3Client.GetObjectAsync(s3Request, cancellationToken))
