@@ -14,7 +14,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">A token to cancel the request.</param>
         /// <returns></returns>
-        public void Create(CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual void Create(CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 CreateAsync(cancellationToken).Wait();
             } catch (AggregateException ex) {
@@ -27,7 +27,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public void Update(CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual void Update(CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 UpdateAsync(cancellationToken).Wait();
             } catch (AggregateException ex) {
@@ -40,7 +40,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public void Delete(CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual void Delete(CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 DeleteAsync(cancellationToken).Wait();
             } catch (AggregateException ex) {
@@ -54,7 +54,7 @@ namespace QarnotSDK {
         /// <param name="remoteFolder">The folder to list.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>A list of QFile</returns>
-        public List<QAbstractStorageEntry> ListEntries(string remoteFolder, CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual List<QAbstractStorageEntry> ListEntries(string remoteFolder, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 return ListEntriesAsync(remoteFolder, cancellationToken).Result;
             } catch (AggregateException ex) {
@@ -67,7 +67,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>A list of QFile</returns>
-        public List<QAbstractStorageEntry> ListFiles(CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual List<QAbstractStorageEntry> ListFiles(CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 return ListFilesAsync(cancellationToken).Result;
             } catch (AggregateException ex) {
@@ -81,7 +81,7 @@ namespace QarnotSDK {
         /// <param name="remotePath">The entry to remove.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public void DeleteEntry(string remotePath, CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual void DeleteEntry(string remotePath, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 DeleteEntryAsync(remotePath, cancellationToken).Wait();
             } catch (AggregateException ex) {
@@ -97,7 +97,7 @@ namespace QarnotSDK {
         /// <param name="remoteFile">The destination file name in this storage.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public void UploadStream(Stream sourceStream, string remoteFile, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual void UploadStream(Stream sourceStream, string remoteFile, CancellationToken cancellationToken = default(CancellationToken))
             => UploadStream(sourceStream, remoteFile, pathDirectorySeparator: Path.DirectorySeparatorChar, cancellationToken: cancellationToken);
 
         /// <summary>
@@ -108,7 +108,7 @@ namespace QarnotSDK {
         /// <param name="pathDirectorySeparator">PathDirectorySeprator char that will change the remote file path to match the folder hierarchy.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public void UploadStream(Stream sourceStream, string remoteFile, char pathDirectorySeparator, CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual void UploadStream(Stream sourceStream, string remoteFile, char pathDirectorySeparator, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 UploadStreamAsync(sourceStream, remoteFile, pathDirectorySeparator, cancellationToken).Wait();
             } catch (AggregateException ex) {
@@ -122,7 +122,7 @@ namespace QarnotSDK {
         /// <param name="remoteFile">The source file name in this storage.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>A stream with the file's data.</returns>
-        public Stream DownloadStream(string remoteFile, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Stream DownloadStream(string remoteFile, CancellationToken cancellationToken = default(CancellationToken))
             => DownloadStream(remoteFile, pathDirectorySeparator: Path.DirectorySeparatorChar, cancellationToken: cancellationToken);
 
         /// <summary>
@@ -132,7 +132,7 @@ namespace QarnotSDK {
         /// <param name="pathDirectorySeparator">Platform separator directory for provided path.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>A stream with the file's data.</returns>
-        public Stream DownloadStream(string remoteFile,  char pathDirectorySeparator, CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual Stream DownloadStream(string remoteFile,  char pathDirectorySeparator, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 return DownloadStreamAsync(remoteFile, pathDirectorySeparator, cancellationToken).Result;
             } catch (AggregateException ex) {
@@ -147,7 +147,7 @@ namespace QarnotSDK {
         /// <param name="remoteFile">The destination file name in this storage.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public void UploadFile(string localFile, string remoteFile = null, CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual void UploadFile(string localFile, string remoteFile = null, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 UploadFileAsync(localFile, remoteFile, cancellationToken).Wait();
             } catch (AggregateException ex) {
@@ -162,7 +162,7 @@ namespace QarnotSDK {
         /// <param name="localFile">The destination local file name.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public void DownloadFile(string remoteFile, string localFile, CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual void DownloadFile(string remoteFile, string localFile, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 DownloadFileAsync(remoteFile, localFile, cancellationToken).Wait();
             } catch (AggregateException ex) {
@@ -178,7 +178,7 @@ namespace QarnotSDK {
         /// <param name="encoding">The encoding to use to write the string. UTF8 by default.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public void UploadString(string content, string remoteFile, Encoding encoding = null, CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual void UploadString(string content, string remoteFile, Encoding encoding = null, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 UploadStringAsync(content, remoteFile, encoding, cancellationToken).Wait();
             } catch (AggregateException ex) {
@@ -193,7 +193,7 @@ namespace QarnotSDK {
         /// <param name="encoding">The encoding to use to read the string. UTF8 by default.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public string DownloadString(string remoteFile, Encoding encoding = null, CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual string DownloadString(string remoteFile, Encoding encoding = null, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 return DownloadStringAsync(remoteFile, encoding, cancellationToken).Result;
             } catch (AggregateException ex) {
@@ -208,7 +208,7 @@ namespace QarnotSDK {
         /// <param name="remoteFile">The destination file name in this storage.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public void UploadBytes(byte[] data, string remoteFile, CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual void UploadBytes(byte[] data, string remoteFile, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 UploadBytesAsync(data, remoteFile, cancellationToken).Wait();
             } catch (AggregateException ex) {
@@ -222,7 +222,7 @@ namespace QarnotSDK {
         /// <param name="localFolderPath">The source folder path.</param>
         /// <param name="remoteFolderPath">The destination folder path in this storage.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        public void UploadFolder(string localFolderPath, string remoteFolderPath = null, CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual void UploadFolder(string localFolderPath, string remoteFolderPath = null, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 UploadFolderAsync(localFolderPath, remoteFolderPath, cancellationToken).Wait();
             } catch (AggregateException ex) {
@@ -236,7 +236,7 @@ namespace QarnotSDK {
         /// <param name="remoteFolderPath">The source folder path in this storage.</param>
         /// <param name="localFolderPath">The destination folder path.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        public void DownloadFolder(string remoteFolderPath, string localFolderPath, CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual void DownloadFolder(string remoteFolderPath, string localFolderPath, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 DownloadFolderAsync(remoteFolderPath, localFolderPath, cancellationToken).Wait();
             } catch (AggregateException ex) {
@@ -250,7 +250,7 @@ namespace QarnotSDK {
         /// <param name="localFolderPath">The local folder to overwrite.</param>
         /// <param name="dontDelete">If false, the files that have been deleted in this storage will also be removed in the local folder. To avoid mistakes, this parameter is set to true by default.</param>
         /// <param name="remoteFolderRelativePath">Optional, allows to sync only a sub-folder of this storage.</param>
-        public void SyncRemoteToLocal(string localFolderPath, bool dontDelete = true, string remoteFolderRelativePath = "") {
+        public virtual void SyncRemoteToLocal(string localFolderPath, bool dontDelete = true, string remoteFolderRelativePath = "") {
             try {
                 SyncRemoteToLocalAsync(localFolderPath, dontDelete, remoteFolderRelativePath).Wait();
             } catch (AggregateException ex) {
@@ -265,7 +265,7 @@ namespace QarnotSDK {
         /// <param name="dontDelete">If false, the files that have been deleted in this storage will also be removed in the local folder. To avoid mistakes, this parameter is set to true by default.</param>
         /// <param name="remoteFolderRelativePath">Optional, allows to sync only a sub-folder of this storage.</param>
         /// <returns></returns>
-        public void SyncRemoteToLocal(string localFolderPath, CancellationToken cancellationToken, bool dontDelete = true, string remoteFolderRelativePath = "") {
+        public virtual void SyncRemoteToLocal(string localFolderPath, CancellationToken cancellationToken, bool dontDelete = true, string remoteFolderRelativePath = "") {
             try {
                 SyncRemoteToLocalAsync(localFolderPath, cancellationToken, dontDelete, remoteFolderRelativePath).Wait();
             } catch (AggregateException ex) {
@@ -280,7 +280,7 @@ namespace QarnotSDK {
         /// <param name="dontDelete">If false, the files that have been deleted in the local folder will also be removed from this storage. To avoid mistakes, this parameter is set to true by default.</param>
         /// <param name="remoteFolderRelativePath">Optional, allows to sync to a sub-folder of this storage.</param>
         /// <returns></returns>
-        public void SyncLocalToRemote(string localFolderPath, bool dontDelete = true, string remoteFolderRelativePath = "") {
+        public virtual void SyncLocalToRemote(string localFolderPath, bool dontDelete = true, string remoteFolderRelativePath = "") {
             try {
                 SyncLocalToRemoteAsync(localFolderPath, dontDelete, remoteFolderRelativePath).Wait();
             } catch (AggregateException ex) {
@@ -295,7 +295,7 @@ namespace QarnotSDK {
         /// <param name="dontDelete">If false, the files that have been deleted in the local folder will also be removed from this storage. To avoid mistakes, this parameter is set to true by default.</param>
         /// <param name="remoteFolderRelativePath">Optional, allows to sync to a sub-folder of this storage.</param>
         /// <returns></returns>
-        public void SyncLocalToRemote(string localFolderPath, CancellationToken cancellationToken, bool dontDelete = true, string remoteFolderRelativePath = "") {
+        public virtual void SyncLocalToRemote(string localFolderPath, CancellationToken cancellationToken, bool dontDelete = true, string remoteFolderRelativePath = "") {
             try {
                 SyncLocalToRemoteAsync(localFolderPath, cancellationToken, dontDelete, remoteFolderRelativePath).Wait();
             } catch (AggregateException ex) {

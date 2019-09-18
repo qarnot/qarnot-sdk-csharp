@@ -71,7 +71,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public async Task CloseAsync(CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual async Task CloseAsync(CancellationToken cancellationToken = default(CancellationToken)) {
             if (_api.IsReadOnly) throw new Exception("Can't close pools, this connection is configured in read-only mode");
             using (var response = await _api._client.PostAsync(_uri + "/close", null, cancellationToken))
                 await Utils.LookForErrorAndThrowAsync(_api._client, response);
