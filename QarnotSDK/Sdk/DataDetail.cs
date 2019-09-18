@@ -138,7 +138,7 @@ namespace QarnotSDK
         /// Include a field in the projection
         /// </summary>
         /// <param name="property">the field to retrieve</param>
-        public QSelect<T> Include<P>(Expression<Func<T, P>> property)
+        public virtual QSelect<T> Include<P>(Expression<Func<T, P>> property)
         {
             // old
             var fieldName = DataDetailHelper.GetAPISelectPropertyName(property);

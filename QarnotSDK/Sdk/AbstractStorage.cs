@@ -74,7 +74,7 @@ namespace QarnotSDK {
         /// <param name="localFilePath">The local file to compare to.</param>
         /// <param name="cancellationToken">A token to cancel the request.</param>
         /// <returns></returns>
-        public bool EqualsLocalFileDigest(string localFilePath, CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual bool EqualsLocalFileDigest(string localFilePath, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 return EqualsLocalFileDigestAsync(localFilePath, cancellationToken).Result;
             } catch (AggregateException ex) {
@@ -217,7 +217,7 @@ namespace QarnotSDK {
         /// <param name="remoteFile">The destination file name in this storage.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public async Task UploadFileAsync(string localFile, string remoteFile = null, CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual async Task UploadFileAsync(string localFile, string remoteFile = null, CancellationToken cancellationToken = default(CancellationToken)) {
             if (!File.Exists(localFile))
                 throw new IOException("No such file " + localFile);
 
@@ -234,7 +234,7 @@ namespace QarnotSDK {
         /// <param name="localFile">The destination local file name.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public async Task DownloadFileAsync(string remoteFile, string localFile, CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual async Task DownloadFileAsync(string remoteFile, string localFile, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 using (var fileStream = new FileStream(localFile, FileMode.Create, FileAccess.Write, FileShare.ReadWrite)) {
                     using (var httpStream = await DownloadStreamAsync(remoteFile, cancellationToken)) {
@@ -257,7 +257,7 @@ namespace QarnotSDK {
         /// <param name="encoding">The encoding to use to write the string. UTF8 by default.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public async Task UploadStringAsync(string content, string remoteFile, Encoding encoding = null, CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual async Task UploadStringAsync(string content, string remoteFile, Encoding encoding = null, CancellationToken cancellationToken = default(CancellationToken)) {
             if (encoding == null) encoding = Encoding.UTF8;
             using (var stream = new MemoryStream(encoding.GetBytes(content))) {
                 await UploadStreamAsync(stream, remoteFile, cancellationToken);
@@ -271,7 +271,7 @@ namespace QarnotSDK {
         /// <param name="encoding">The encoding to use to read the string. UTF8 by default.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public async Task<string> DownloadStringAsync(string remoteFile, Encoding encoding = null, CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual async Task<string> DownloadStringAsync(string remoteFile, Encoding encoding = null, CancellationToken cancellationToken = default(CancellationToken)) {
             if (encoding == null) encoding = Encoding.UTF8;
             using (var stream = new StreamReader(await DownloadStreamAsync(remoteFile, cancellationToken), encoding)) {
                 return await stream.ReadToEndAsync();
@@ -285,7 +285,7 @@ namespace QarnotSDK {
         /// <param name="remoteFile">The destination file name in this storage.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public async Task UploadBytesAsync(byte[] data, string remoteFile, CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual async Task UploadBytesAsync(byte[] data, string remoteFile, CancellationToken cancellationToken = default(CancellationToken)) {
             using (var stream = new MemoryStream(data)) {
                 await UploadStreamAsync(stream, remoteFile, cancellationToken);
             }
@@ -299,7 +299,7 @@ namespace QarnotSDK {
         /// <param name="dontDelete">If false, the files that have been deleted in this storage will also be removed in the local folder. To avoid mistakes, this parameter is set to true by default.</param>
         /// <param name="remoteFolderRelativePath">Optional, allows to sync only a sub-folder of this storage.</param>
         /// <returns></returns>
-        public async Task SyncRemoteToLocalAsync(string localFolderPath, CancellationToken cancellationToken, bool dontDelete = true, string remoteFolderRelativePath = "") {
+        public virtual async Task SyncRemoteToLocalAsync(string localFolderPath, CancellationToken cancellationToken, bool dontDelete = true, string remoteFolderRelativePath = "") {
             Directory.CreateDirectory(localFolderPath);
 
             List<QAbstractStorageEntry> existingFiles;
@@ -382,7 +382,7 @@ namespace QarnotSDK {
         /// <param name="dontDelete">If false, the files that have been deleted in the local folder will also be removed from this storage. To avoid mistakes, this parameter is set to true by default.</param>
         /// <param name="remoteFolderRelativePath">Optional, allows to sync to a sub-folder of this storage.</param>
         /// <returns></returns>
-        public async Task SyncLocalToRemoteAsync(string localFolderPath, CancellationToken cancellationToken, bool dontDelete = true, string remoteFolderRelativePath = "") {
+        public virtual async Task SyncLocalToRemoteAsync(string localFolderPath, CancellationToken cancellationToken, bool dontDelete = true, string remoteFolderRelativePath = "") {
             List<QAbstractStorageEntry> existingFiles;
             try {
                 existingFiles = await ListEntriesAsync(remoteFolderRelativePath, cancellationToken);
@@ -461,7 +461,7 @@ namespace QarnotSDK {
         /// <param name="remoteFolderPath">The destination folder path in this storage.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public async Task UploadFolderAsync(string localFolderPath, string remoteFolderPath = null, CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual async Task UploadFolderAsync(string localFolderPath, string remoteFolderPath = null, CancellationToken cancellationToken = default(CancellationToken)) {
             if (!Directory.Exists(localFolderPath))
                 throw new IOException("No such folder " + localFolderPath);
 
@@ -476,7 +476,7 @@ namespace QarnotSDK {
         /// <param name="localFolderPath">The destination folder path.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public async Task DownloadFolderAsync(string remoteFolderPath, string localFolderPath, CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual async Task DownloadFolderAsync(string remoteFolderPath, string localFolderPath, CancellationToken cancellationToken = default(CancellationToken)) {
             await SyncRemoteToLocalAsync(localFolderPath, cancellationToken, true, remoteFolderPath);
         }
 
@@ -487,7 +487,7 @@ namespace QarnotSDK {
         /// <param name="dontDelete">If false, the files that have been deleted in this storage will also be removed in the local folder. To avoid mistakes, this parameter is set to true by default.</param>
         /// <param name="remoteFolderRelativePath">Optional, allows to sync only a sub-folder of this storage.</param>
         /// <returns></returns>
-        public async Task SyncRemoteToLocalAsync(string localFolderPath, bool dontDelete = true, string remoteFolderRelativePath = "") {
+        public virtual async Task SyncRemoteToLocalAsync(string localFolderPath, bool dontDelete = true, string remoteFolderRelativePath = "") {
             await SyncRemoteToLocalAsync(localFolderPath, default(CancellationToken), dontDelete, remoteFolderRelativePath);
         }
 
@@ -498,7 +498,7 @@ namespace QarnotSDK {
         /// <param name="dontDelete">If false, the files that have been deleted in the local folder will also be removed from this storage. To avoid mistakes, this parameter is set to true by default.</param>
         /// <param name="remoteFolderRelativePath">Optional, allows to sync to a sub-folder of this storage.</param>
         /// <returns></returns>
-        public async Task SyncLocalToRemoteAsync(string localFolderPath, bool dontDelete = true, string remoteFolderRelativePath = "") {
+        public virtual async Task SyncLocalToRemoteAsync(string localFolderPath, bool dontDelete = true, string remoteFolderRelativePath = "") {
             await SyncLocalToRemoteAsync(localFolderPath, default(CancellationToken), dontDelete, remoteFolderRelativePath);
         }
 

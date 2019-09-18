@@ -191,7 +191,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public async Task SubmitAsync(CancellationToken cancellationToken=default(CancellationToken))
+        public virtual async Task SubmitAsync(CancellationToken cancellationToken=default(CancellationToken))
         {
             if (_api.IsReadOnly) throw new Exception("Can't submit jobs, this connection is configured in read-only mode");
 
@@ -208,7 +208,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public async Task UpdateStatusAsync(CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual async Task UpdateStatusAsync(CancellationToken cancellationToken = default(CancellationToken)) {
             using (var response = await _api._client.GetAsync(_uri, cancellationToken))
             {
                 await Utils.LookForErrorAndThrowAsync(_api._client, response, cancellationToken);
@@ -222,7 +222,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public async Task TerminateAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task TerminateAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             if (_api.IsReadOnly) throw new Exception("Can't terminate jobs, this connection is configured in read-only mode");
             using (var response = await _api._client.PostAsync(_uri + "/terminate", null, cancellationToken))
@@ -235,7 +235,7 @@ namespace QarnotSDK {
         /// <param name="force">Optional boolean to force inner tasks to be deleted.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public async Task DeleteAsync(bool force=false, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task DeleteAsync(bool force=false, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (_api.IsReadOnly) throw new Exception("Can't delete jobs, this connection is configured in read-only mode");
             var deleteUri = _uri;

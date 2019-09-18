@@ -19,7 +19,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public void Submit(CancellationToken cancellationToken=default(CancellationToken))
+        public virtual void Submit(CancellationToken cancellationToken=default(CancellationToken))
         {
             try {
                 SubmitAsync(cancellationToken).Wait();
@@ -33,7 +33,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public void UpdateStatus(CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual void UpdateStatus(CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 UpdateStatusAsync(cancellationToken).Wait();
             } catch (AggregateException ex) {
@@ -46,7 +46,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public void Terminate(CancellationToken cancellationToken = default(CancellationToken))
+        public virtual void Terminate(CancellationToken cancellationToken = default(CancellationToken))
         {
             try {
                 TerminateAsync(cancellationToken).Wait();
@@ -61,7 +61,7 @@ namespace QarnotSDK {
         /// <param name="force">Optional boolean to force inner tasks to be deleted.</param> 
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public void Delete(bool force = false, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual void Delete(bool force = false, CancellationToken cancellationToken = default(CancellationToken))
         {
             try {
                 DeleteAsync(force, cancellationToken).Wait();

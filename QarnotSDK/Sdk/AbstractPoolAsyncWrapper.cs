@@ -31,7 +31,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public void Close(CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual void Close(CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 CloseAsync(cancellationToken).Wait();
             } catch (AggregateException ex) {
@@ -54,7 +54,7 @@ namespace QarnotSDK {
         /// <param name="failIfDoesntExist">If set to false and the pool doesn't exist, no exception is thrown. Default is true.</param>
         /// <param name="purgeResources">Boolean to trigger all resource storages deletion. Default is false.</param>
         /// <returns></returns>
-        public void Delete(bool failIfDoesntExist = false, bool purgeResources=false)
+        public virtual void Delete(bool failIfDoesntExist = false, bool purgeResources=false)
             => Delete(default(CancellationToken) ,failIfDoesntExist, purgeResources);
         #endregion
     }

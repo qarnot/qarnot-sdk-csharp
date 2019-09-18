@@ -59,7 +59,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public async Task AbortAsync(CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual async Task AbortAsync(CancellationToken cancellationToken = default(CancellationToken)) {
             if (_api.IsReadOnly) throw new Exception("Can't abort tasks, this connection is configured in read-only mode");
             using (var response = await _api._client.PostAsync(_uri + "/abort", null, cancellationToken))
                 await Utils.LookForErrorAndThrowAsync(_api._client, response);
@@ -83,7 +83,7 @@ namespace QarnotSDK {
         /// <param name="purgeResources">Boolean to trigger all resource storages deletion. Default is false.</param>
         /// <param name="purgeResults">Boolean to trigger result storage deletion. Default is false.</param>
         /// <returns></returns>
-        public async Task DeleteAsync(bool failIfDoesntExist = false, bool purgeResources=false, bool purgeResults=false)
+        public virtual async Task DeleteAsync(bool failIfDoesntExist = false, bool purgeResources=false, bool purgeResults=false)
             => await DeleteAsync(default(CancellationToken), failIfDoesntExist, purgeResources, purgeResults);
         #endregion
 
@@ -97,7 +97,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public async Task UpdateResourcesAsync(CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual async Task UpdateResourcesAsync(CancellationToken cancellationToken = default(CancellationToken)) {
             if (_api.IsReadOnly) throw new Exception("Can't update resources, this connection is configured in read-only mode");
             var reqMsg = new HttpRequestMessage(new HttpMethod("PATCH"), _uri);
             using (var response = await _api._client.SendAsync(reqMsg, cancellationToken))
@@ -111,7 +111,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public async Task SnapshotAsync(CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual async Task SnapshotAsync(CancellationToken cancellationToken = default(CancellationToken)) {
             if (_api.IsReadOnly) throw new Exception("Can't request a snapshot, this connection is configured in read-only mode");
             using (var response = await _api._client.PostAsync(_uri + "/snapshot", null, cancellationToken))
                 await Utils.LookForErrorAndThrowAsync(_api._client, response);
@@ -123,7 +123,7 @@ namespace QarnotSDK {
         /// <param name="interval">Interval in seconds between two snapshots.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public async Task SnapshotPeriodicAsync(uint interval, CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual async Task SnapshotPeriodicAsync(uint interval, CancellationToken cancellationToken = default(CancellationToken)) {
             Snapshot s = new QarnotSDK.Snapshot();
             s.Interval = Convert.ToInt32(interval);
             if (_api.IsReadOnly) throw new Exception("Can't configure snapshots, this connection is configured in read-only mode");
@@ -141,7 +141,7 @@ namespace QarnotSDK {
         /// <param name="destinationStream">The destination stream.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public async Task CopyStdoutToAsync(Stream destinationStream, CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual async Task CopyStdoutToAsync(Stream destinationStream, CancellationToken cancellationToken = default(CancellationToken)) {
             using (var response = await _api._client.GetAsync(_uri + "/stdout", cancellationToken))
             {
                 await Utils.LookForErrorAndThrowAsync(_api._client, response);
@@ -156,7 +156,7 @@ namespace QarnotSDK {
         /// <param name="destinationStream">The destination stream.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public async Task CopyStderrToAsync(Stream destinationStream, CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual async Task CopyStderrToAsync(Stream destinationStream, CancellationToken cancellationToken = default(CancellationToken)) {
             using (var response = await _api._client.GetAsync(_uri + "/stderr", cancellationToken))
             {
                 await Utils.LookForErrorAndThrowAsync(_api._client, response);
@@ -170,7 +170,7 @@ namespace QarnotSDK {
         /// <param name="destinationStream">The destination stream.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public async Task CopyFreshStdoutToAsync(Stream destinationStream, CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual async Task CopyFreshStdoutToAsync(Stream destinationStream, CancellationToken cancellationToken = default(CancellationToken)) {
             if (_api.IsReadOnly) throw new Exception("Can't retrieve fresh standard output, this connection is configured in read-only mode");
             using (var response = await _api._client.PostAsync(_uri + "/stdout", null, cancellationToken))
             {
@@ -185,7 +185,7 @@ namespace QarnotSDK {
         /// <param name="destinationStream">The destination stream.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public async Task CopyFreshStderrToAsync(Stream destinationStream, CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual async Task CopyFreshStderrToAsync(Stream destinationStream, CancellationToken cancellationToken = default(CancellationToken)) {
             if (_api.IsReadOnly) throw new Exception("Can't retrieve fresh standard error, this connection is configured in read-only mode");
             using (var response = await _api._client.PostAsync(_uri + "/stderr", null, cancellationToken))
             {
@@ -200,7 +200,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>The task standard output.</returns>
-        public async Task<string> StdoutAsync(CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual async Task<string> StdoutAsync(CancellationToken cancellationToken = default(CancellationToken)) {
             using (MemoryStream ms = new MemoryStream()) {
                 await CopyStdoutToAsync(ms, cancellationToken);
                 ms.Position = 0;
@@ -216,7 +216,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>The task standard error.</returns>
-        public async Task<string> StderrAsync(CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual async Task<string> StderrAsync(CancellationToken cancellationToken = default(CancellationToken)) {
             using (MemoryStream ms = new MemoryStream()) {
                 await CopyStderrToAsync(ms, cancellationToken);
                 ms.Position = 0;
@@ -231,7 +231,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>The task fresh standard output.</returns>
-        public async Task<string> FreshStdoutAsync(CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual async Task<string> FreshStdoutAsync(CancellationToken cancellationToken = default(CancellationToken)) {
             using (MemoryStream ms = new MemoryStream()) {
                 await CopyFreshStdoutToAsync(ms, cancellationToken);
                 ms.Position = 0;
@@ -246,7 +246,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>The task fresh standard error.</returns>
-        public async Task<string> FreshStderrAsync(CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual async Task<string> FreshStderrAsync(CancellationToken cancellationToken = default(CancellationToken)) {
             using (MemoryStream ms = new MemoryStream()) {
                 await CopyFreshStderrToAsync(ms, cancellationToken);
                 ms.Position = 0;
