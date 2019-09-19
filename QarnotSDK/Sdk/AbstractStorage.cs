@@ -42,23 +42,23 @@ namespace QarnotSDK {
         /// <summary>
         /// Size of this entry in bytes.
         /// </summary>
-        public long Size { get; protected set; }
+        public virtual long Size { get; protected set; }
 
         /// <summary>
         /// Full name of this entry.
         /// </summary>
-        public string Name { get; protected set; }
+        public virtual string Name { get; protected set; }
 
         /// <summary>
         /// The flags for this entry, use it to identify folders, files and executable files.
         /// </summary>
-        public FileFlags FileFlags { get; protected set; }
+        public virtual FileFlags FileFlags { get; protected set; }
 
         /// <summary>
         /// The digest for this entry content.
         /// Use EqualsLocalFileDigest or EqualsLocalFileDigestAsync to compare the digest to a local file.
         /// </summary>
-        public string Digest { get; protected set; }
+        public virtual string Digest { get; protected set; }
 
         /// <summary>
         /// Computes the digest of a local file and compares it to the digest of this storage entry.

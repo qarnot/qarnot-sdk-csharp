@@ -14,7 +14,7 @@ namespace QarnotSDK {
         /// <param name="profile">The task profile, if not running inside a pool. Optional if the profile has already been defined in the constructor or if the task is bound to a pool, profile must be null.</param>
         /// <param name="instanceCount">How many times the task have to run. Optional if the instance count has already been defined in the constructor, it can be set to 0.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        public void Submit(string profile=null, uint instanceCount=0, CancellationToken cancellationToken=default(CancellationToken)) {
+        public virtual void Submit(string profile=null, uint instanceCount=0, CancellationToken cancellationToken=default(CancellationToken)) {
             try {
                 SubmitAsync(profile, instanceCount, cancellationToken).Wait();
             } catch (AggregateException ex) {
@@ -28,7 +28,7 @@ namespace QarnotSDK {
         /// <param name="profile">The task profile, if not running inside a pool. Optional if the profile has already been defined in the constructor or if the task is bound to a pool, profile must be null.</param>
         /// <param name="range">Which instance ids of the task have to run. Optional if the instance count has already been defined in the constructor, it can be set to null.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        public void Submit(string profile, AdvancedRanges range, CancellationToken cancellationToken=default(CancellationToken)) {
+        public virtual void Submit(string profile, AdvancedRanges range, CancellationToken cancellationToken=default(CancellationToken)) {
             try {
                 SubmitAsync(profile, range, cancellationToken).Wait();
             } catch (AggregateException ex) {
@@ -43,7 +43,7 @@ namespace QarnotSDK {
         /// <param name="taskTimeoutSeconds">Optional number of second before abort is called.</param>
         /// <param name="ct">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public void Run(int taskTimeoutSeconds=-1, CancellationToken ct =default(CancellationToken)) {
+        public virtual void Run(int taskTimeoutSeconds=-1, CancellationToken ct =default(CancellationToken)) {
             try {
                 RunAsync(taskTimeoutSeconds, ct).Wait();
             } catch (AggregateException ex) {
@@ -57,7 +57,7 @@ namespace QarnotSDK {
         /// <param name="taskTimeoutSeconds">Optional maximum number of second to wait for completion.</param>
         /// <param name="ct">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public void Wait(int taskTimeoutSeconds=-1, CancellationToken ct =default(CancellationToken)) {
+        public virtual void Wait(int taskTimeoutSeconds=-1, CancellationToken ct =default(CancellationToken)) {
             try {
                 WaitAsync(taskTimeoutSeconds, ct).Wait();
             } catch (AggregateException ex) {
@@ -69,7 +69,7 @@ namespace QarnotSDK {
         /// Update this task state and status.
         /// </summary>
         /// <param name="updateQBucketsInfo">If set to true, the resources and results bucket objects are also updated.</param>
-        public void UpdateStatus(bool updateQBucketsInfo = true) {
+        public virtual void UpdateStatus(bool updateQBucketsInfo = true) {
             try {
                 UpdateStatusAsync(updateQBucketsInfo).Wait();
             } catch (AggregateException ex) {
@@ -82,7 +82,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <param name="updateQBucketsInfo">If set to true, the resources and results bucket objects are also updated.</param>
-        public void UpdateStatus(CancellationToken cancellationToken, bool updateQBucketsInfo = true) {
+        public virtual void UpdateStatus(CancellationToken cancellationToken, bool updateQBucketsInfo = true) {
             try {
                 UpdateStatusAsync(cancellationToken, updateQBucketsInfo).Wait();
             } catch (AggregateException ex) {
@@ -110,7 +110,7 @@ namespace QarnotSDK {
         /// <summary>
         /// Commit the local task changes.
         /// </summary>
-        public void Commit(CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual void Commit(CancellationToken cancellationToken = default(CancellationToken)) {
            try {
                 CommitAsync().Wait();
             } catch (AggregateException ex) {

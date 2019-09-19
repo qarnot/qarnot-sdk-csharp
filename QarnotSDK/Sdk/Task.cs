@@ -64,24 +64,24 @@ namespace QarnotSDK {
         /// The task shortname identifier. The shortname is provided by the user. It has to be unique.
         /// </summary>
         [InternalDataApiName(Name="Shortname")]
-        public string Shortname { get { return _taskApi.Shortname == null ? _taskApi.Uuid.ToString() : _taskApi.Shortname; } }
+        public virtual string Shortname { get { return _taskApi.Shortname == null ? _taskApi.Uuid.ToString() : _taskApi.Shortname; } }
         /// <summary>
         /// The task name.
         /// </summary>
         [InternalDataApiName(Name="Name")]
-        public string Name { get { return _taskApi.Name; } }
+        public virtual string Name { get { return _taskApi.Name; } }
         /// <summary>
         /// The task profile.
         /// </summary>
         [InternalDataApiName(Name="Profile")]
-        public string Profile { get { return _taskApi.Profile; } }
+        public virtual string Profile { get { return _taskApi.Profile; } }
 
         /// <summary>
         /// Qarnot resources buckets bound to this task.
         /// Can be set only before the task submission.
         /// </summary>
         [InternalDataApiName(IsFilterable=false, IsSelectable=false)]
-        public List<QAbstractStorage> Resources {
+        public virtual List<QAbstractStorage> Resources {
             get {
                 return _resources.Select(bucket => (QAbstractStorage) bucket).ToList();
             }
@@ -97,7 +97,7 @@ namespace QarnotSDK {
         /// Can be set only before the task submission.
         /// </summary>
         [InternalDataApiName(Name="ResourceBuckets", IsFilterable=false)]
-        public IEnumerable<QBucket> ResourcesBuckets {
+        public virtual IEnumerable<QBucket> ResourcesBuckets {
             get {
                 return _resources;
             }
@@ -108,7 +108,7 @@ namespace QarnotSDK {
         /// Can be set only before the task submission.
         /// </summary>
         [InternalDataApiName(IsFilterable=false, IsSelectable=false)]
-        public QAbstractStorage Results {
+        public virtual QAbstractStorage Results {
             get {
                 return _results;
             }
@@ -124,7 +124,7 @@ namespace QarnotSDK {
         /// Can be set only before the task submission.
         /// </summary>
         [InternalDataApiName(Name="ResultBucket")]
-        public QBucket ResultsBucket {
+        public virtual QBucket ResultsBucket {
             get {
                 return _results;
             }
@@ -135,13 +135,13 @@ namespace QarnotSDK {
         /// Available only after the submission. Use UpdateStatus or UpdateStatusAsync to refresh.
         /// </summary>
         [InternalDataApiName(Name="State")]
-        public string State { get { return _taskApi != null ? _taskApi.State : null; } }
+        public virtual string State { get { return _taskApi != null ? _taskApi.State : null; } }
 
         /// <summary>
         /// Retrieve the task errors.
         /// </summary>
         [InternalDataApiName(Name="Errors", IsFilterable=false)]
-        public List<QTaskError> Errors {
+        public virtual List<QTaskError> Errors {
             get {
                 return _taskApi != null ? _taskApi.Errors : new List<QTaskError>();
             }
@@ -152,7 +152,7 @@ namespace QarnotSDK {
         /// Available only after the submission. Use UpdateStatus or UpdateStatusAsync to refresh.
         /// </summary>
         [InternalDataApiName(Name="Status", IsFilterable=false)]
-        public QTaskStatus Status {
+        public virtual QTaskStatus Status {
             get {
                 if (_taskApi == null)
                     return null;
@@ -165,14 +165,14 @@ namespace QarnotSDK {
         /// Available only after the submission.
         /// </summary>
         [InternalDataApiName(Name="CreationDate")]
-        public DateTime CreationDate { get { return _taskApi.CreationDate; } }
+        public virtual DateTime CreationDate { get { return _taskApi.CreationDate; } }
 
         /// <summary>
         /// Increased each time a new set of results is available, when snapshot or final results are ready.
         /// Use UpdateStatus or UpdateStatusAsync to refresh.
         /// </summary>
         [InternalDataApiName(Name="ResultsCount")]
-        public uint ResultsCount {
+        public virtual uint ResultsCount {
             get {
                 return _taskApi.ResultsCount;
             }
@@ -182,7 +182,7 @@ namespace QarnotSDK {
         /// The custom task tag list.
         /// </summary>
         [InternalDataApiName(Name="Tags")]
-        public List<String> Tags {
+        public virtual List<String> Tags {
             get {
                 return _taskApi.Tags;
             }
@@ -195,7 +195,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <returns>return all Constants</returns>
         [InternalDataApiName(Name="Constants")]
-        public Dictionary<string, string> Constants {
+        public virtual Dictionary<string, string> Constants {
             get {
                 if (_constants == null)
                     _constants = new Dictionary<string, string>();
@@ -210,7 +210,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <returns>return all Constraints</returns>
         [InternalDataApiName(Name="Constraints")]
-        public Dictionary<string, string> Constraints {
+        public virtual Dictionary<string, string> Constraints {
             get {
                 if (_constraints == null)
                     _constraints = new Dictionary<string, string>();
@@ -222,7 +222,7 @@ namespace QarnotSDK {
         /// Allow the automatic resize of the pool
         /// </summary>
         [InternalDataApiName(Name="Dependencies.DependsOn")]
-        public List<Guid> DependsOn {
+        public virtual List<Guid> DependsOn {
             get
             {
                 if (_taskApi.Dependencies == null || _taskApi.Dependencies.DependsOn.IsNullOrEmpty())
@@ -242,7 +242,7 @@ namespace QarnotSDK {
         /// Once the task is running, use the SnapshotPeriodic method to update.
         /// </summary>
         [InternalDataApiName(Name="SnapshotInterval")]
-        public int SnapshotInterval {
+        public virtual int SnapshotInterval {
             get {
                 return _taskApi.SnapshotInterval;
             }
@@ -252,33 +252,33 @@ namespace QarnotSDK {
         /// The pool id where the task is running or default Guid if the task doesn't belong to a pool.
         /// </summary>
         [InternalDataApiName(Name="PoolUuid")]
-        public Guid PoolUuid { get { return _taskApi.PoolUuid.IsNullOrEmpty() ? Guid.Empty : new Guid(_taskApi.PoolUuid); } }
+        public virtual Guid PoolUuid { get { return _taskApi.PoolUuid.IsNullOrEmpty() ? Guid.Empty : new Guid(_taskApi.PoolUuid); } }
 
         /// <summary>
         /// The pool where the task is running or null if the task doesn't belong to a pool.
         /// </summary>
         [InternalDataApiName(IsFilterable=false, IsSelectable=false)]
-        public QPool Pool { get { return (_taskApi.PoolUuid.IsNullOrEmpty() || _taskApi.PoolUuid == Guid.Empty.ToString()) ? null : new QPool(_api, new Guid(_taskApi.PoolUuid)); } }
+        public virtual QPool Pool { get { return (_taskApi.PoolUuid.IsNullOrEmpty() || _taskApi.PoolUuid == Guid.Empty.ToString()) ? null : new QPool(_api, new Guid(_taskApi.PoolUuid)); } }
 
 
         /// <summary>
         /// The job id where the task is running or default Guid if the task is not attached to a job.
         /// </summary>
         [InternalDataApiName(Name="JobUuid")]
-        public Guid JobUuid { get { return _taskApi.JobUuid.IsNullOrEmpty() ? Guid.Empty : new Guid(_taskApi.JobUuid); } }
+        public virtual Guid JobUuid { get { return _taskApi.JobUuid.IsNullOrEmpty() ? Guid.Empty : new Guid(_taskApi.JobUuid); } }
 
         /// <summary>
         /// The job the task is attached to or null if the task isn't attached to a job.
         /// </summary>
         [InternalDataApiName(IsFilterable=false, IsSelectable=false)]
-        public QJob Job { get { return (_taskApi.JobUuid.IsNullOrEmpty() || _taskApi.JobUuid == Guid.Empty.ToString()) ? null : new QJob(_api, new Guid(_taskApi.JobUuid)); } }
+        public virtual QJob Job { get { return (_taskApi.JobUuid.IsNullOrEmpty() || _taskApi.JobUuid == Guid.Empty.ToString()) ? null : new QJob(_api, new Guid(_taskApi.JobUuid)); } }
 
         /// <summary>
         /// True if the task is completed or false if the task is still running or deploying.
         /// Use UpdateStatus or UpdateStatusAsync to refresh.
         /// </summary>
         [InternalDataApiName(IsFilterable=false, IsSelectable=false)]
-        public bool Completed {
+        public virtual bool Completed {
             get {
                 return State == QTaskStates.Success || State == QTaskStates.Failure || State == QTaskStates.Cancelled;
             }
@@ -289,7 +289,7 @@ namespace QarnotSDK {
         /// Use UpdateStatus or UpdateStatusAsync to refresh.
         /// </summary>
         [InternalDataApiName(IsFilterable=false, IsSelectable=false)]
-        public bool Executing {
+        public virtual bool Executing {
             get {
                 return State == QTaskStates.PartiallyExecuting || State == QTaskStates.FullyExecuting;
             }
@@ -299,7 +299,7 @@ namespace QarnotSDK {
         /// How many times this task have to run.
         /// </summary>
         [InternalDataApiName(Name="InstanceCount")]
-        public uint InstanceCount {
+        public virtual uint InstanceCount {
             get {
                 if (_advancedRange == null) return _taskApi.InstanceCount;
                 else return _advancedRange.Count;
@@ -311,7 +311,7 @@ namespace QarnotSDK {
         /// Must be set before the submission.
         /// </summary>
         [InternalDataApiName(Name="ResultsWhitelist")]
-        public string ResultsWhitelist {
+        public virtual string ResultsWhitelist {
             get {
                 return _taskApi.ResultsWhitelist;
             }
@@ -323,7 +323,7 @@ namespace QarnotSDK {
         /// Must be set before the submission.
         /// </summary>
         [InternalDataApiName(Name="ResultsBlacklist")]
-        public string ResultsBlacklist {
+        public virtual string ResultsBlacklist {
             get {
                 return _taskApi.ResultsBlacklist;
             }
@@ -336,7 +336,7 @@ namespace QarnotSDK {
         /// Must be set before the submission.
         /// </summary>
         [InternalDataApiName(Name="SnapshotWhitelist")]
-        public string SnapshotWhitelist {
+        public virtual string SnapshotWhitelist {
             get {
                 return _taskApi.SnapshotWhitelist;
             }
@@ -348,7 +348,7 @@ namespace QarnotSDK {
         /// Must be set before the submission.
         /// </summary>
         [InternalDataApiName(Name="SnapshotBlacklist")]
-        public string SnapshotBlacklist {
+        public virtual string SnapshotBlacklist {
             get {
                 return _taskApi.SnapshotBlacklist;
             }
@@ -494,7 +494,7 @@ namespace QarnotSDK {
         /// The task need to be in a job with depencendies activated
         /// </summary>
         /// <param name="guids">list of task guids this task depends on.</param>
-        public void SetTaskDependencies(params Guid [] guids)
+        public virtual void SetTaskDependencies(params Guid [] guids)
         {
             if (_taskApi.Dependencies == null)
                 _taskApi.Dependencies = new Dependency();
@@ -506,7 +506,7 @@ namespace QarnotSDK {
         /// The task need to be in a job with depencendies activated
         /// </summary>
         /// <param name="tasks">list of task this task depends on.</param>
-        public void SetTaskDependencies(params QTask [] tasks)
+        public virtual void SetTaskDependencies(params QTask [] tasks)
         {
             if (_taskApi.Dependencies == null)
                 _taskApi.Dependencies = new Dependency();
@@ -517,7 +517,7 @@ namespace QarnotSDK {
         /// Set the a list of tags for the task.
         /// </summary>
         /// <param name="tags">Task tags.</param>
-        public void SetTags(params String [] tags) {
+        public virtual void SetTags(params String [] tags) {
             _taskApi.Tags = tags.Distinct().ToList();
         }
 
@@ -527,7 +527,7 @@ namespace QarnotSDK {
         /// <param name="name">Constant name.</param>
         /// <param name="value">Constant value.</param>
         [Obsolete("use SetConstant")]
-        public void AddConstant(string name, string value) {
+        public virtual void AddConstant(string name, string value) {
             if (_constants == null) _constants = new Dictionary<string, string>();
             _constants.Add(name, value);
         }
@@ -537,7 +537,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="name">Constant name.</param>
         /// <param name="value">Constant value. If null, the constant is not added or deleted.</param>
-        public void SetConstant(string name, string value) {
+        public virtual void SetConstant(string name, string value) {
             if (_constants == null) _constants = new Dictionary<string, string>();
             _constants.Add(name, value);
         }
@@ -547,7 +547,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="name">Constraint name.</param>
         /// <param name="value">Constraint value. If null, the constraint is not added or deleted.</param>
-        public void SetConstraint(string name, string value) {
+        public virtual void SetConstraint(string name, string value) {
             if (_constraints == null) _constraints = new Dictionary<string, string>();
             _constraints.Add(name, value);
         }
@@ -559,7 +559,7 @@ namespace QarnotSDK {
         /// <param name="taskTimeoutSeconds">Optional number of second before abort is called.</param>
         /// <param name="ct">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public async Task RunAsync(int taskTimeoutSeconds=-1, CancellationToken ct=default(CancellationToken)) {
+        public virtual async Task RunAsync(int taskTimeoutSeconds=-1, CancellationToken ct=default(CancellationToken)) {
             await SubmitAsync(null, 0, ct);
             await WaitAsync(taskTimeoutSeconds, ct);
             if (taskTimeoutSeconds > 0)
@@ -572,7 +572,7 @@ namespace QarnotSDK {
         /// <param name="taskTimeoutSeconds">Optional maximum number of second to wait for completion.</param>
         /// <param name="ct">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public async Task WaitAsync(int taskTimeoutSeconds=-1, CancellationToken ct =default(CancellationToken)) {
+        public virtual async Task WaitAsync(int taskTimeoutSeconds=-1, CancellationToken ct =default(CancellationToken)) {
             var period = TimeSpan.FromSeconds(10).Milliseconds;
             int sleepingTimeMs=0;
             var start = DateTime.Now;
@@ -597,7 +597,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public async Task CommitAsync(CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual async Task CommitAsync(CancellationToken cancellationToken = default(CancellationToken)) {
             // build the constants
             _taskApi.Constants = new List<KeyValHelper>();
             foreach(var c in _constants) { _taskApi.Constants.Add(new KeyValHelper(c.Key, c.Value)); }
@@ -619,7 +619,7 @@ namespace QarnotSDK {
         /// <param name="instanceCount">How many times the task have to run. Optional if the instance count has already been defined in the constructor, it can be set to 0.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public async Task SubmitAsync(string profile=null, uint instanceCount=0, CancellationToken cancellationToken=default(CancellationToken)) {
+        public virtual async Task SubmitAsync(string profile=null, uint instanceCount=0, CancellationToken cancellationToken=default(CancellationToken)) {
             if (profile != null) _taskApi.Profile = profile;
             if (instanceCount > 0) _taskApi.InstanceCount = instanceCount;
             await SubmitAsync(cancellationToken);
@@ -633,7 +633,7 @@ namespace QarnotSDK {
         /// <param name="profile">The task profile, if not running inside a pool. Optional if the profile has already been defined in the constructor or if the task is bound to a pool, profile must be null.</param>
         /// <param name="range">Which instance ids of the task have to run. Optional if the instance count has already been defined in the constructor, it can be set to null.</param>
         /// <returns></returns>
-        public async Task SubmitAsync(string profile, AdvancedRanges range, CancellationToken cancellationToken=default(CancellationToken)) {
+        public virtual async Task SubmitAsync(string profile, AdvancedRanges range, CancellationToken cancellationToken=default(CancellationToken)) {
             if (profile != null) _taskApi.Profile = profile;
             if (range != null) _advancedRange = range;
             _taskApi.AdvancedRanges = _advancedRange.ToString();
@@ -713,7 +713,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="updateQBucketsInfo">If set to true, the resources and results bucket objects are also updated.</param>
         /// <returns></returns>
-        public async Task UpdateStatusAsync(bool updateQBucketsInfo = true) {
+        public virtual async Task UpdateStatusAsync(bool updateQBucketsInfo = true) {
             await UpdateStatusAsync(default(CancellationToken), updateQBucketsInfo);
         }
 
@@ -755,7 +755,7 @@ namespace QarnotSDK {
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <param name="updateQBucketsInfo">If set to true, the resources and results bucket objects are also updated.</param>
         /// <returns></returns>
-        public async Task UpdateStatusAsync(CancellationToken cancellationToken, bool updateQBucketsInfo = true) {
+        public virtual async Task UpdateStatusAsync(CancellationToken cancellationToken, bool updateQBucketsInfo = true) {
             using (var response = await _api._client.GetAsync(_uri, cancellationToken)) // get task status
             {
                 await Utils.LookForErrorAndThrowAsync(_api._client, response);
@@ -817,7 +817,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="port">The port you want to access on the master compute node (instance 0).</param>
         /// <returns>The host and port formated in a string "host:port".</returns>
-        public string GetPublicHostForApplicationPort(UInt16 port) {
+        public virtual string GetPublicHostForApplicationPort(UInt16 port) {
             if (Status != null && Status.RunningInstancesInfo != null) {
                 var instances = Status.RunningInstancesInfo.PerRunningInstanceInfo;
                 if (instances != null && instances.Count > 0) {
@@ -838,7 +838,7 @@ namespace QarnotSDK {
         /// Enumeration on the task instance ids.
         /// Useful if an advanced range is used.
         /// </summary>
-        public IEnumerable<UInt32> Instances {
+        public virtual IEnumerable<UInt32> Instances {
             get {
                 if (_advancedRange != null) {
                     foreach (var i in _advancedRange)
@@ -858,7 +858,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="instanceId">The id of the instance.</param>
         /// <returns>The status of the instance or null if not available.</returns>
-        public QTaskInstanceStatus GetInstanceStatus(UInt32 instanceId) {
+        public virtual QTaskInstanceStatus GetInstanceStatus(UInt32 instanceId) {
             if (_taskApi.CompletedInstances != null) {
                 foreach (var j in _taskApi.CompletedInstances) {
                     if (j.InstanceId == instanceId) {
@@ -885,42 +885,42 @@ namespace QarnotSDK {
         /// <summary>
         /// Retrieve the instance state.
         /// </summary>
-        public string State { get; private set; }
+        public virtual string State { get; private set; }
 
         /// <summary>
         /// Retrieve the instance error
         /// </summary>
-        public QTaskError Error { get; private set; }
+        public virtual QTaskError Error { get; private set; }
 
         /// <summary>
         /// Retrieve the instance progress indicator
         /// </summary>
-        public float Progress { get; private set; }
+        public virtual float Progress { get; private set; }
 
         /// <summary>
         /// Instance execution time(in seconds).
         /// </summary>
-        public float ExecutionTimeSec { get; private set; }
+        public virtual float ExecutionTimeSec { get; private set; }
 
         /// <summary>
         /// Instance execution time frequency(in seconds.ghz).
         /// </summary>
-        public float ExecutionTimeGHz { get; private set; }
+        public virtual float ExecutionTimeGHz { get; private set; }
 
         /// <summary>
         /// Retrieve the instance wall time(in seconds).
         /// </summary>
-        public float WallTimeSec { get; private set; }
+        public virtual float WallTimeSec { get; private set; }
 
         /// <summary>
         /// Informations about the running instances.(see QTaskStatusPerRunningInstanceInfo)
         /// </summary>
-        public QTaskStatusPerRunningInstanceInfo RunningInstanceInfo {get; private set; }
+        public virtual QTaskStatusPerRunningInstanceInfo RunningInstanceInfo {get; private set; }
 
         /// <summary>
         /// Informations about completed instances (see QTaskCompletedInstance)
         /// </summary>
-        public QTaskCompletedInstance CompletedInstanceInfo { get; private set; }
+        public virtual QTaskCompletedInstance CompletedInstanceInfo { get; private set; }
 
         internal QTaskInstanceStatus(QTaskStatusPerRunningInstanceInfo i) {
             // Phase is lowercase, convert the first letter to uppercase

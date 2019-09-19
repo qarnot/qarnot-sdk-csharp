@@ -42,48 +42,48 @@ namespace QarnotSDK {
         /// <summary>
         /// Set the Connection object in read-only mode, useful for monitoring purpose.
         /// </summary>
-        public bool IsReadOnly { get; set; }
+        public  virtual bool IsReadOnly { get; set; }
         /// <summary>
         /// The token used for authentication against the Api.
         /// This token is available at https://account.qarnot.com
         /// </summary>
-        public string Token { get; }
+        public  virtual string Token { get; }
         /// <summary>
         /// Api Uri.
         /// The default ClusterUri is https://api.qarnot.com
         /// </summary>
-        public Uri Uri { get; }
+        public  virtual Uri Uri { get; }
         /// <summary>
         /// The Uri where the buckets are stored.
         /// Note: if null or empty, this value is auto filled when calling
         ///  any Bucket method for the first time.
         /// </summary>
-        public Uri StorageUri { get; set; }
+        public virtual Uri StorageUri { get; set; }
         /// <summary>
         /// The access key to your buckets.
         /// By default, this is your account email.
         /// Note: if null or empty, this value is auto filled when calling
         ///  any Bucket method for the first time.
         /// </summary>
-        public string StorageAccessKey { get; set; }
+        public virtual string StorageAccessKey { get; set; }
         /// <summary>
         /// The secret key to your buckets.
         /// By default, this is your token.
         /// </summary>
-        public string StorageSecretKey { get; set; }
+        public virtual string StorageSecretKey { get; set; }
         /// <summary>
         /// The upload part size for your bucket's object.
         /// If set to 0, the object are not uploaded by part.
         /// Must be greater than "5 * 1024 * 1024" (5MB).
         /// </summary>
-        public long StorageUploadPartSize { get; set; } = 8 * 1024 * 1024;
+        public virtual long StorageUploadPartSize { get; set; } = 8 * 1024 * 1024;
         /// <summary>
         /// List of part sizes to try to compute the bucket object eTag.
         /// The default element is "0" which means "try to guess the part sizes"
         /// If you know the part size or have a part size not multiple of 1MB, you can
         /// override this list to improve performances.
         /// </summary>
-        public List<long> StorageAvailablePartSizes {
+        public virtual List<long> StorageAvailablePartSizes {
             get; set;
         } = new List<long>() { 0 };
 
@@ -91,13 +91,13 @@ namespace QarnotSDK {
         /// Maximum number of retries in case of transient error.
         /// Default is 3 times.
         /// </summary>
-        public int MaxRetry { get { return _retryHandler.MaxRetries; } set { _retryHandler.MaxRetries = value; } }
+        public virtual int MaxRetry { get { return _retryHandler.MaxRetries; } set { _retryHandler.MaxRetries = value; } }
 
         /// <summary>
         /// Interval between retries (in milliseconds).
         /// Default is 500 ms.
         /// </summary>
-        public int RetryInterval { get { return _retryHandler.RetryInterval; } set { _retryHandler.RetryInterval = value; } }
+        public virtual int RetryInterval { get { return _retryHandler.RetryInterval; } set { _retryHandler.RetryInterval = value; } }
 
         /// <summary>
         /// Sdk user agent: adding references to the current version to trace bugs and usages

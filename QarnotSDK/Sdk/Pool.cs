@@ -46,23 +46,23 @@ namespace QarnotSDK
         /// The pool shortname identifier. The shortname is provided by the user. It has to be unique.
         /// </summary>
         [InternalDataApiName(Name="Shortname")]
-        public string Shortname { get { return _poolApi.Shortname == null ? _poolApi.Uuid.ToString() : _poolApi.Shortname; } }
+        public virtual string Shortname { get { return _poolApi.Shortname == null ? _poolApi.Uuid.ToString() : _poolApi.Shortname; } }
         /// <summary>
         /// The pool name.
         /// </summary>
         [InternalDataApiName(Name="Name")]
-        public string Name { get { return _poolApi.Name; } }
+        public virtual string Name { get { return _poolApi.Name; } }
         /// <summary>
         /// The pool profile.
         /// </summary>
         [InternalDataApiName(Name="Profile")]
-        public string Profile { get { return _poolApi.Profile; } }
+        public virtual string Profile { get { return _poolApi.Profile; } }
         /// <summary>
         /// Qarnot resources buckets bound to this pool.
         /// Can be set only before the pool start.
         /// </summary>
         [InternalDataApiName(IsFilterable=false, IsSelectable=false)]
-        public List<QAbstractStorage> Resources {
+        public virtual List<QAbstractStorage> Resources {
             get {
                 return _resources.Select(bucket => (QAbstractStorage) bucket).ToList();
             }
@@ -78,7 +78,7 @@ namespace QarnotSDK
         /// Can be set only before the pool start.
         /// </summary>
         [InternalDataApiName(Name="ResourceBuckets", IsFilterable=false)]
-        public IEnumerable<QBucket> ResourcesBuckets {
+        public virtual IEnumerable<QBucket> ResourcesBuckets {
             get {
                 return _resources;
             }
@@ -89,13 +89,13 @@ namespace QarnotSDK
         /// Available only after the pool is started. Use UpdateStatus or UpdateStatusAsync to refresh.
         /// </summary>
         [InternalDataApiName(Name="State")]
-        public string State { get { return _poolApi != null ? _poolApi.State : null; } }
+        public virtual string State { get { return _poolApi != null ? _poolApi.State : null; } }
 
         /// <summary>
         /// Retrieve the pool errors.
         /// </summary>
         [InternalDataApiName(Name="Errors", IsFilterable=false)]
-        public List<QPoolError> Errors {
+        public virtual List<QPoolError> Errors {
             get {
                 return _poolApi != null ? _poolApi.Errors : new List<QPoolError>();
             }
@@ -106,7 +106,7 @@ namespace QarnotSDK
         /// Available only after the pool is started. Use UpdateStatus or UpdateStatusAsync to refresh.
         /// </summary>
         [InternalDataApiName(Name="Status", IsFilterable=false)]
-        public QPoolStatus Status {
+        public virtual QPoolStatus Status {
             get {
                 return _poolApi != null ? _poolApi.Status : null;
             }
@@ -117,17 +117,17 @@ namespace QarnotSDK
         /// Available only after the pool is started.
         /// </summary>
         [InternalDataApiName(Name="CreationDate")]
-        public DateTime CreationDate { get { return _poolApi.CreationDate; } }
+        public virtual DateTime CreationDate { get { return _poolApi.CreationDate; } }
         /// <summary>
         /// How many nodes this pool has.
         /// </summary>
         [InternalDataApiName(Name="InstanceCount")]
-        public uint NodeCount { get { return _poolApi.InstanceCount; } }
+        public virtual uint NodeCount { get { return _poolApi.InstanceCount; } }
         /// <summary>
         /// The custom pool tag list.
         /// </summary>
         [InternalDataApiName(Name="Tags")]
-        public List<String> Tags {
+        public virtual List<String> Tags {
             get {
                 return _poolApi.Tags;
             }
@@ -139,7 +139,7 @@ namespace QarnotSDK
         /// The Pool constants.
         /// </summary>
         [InternalDataApiName(Name="Constants", IsFilterable=false)]
-        public Dictionary<string, string> Constants {
+        public virtual Dictionary<string, string> Constants {
             get {
                 if (_constants == null)
                     _constants = new Dictionary<string, string>();
@@ -153,7 +153,7 @@ namespace QarnotSDK
         /// The pool constraints.
         /// </summary>
         [InternalDataApiName(Name="Constraints", IsFilterable=false)]
-        public Dictionary<string, string> Constraints {
+        public virtual Dictionary<string, string> Constraints {
             get {
                 if (_constraints == null)
                     _constraints = new Dictionary<string, string>();
@@ -166,7 +166,7 @@ namespace QarnotSDK
         /// Allow the automatic resize of the pool
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.IsElastic")]
-        public bool IsElastic {
+        public virtual bool IsElastic {
             get { return _poolApi.ElasticProperty.IsElastic; }
             set { _poolApi.ElasticProperty.IsElastic = value; }
         }
@@ -175,7 +175,7 @@ namespace QarnotSDK
         /// Minimum node number for the pool in elastic mode
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.MinTotalSlots")]
-        public uint ElasticMinimumTotalNodes {
+        public virtual uint ElasticMinimumTotalNodes {
             get { return _poolApi.ElasticProperty.MinTotalSlots; }
             set { _poolApi.ElasticProperty.MinTotalSlots = value; }
         }
@@ -184,7 +184,7 @@ namespace QarnotSDK
         /// Maximum node number for the pool in elastic mode
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.MaxTotalSlots")]
-        public uint ElasticMaximumTotalNodes {
+        public virtual uint ElasticMaximumTotalNodes {
             get { return _poolApi.ElasticProperty.MaxTotalSlots; }
             set { _poolApi.ElasticProperty.MaxTotalSlots = value; }
         }
@@ -193,7 +193,7 @@ namespace QarnotSDK
         /// Minimum idling node number.
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.MinIdleSlots")]
-        public uint ElasticMinimumIdlingNodes {
+        public virtual uint ElasticMinimumIdlingNodes {
             get { return _poolApi.ElasticProperty.MinIdleSlots; }
             set { _poolApi.ElasticProperty.MinIdleSlots = value; }
         }
@@ -201,7 +201,7 @@ namespace QarnotSDK
         /// <summary>
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.ResizePeriod")]
-        public uint ElasticResizePeriod {
+        public virtual uint ElasticResizePeriod {
             get { return _poolApi.ElasticProperty.ResizePeriod; }
             set { _poolApi.ElasticProperty.ResizePeriod = value; }
         }
@@ -209,7 +209,7 @@ namespace QarnotSDK
         /// <summary>
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.RampResizeFactor")]
-        public float ElasticResizeFactor {
+        public virtual float ElasticResizeFactor {
             get { return _poolApi.ElasticProperty.RampResizeFactor; }
             set { _poolApi.ElasticProperty.RampResizeFactor = value; }
         }
@@ -217,7 +217,7 @@ namespace QarnotSDK
         /// <summary>
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.MinIdleTimeSeconds")]
-        public uint ElasticMinimumIdlingTime {
+        public virtual uint ElasticMinimumIdlingTime {
             get { return _poolApi.ElasticProperty.MinIdleTimeSeconds; }
             set { _poolApi.ElasticProperty.MinIdleTimeSeconds = value; }
         }
@@ -286,7 +286,7 @@ namespace QarnotSDK
         /// Set the a list of tags for the pool.
         /// </summary>
         /// <param name="tags">Pool tags.</param>
-        public void SetTags(params String [] tags) {
+        public virtual void SetTags(params String [] tags) {
             _poolApi.Tags = tags.Distinct().ToList();
         }
 
@@ -296,7 +296,7 @@ namespace QarnotSDK
         /// <param name="key">Constant name.</param>
         /// <param name="value">Constant value.</param>
         [Obsolete("use SetConstant")]
-        public void AddConstant(string key, string value) {
+        public virtual void AddConstant(string key, string value) {
             _poolApi.Constants.Add(new KeyValHelper(key, value));
         }
 
@@ -305,7 +305,7 @@ namespace QarnotSDK
         /// </summary>
         /// <param name="name">Constant name.</param>
         /// <param name="value">Constant value. If null, the constant is not added or deleted.</param>
-        public void SetConstant(string name, string value) {
+        public virtual void SetConstant(string name, string value) {
             // First, check if the constant already exists
             var c = _poolApi.Constants.Find(x => x.Key == name);
             if (c != null) {
@@ -323,7 +323,7 @@ namespace QarnotSDK
         /// </summary>
         /// <param name="name">Constraint name.</param>
         /// <param name="value">Constraint value. If null, the constraint is not added or deleted.</param>
-        public void SetConstraint(string name, string value) {
+        public virtual void SetConstraint(string name, string value) {
             // First, check if the constraints already exists
             var c = _poolApi.Constraints.Find(x => x.Key == name);
             if (c != null) {
@@ -341,7 +341,7 @@ namespace QarnotSDK
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public async Task CommitAsync(CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual async Task CommitAsync(CancellationToken cancellationToken = default(CancellationToken)) {
             // build the constants
             _poolApi.Constants = new List<KeyValHelper>();
             foreach(var c in _constants) { _poolApi.Constants.Add(new KeyValHelper(c.Key, c.Value)); }
@@ -360,7 +360,7 @@ namespace QarnotSDK
         /// <param name="profile">The pool profile. Optional if it has already been defined in the constructor.</param>
         /// <param name="initialNodeCount">The number of compute nodes this pool will have. Optional if it has already been defined in the constructor.</param>
         /// <returns></returns>
-        public async Task StartAsync(string profile = null, uint initialNodeCount = 0) {
+        public virtual async Task StartAsync(string profile = null, uint initialNodeCount = 0) {
             await StartAsync(default(CancellationToken), profile, initialNodeCount);
         }
 
@@ -371,7 +371,7 @@ namespace QarnotSDK
         /// <param name="profile">The pool profile. Optional if it has already been defined in the constructor.</param>
         /// <param name="initialNodeCount">The number of compute nodes this pool will have. Optional if it has already been defined in the constructor.</param>
         /// <returns></returns>
-        public async Task StartAsync(CancellationToken cancellationToken, string profile = null, uint initialNodeCount = 0) {
+        public virtual async Task StartAsync(CancellationToken cancellationToken, string profile = null, uint initialNodeCount = 0) {
             // build the constants
             _poolApi.Constants = new List<KeyValHelper>();
             foreach(var c in _constants) { _poolApi.Constants.Add(new KeyValHelper(c.Key, c.Value)); }
@@ -417,7 +417,7 @@ namespace QarnotSDK
         /// </summary>
         /// <param name="updateQBucketsInfo">If set to true, the resources qbucket objects are also updated.</param>
         /// <returns></returns>
-        public async Task UpdateStatusAsync(bool updateQBucketsInfo = false) {
+        public virtual async Task UpdateStatusAsync(bool updateQBucketsInfo = false) {
             await UpdateStatusAsync(default(CancellationToken), updateQBucketsInfo);
         }
 
@@ -450,7 +450,7 @@ namespace QarnotSDK
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <param name="updateQBucketsInfo">If set to true, the resources bucket objects are also updated.</param>
         /// <returns></returns>
-        public async Task UpdateStatusAsync(CancellationToken cancellationToken, bool updateQBucketsInfo = false) {
+        public virtual async Task UpdateStatusAsync(CancellationToken cancellationToken, bool updateQBucketsInfo = false) {
             using (var response = await _api._client.GetAsync(_uri, cancellationToken)) // get pool status
             {
                 await Utils.LookForErrorAndThrowAsync(_api._client, response);
@@ -496,7 +496,7 @@ namespace QarnotSDK
         /// </summary>
         /// <param name="port">The port you want to access on the master compute node (node 0).</param>
         /// <returns>The host and port formated in a string "host:port".</returns>
-        public string GetPublicHostForApplicationPort(UInt16 port) {
+        public virtual string GetPublicHostForApplicationPort(UInt16 port) {
             if (Status != null && Status.RunningInstancesInfo != null) {
                 var instances = Status.RunningInstancesInfo.PerRunningInstanceInfo;
                 if (instances != null && instances.Count > 0) {
@@ -521,7 +521,7 @@ namespace QarnotSDK
         /// </summary>
         /// <param name="nodeId">The id of the node.</param>
         /// <returns>The status of the node or null if not available.</returns>
-        public QPoolNodeStatus GetNodeStatus(UInt32 nodeId) {
+        public virtual QPoolNodeStatus GetNodeStatus(UInt32 nodeId) {
             if (_poolApi.Status != null && _poolApi.Status.RunningInstancesInfo != null && _poolApi.Status.RunningInstancesInfo.PerRunningInstanceInfo != null) {
                 foreach (var j in _poolApi.Status.RunningInstancesInfo.PerRunningInstanceInfo) {
                     if (j.InstanceId == nodeId) {
@@ -541,37 +541,37 @@ namespace QarnotSDK
         /// <summary>
         /// Retrieve the instance state.
         /// </summary>
-        public string State { get; set; }
+        public virtual string State { get; set; }
 
         /// <summary>
         /// Retrieve the instance error
         /// </summary>
-        public QPoolError Error { get; set; }
+        public virtual QPoolError Error { get; set; }
 
         /// <summary>
         /// Retrieve the instance progress indicator
         /// </summary>
-        public float Progress { get; set; }
+        public virtual float Progress { get; set; }
 
         /// <summary>
         /// Instance execution time(in seconds).
         /// </summary>
-        public float ExecutionTimeSec { get; set; }
+        public virtual float ExecutionTimeSec { get; set; }
 
         /// <summary>
         /// Instance execution time frequency(in seconds.ghz).
         /// </summary>
-        public float ExecutionTimeGHz { get; set; }
+        public virtual float ExecutionTimeGHz { get; set; }
 
         /// <summary>
         /// Retrieve the instance wall time(in seconds).
         /// </summary>
-        public float WallTimeSec { get; set; }
+        public virtual float WallTimeSec { get; set; }
 
         /// <summary>
         /// Informations about running instances (see QPoolStatusPerRunningInstanceInfo)
         /// </summary>
-        public QPoolStatusPerRunningInstanceInfo RunningNodeInfo { get; private set; }
+        public virtual QPoolStatusPerRunningInstanceInfo RunningNodeInfo { get; private set; }
 
         internal QPoolNodeStatus(QPoolStatusPerRunningInstanceInfo i) {
             // Phase is lowercase, convert the first letter to uppercase

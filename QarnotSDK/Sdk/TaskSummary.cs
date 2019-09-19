@@ -19,38 +19,38 @@ namespace QarnotSDK {
         /// <summary>
         /// The task shortname identifier. The shortname is provided by the user. It has to be unique.
         /// </summary>
-        public string Shortname { get { return _taskApi.Shortname == null ? _taskApi.Uuid.ToString() : _taskApi.Shortname; } }
+        public virtual string Shortname { get { return _taskApi.Shortname == null ? _taskApi.Uuid.ToString() : _taskApi.Shortname; } }
         /// <summary>
         /// The task name.
         /// </summary>
-        public string Name { get { return _taskApi.Name; } }
+        public virtual string Name { get { return _taskApi.Name; } }
         /// <summary>
         /// The task profile.
         /// </summary>
-        public string Profile { get { return _taskApi.Profile; } }
+        public virtual string Profile { get { return _taskApi.Profile; } }
 
 
         /// <summary>
         /// Retrieve the task state (see QTaskStates).
         /// Available only after the submission.
         /// </summary>
-        public string State { get { return _taskApi != null ? _taskApi.State : null; } }
+        public virtual string State { get { return _taskApi != null ? _taskApi.State : null; } }
 
         /// <summary>
         /// The task creation date.
         /// Available only after the submission.
         /// </summary>
-        public DateTime CreationDate { get { return _taskApi.CreationDate; } }
+        public virtual DateTime CreationDate { get { return _taskApi.CreationDate; } }
 
         /// <summary>
         /// The pool where the task is running or null if the task doesn't belong to a pool.
         /// </summary>
-        public QPool Pool { get { return (_taskApi.PoolUuid == null || _taskApi.PoolUuid == Guid.Empty.ToString()) ? null : new QPool(_api, new Guid(_taskApi.PoolUuid)); } }
+        public virtual QPool Pool { get { return (_taskApi.PoolUuid == null || _taskApi.PoolUuid == Guid.Empty.ToString()) ? null : new QPool(_api, new Guid(_taskApi.PoolUuid)); } }
 
         /// <summary>
         /// True if the task is completed or false if the task is still running or deploying.
         /// </summary>
-        public bool Completed {
+        public virtual bool Completed {
             get {
                 return State == QTaskStates.Success || State == QTaskStates.Failure || State == QTaskStates.Cancelled;
             }
@@ -59,7 +59,7 @@ namespace QarnotSDK {
         /// <summary>
         /// True if the task is executing (PartiallyExecuting or FullyExecuting) or false if the task is in another state.
         /// </summary>
-        public bool Executing {
+        public virtual bool Executing {
             get {
                 return State == QTaskStates.PartiallyExecuting || State == QTaskStates.FullyExecuting;
             }
@@ -68,7 +68,7 @@ namespace QarnotSDK {
         /// <summary>
         /// How many times this task have to run.
         /// </summary>
-        public uint InstanceCount {
+        public virtual uint InstanceCount {
             get {
                 if (_advancedRange == null) return _taskApi.InstanceCount;
                 else return _advancedRange.Count;
@@ -130,7 +130,7 @@ namespace QarnotSDK {
         /// Enumeration on the task instance ids.
         /// Useful if an advanced range is used.
         /// </summary>
-        public IEnumerable<UInt32> Instances {
+        public virtual IEnumerable<UInt32> Instances {
             get {
                 if (_advancedRange != null) {
                     foreach (var i in _advancedRange)
@@ -147,7 +147,7 @@ namespace QarnotSDK {
         /// Get The Full Task from this task summary.
         /// <param name="ct">Optional token to cancel the request.</param>
         /// </summary>
-        public async Task<QTask> GetFullQTaskAsync(CancellationToken ct = default(CancellationToken)) {
+        public virtual async Task<QTask> GetFullQTaskAsync(CancellationToken ct = default(CancellationToken)) {
             using (var response = await _api._client.GetAsync(_uri, ct))
             {
                 await Utils.LookForErrorAndThrowAsync(_api._client, response);
