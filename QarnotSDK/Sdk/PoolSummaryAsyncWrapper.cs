@@ -17,7 +17,7 @@ namespace QarnotSDK {
         /// Get The Full Pool from this task summary.
         /// <param name="ct">Optional token to cancel the request.</param>
         /// </summary>
-        public QPool GetFullQPool(CancellationToken ct = default(CancellationToken)) {
+        public virtual QPool GetFullQPool(CancellationToken ct = default(CancellationToken)) {
             try {
                 return GetFullQPoolAsync(ct).Result;
             } catch (AggregateException ex) {

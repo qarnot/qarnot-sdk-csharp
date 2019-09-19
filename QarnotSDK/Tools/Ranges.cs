@@ -69,14 +69,14 @@ namespace QarnotSDK {
         /// <summary>
         /// True if this range is empty.
         /// </summary>
-        public bool Empty {
+        public virtual bool Empty {
             get { return Count == 0; }
         }
 
         /// <summary>
         /// Returns the number of instance ids in this range.
         /// </summary>
-        public UInt32 Count {
+        public virtual UInt32 Count {
             get {
                 UInt32 count = 0;
                 foreach (var r in _ranges) {

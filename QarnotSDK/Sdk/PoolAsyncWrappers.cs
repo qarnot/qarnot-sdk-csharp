@@ -14,7 +14,7 @@ namespace QarnotSDK
         /// <param name="profile">The pool profile. Optional if it has already been defined in the constructor.</param>
         /// <param name="initialNodeCount">The number of compute nodes this pool will have. Optional if it has already been defined in the constructor.</param>
         /// <returns></returns>
-        public void Start(string profile = null, uint initialNodeCount = 0) {
+        public virtual void Start(string profile = null, uint initialNodeCount = 0) {
             try {
                 StartAsync(profile, initialNodeCount).Wait();
             } catch (AggregateException ex) {
@@ -29,7 +29,7 @@ namespace QarnotSDK
         /// <param name="profile">The pool profile. Optional if it has already been defined in the constructor.</param>
         /// <param name="initialNodeCount">The number of compute nodes this pool will have. Optional if it has already been defined in the constructor.</param>
         /// <returns></returns>
-        public void Start(CancellationToken cancellationToken, string profile = null, uint initialNodeCount = 0) {
+        public virtual void Start(CancellationToken cancellationToken, string profile = null, uint initialNodeCount = 0) {
             try {
                 StartAsync(cancellationToken, profile, initialNodeCount).Wait();
             } catch (AggregateException ex) {
@@ -43,7 +43,7 @@ namespace QarnotSDK
         /// </summary>
         /// <param name="updateQBucketsInfo">If set to true, the resources bucket objects are also updated.</param>
         /// <returns></returns>
-        public void UpdateStatus(bool updateQBucketsInfo = false) {
+        public virtual void UpdateStatus(bool updateQBucketsInfo = false) {
             try {
                 UpdateStatusAsync(updateQBucketsInfo).Wait();
             } catch (AggregateException ex) {
@@ -57,7 +57,7 @@ namespace QarnotSDK
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <param name="updateQBucketsInfo">If set to true, the resources bucket objects are also updated.</param>
         /// <returns></returns>
-        public void UpdateStatus(CancellationToken cancellationToken, bool updateQBucketsInfo = false) {
+        public virtual void UpdateStatus(CancellationToken cancellationToken, bool updateQBucketsInfo = false) {
             try {
                 UpdateStatusAsync(cancellationToken, updateQBucketsInfo).Wait();
             } catch (AggregateException ex) {
@@ -85,7 +85,7 @@ namespace QarnotSDK
         /// <summary>
         /// Commit the local pool changes.
         /// </summary>
-        public void Commit(CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual void Commit(CancellationToken cancellationToken = default(CancellationToken)) {
            try {
                 CommitAsync().Wait();
             } catch (AggregateException ex) {

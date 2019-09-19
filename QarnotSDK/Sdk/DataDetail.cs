@@ -14,9 +14,9 @@ namespace QarnotSDK
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
     internal class InternalDataApiName : Attribute
     {
-        public string Name { get; set; } = null;
-        public bool IsFilterable { get; set; } = true;
-        public bool IsSelectable { get; set; } = true;
+        public  virtual string Name { get; set; } = null;
+        public virtual bool IsFilterable { get; set; } = true;
+        public virtual bool IsSelectable { get; set; } = true;
         public InternalDataApiName()
         { }
     }

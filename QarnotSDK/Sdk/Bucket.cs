@@ -39,13 +39,13 @@ namespace QarnotSDK {
         /// <summary>
         /// Last modification date of this entry.
         /// </summary>
-        public DateTime LastModified { get; protected set; }
+        public  virtual DateTime LastModified { get; protected set; }
 
         /// <summary>
         /// Size of one part if the file was uploaded in multi-part.
         /// Note: this value is filled only after a successful call to EqualsLocalFileDigest or EqualsLocalFileDigestAsync.
         /// </summary>
-        public long PartSize { get; private set; }
+        public  virtual long PartSize { get; private set; }
 
         /// <summary>
         /// Computes the digest of a local file and compares it to the digest of this bucket object.

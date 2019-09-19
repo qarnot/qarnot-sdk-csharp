@@ -18,7 +18,7 @@ namespace QarnotSDK {
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
         [Obsolete("use Close")]
-        public void Stop(CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual void Stop(CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 StopAsync(cancellationToken).Wait();
             } catch (AggregateException ex) {

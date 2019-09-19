@@ -17,7 +17,7 @@ namespace QarnotSDK {
         /// Get The Full Task from this task summary.
         /// <param name="ct">Optional token to cancel the request.</param>
         /// </summary>
-        public QTask GetFullQTask(CancellationToken ct = default(CancellationToken)) {
+        public virtual QTask GetFullQTask(CancellationToken ct = default(CancellationToken)) {
             try {
                 return GetFullQTaskAsync(ct).Result;
             } catch (AggregateException ex) {

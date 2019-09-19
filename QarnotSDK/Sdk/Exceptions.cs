@@ -9,7 +9,7 @@ namespace QarnotSDK
         /// <summary>
         /// Could contain extra information to help debugging.
         /// </summary>
-        public object DebugHelper { get; private set; }
+        public  virtual object DebugHelper { get; private set; }
 
         internal QarnotApiException(string error, object debugObject = null) : base(error) {
             DebugHelper = debugObject;
