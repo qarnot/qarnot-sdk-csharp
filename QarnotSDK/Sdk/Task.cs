@@ -536,20 +536,42 @@ namespace QarnotSDK {
         /// Set a constant. If the constant already exists, it is replaced (or removed if value is null).
         /// </summary>
         /// <param name="name">Constant name.</param>
-        /// <param name="value">Constant value. If null, the constant is not added or deleted.</param>
+        /// <param name="value">Constant value. If null, the constant is deleted.</param>
         public virtual void SetConstant(string name, string value) {
-            if (_constants == null) _constants = new Dictionary<string, string>();
-            _constants.Add(name, value);
+            if (_constants == null)
+            {
+                _constants = new Dictionary<string, string>();
+            }
+
+            if (value != null)
+            {
+                _constants[name] = value;
+            }
+            else
+            {
+                _constants.Remove(name);
+            }
         }
 
         /// <summary>
         /// Set a constraint. If the constraint already exists, it is replaced (or removed if value is null).
         /// </summary>
         /// <param name="name">Constraint name.</param>
-        /// <param name="value">Constraint value. If null, the constraint is not added or deleted.</param>
+        /// <param name="value">Constraint value. If null, the constraint is deleted.</param>
         public virtual void SetConstraint(string name, string value) {
-            if (_constraints == null) _constraints = new Dictionary<string, string>();
-            _constraints.Add(name, value);
+            if (_constraints == null)
+            {
+                _constraints = new Dictionary<string, string>();
+            }
+
+            if (value == null)
+            {
+                _constraints.Remove(name);
+            }
+            else
+            {
+                _constraints[name] = value;
+            }
         }
 
 
@@ -557,13 +579,22 @@ namespace QarnotSDK {
         /// Run this task.
         /// </summary>
         /// <param name="taskTimeoutSeconds">Optional number of second before abort is called.</param>
+        /// <param name="outputDirectory">local directory for the retrieved files</param>
         /// <param name="ct">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public virtual async Task RunAsync(int taskTimeoutSeconds=-1, CancellationToken ct=default(CancellationToken)) {
+        public virtual async Task RunAsync(int taskTimeoutSeconds=-1, string outputDirectory=default, CancellationToken ct=default) {
             await SubmitAsync(null, 0, ct);
             await WaitAsync(taskTimeoutSeconds, ct);
+
             if (taskTimeoutSeconds > 0)
+            {
                 await AbortAsync(ct);
+            }
+
+            if (outputDirectory != default)
+            {
+                await DownloadResultAsync(outputDirectory, ct);
+            }
         }
 
         /// <summary>
@@ -571,17 +602,17 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="taskTimeoutSeconds">Optional maximum number of second to wait for completion.</param>
         /// <param name="ct">Optional token to cancel the request.</param>
-        /// <returns></returns>
-        public virtual async Task WaitAsync(int taskTimeoutSeconds=-1, CancellationToken ct =default(CancellationToken)) {
+        /// <returns>true if the task is completed</returns>
+        public virtual async Task<bool> WaitAsync(int taskTimeoutSeconds=-1, CancellationToken ct =default(CancellationToken)) {
             var period = TimeSpan.FromSeconds(10).Milliseconds;
-            int sleepingTimeMs=0;
+            int sleepingTimeMs;
             var start = DateTime.Now;
-            while(!Completed) {
+            while (!Completed) {
                 await UpdateStatusAsync();
                 var elasped = (DateTime.Now - start).Seconds;
 
                 // loop timeout exit condition
-                if(taskTimeoutSeconds > 0 && elasped > taskTimeoutSeconds) return;
+                if(taskTimeoutSeconds > 0 && elasped > taskTimeoutSeconds) return false;
 
                 // loop delay
                 if(taskTimeoutSeconds > 0)
@@ -590,6 +621,21 @@ namespace QarnotSDK {
                     sleepingTimeMs = period;
                 await Task.Delay(sleepingTimeMs);
             }
+            return true;
+        }
+
+        /// <summary>
+        /// Download result in the given directory
+        /// warning: Will override *output_dir* content.
+        /// </summary>
+        /// <param name="outputDirectory">local directory for the retrieved files</param>
+        /// <param name="cancellationToken">Optional token to cancel the request</param>
+        public virtual async Task DownloadResultAsync(string outputDirectory, CancellationToken cancellationToken=default) {
+            if (!Directory.Exists(outputDirectory)) {
+                Directory.CreateDirectory (outputDirectory);
+            }
+
+            await ResultsBucket?.DownloadFolderAsync(".", outputDirectory, cancellationToken);
         }
 
         /// <summary>
@@ -725,10 +771,10 @@ namespace QarnotSDK {
             else _advancedRange = null;
 
             // update constants
-            _constants = result.Constants?.ToDictionary(kv => kv.Key, kv => kv.Value) ?? new Dictionary<string, string>(); 
+            _constants = result.Constants?.ToDictionary(kv => kv.Key, kv => kv.Value) ?? new Dictionary<string, string>();
 
             // update constraints
-            _constraints = result.Constraints?.ToDictionary(kv => kv.Key, kv => kv.Value) ?? new Dictionary<string, string>(); 
+            _constraints = result.Constraints?.ToDictionary(kv => kv.Key, kv => kv.Value) ?? new Dictionary<string, string>();
 
             // update the task resources
             var newResourcesCount = 0;

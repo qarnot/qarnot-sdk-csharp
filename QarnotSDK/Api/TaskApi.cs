@@ -94,6 +94,55 @@ namespace QarnotSDK {
     }
 
     /// <summary>
+    /// Represents the execution time by cpu infos.
+    /// </summary>
+    public class QTaskStatusExecutionTimeByCpuModel {
+        /// <summary>
+        /// CPU name and Model.
+        /// </summary>
+        public string Model { get; set; }
+        /// <summary>
+        /// CPU time used in seconds.
+        /// </summary>
+        public ulong Time { get; set; }
+        /// <summary>
+        /// CPU core numbers.
+        /// </summary>
+        public uint Core { get; set; }
+
+        internal QTaskStatusExecutionTimeByCpuModel() {
+        }
+    }
+
+    /// <summary>
+    /// Represents the execution cpu ratio for each task.
+    /// </summary>
+    public class QTaskStatusExecutionTimeGhzByCpuModel
+    {
+        /// <summary>
+        /// CPU name and Model.
+        /// </summary>
+        public string Model { get; set; }
+        /// <summary>
+        /// CPU gigahertz time used in seconds.
+        /// </summary>
+        public double TimeGhz { get; set; }
+        /// <summary>
+        /// CPU core numbers.
+        /// </summary>
+        public uint Core { get; set; }
+
+        /// <summary>
+        /// CPU clock ratio.
+        /// </summary>
+        public double ClockRatio { get; set; }
+
+        internal QTaskStatusExecutionTimeGhzByCpuModel()
+        {
+        }
+    }
+
+    /// <summary>
     /// Represents the status and the statistics of a running task instance.
     /// </summary>
     public class QTaskStatusPerRunningInstanceInfo {
@@ -301,7 +350,19 @@ namespace QarnotSDK {
         /// </summary>
         public QTaskStatusRunningInstancesInfo RunningInstancesInfo { get; set; }
 
+        /// <summary>
+        /// Execution cpu times for each Running instance
+        /// </summary>
+        public List<QTaskStatusExecutionTimeByCpuModel> ExecutionTimeByCpuModel {get; set ;}
+
+        /// <summary>
+        /// Execution cpu ratio for each Running instance
+        /// </summary>
+        public List<QTaskStatusExecutionTimeGhzByCpuModel> ExecutionTimeGhzByCpuModel {get; set ;}
+
         internal QTaskStatus() {
+            ExecutionTimeByCpuModel = new List<QTaskStatusExecutionTimeByCpuModel>();
+            ExecutionTimeGhzByCpuModel = new List<QTaskStatusExecutionTimeGhzByCpuModel>();
         }
     }
 

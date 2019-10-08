@@ -183,6 +183,57 @@ namespace QarnotSDK {
     }
 
     /// <summary>
+    /// Represents the execution time by cpu infos.
+    /// </summary>
+    public class QPoolStatusExecutionTimeByCpuModel
+    {
+        /// <summary>
+        /// CPU name and Model.
+        /// </summary>
+        public string Model { get; set; }
+        /// <summary>
+        /// CPU time used in seconds.
+        /// </summary>
+        public double Time { get; set; }
+        /// <summary>
+        /// CPU core numbers.
+        /// </summary>
+        public uint Core { get; set; }
+
+        internal QPoolStatusExecutionTimeByCpuModel()
+        {
+        }
+    }
+
+    /// <summary>
+    /// Represents the execution cpu ratio for each task.
+    /// </summary>
+    public class QPoolStatusExecutionTimeGhzByCpuModel
+    {
+        /// <summary>
+        /// CPU name and Model.
+        /// </summary>
+        public string Model { get; set; }
+        /// <summary>
+        /// CPU gigahertz time used in seconds.
+        /// </summary>
+        public double TimeGhz { get; set; }
+        /// <summary>
+        /// CPU core numbers.
+        /// </summary>
+        public uint Core { get; set; }
+
+        /// <summary>
+        /// CPU clock ratio.
+        /// </summary>
+        public double ClockRatio { get; set; }
+
+        internal QPoolStatusExecutionTimeGhzByCpuModel()
+        {
+        }
+    }
+
+    /// <summary>
     /// Represents the statistics of a running pool.
     /// </summary>
     public class QPoolStatusRunningInstancesInfo {
@@ -304,7 +355,19 @@ namespace QarnotSDK {
         /// </summary>
         public QPoolStatusRunningInstancesInfo RunningInstancesInfo { get; set; }
 
+        /// <summary>
+        /// Execution cpu times for each Running instance
+        /// </summary>
+        public List<QPoolStatusExecutionTimeByCpuModel> ExecutionTimeByCpuModel { get; set; }
+
+        /// <summary>
+        /// Execution cpu ratio for each Running instance
+        /// </summary>
+        public List<QPoolStatusExecutionTimeGhzByCpuModel> ExecutionTimeGhzByCpuModel { get; set; }
+
         internal QPoolStatus() {
+            ExecutionTimeByCpuModel = new List<QPoolStatusExecutionTimeByCpuModel>();
+            ExecutionTimeGhzByCpuModel = new List<QPoolStatusExecutionTimeGhzByCpuModel>();
         }
     }
 
