@@ -60,6 +60,11 @@ namespace QarnotSDK {
         /// </summary>
         public virtual Uri StorageUri { get; set; }
         /// <summary>
+        /// Boolean to force all requests to the storage service to use a path style
+        /// instead of a virtual host.
+        /// </summary>
+        public virtual bool ForceStoragePathStyle { get; set; }
+        /// <summary>
         /// The access key to your buckets.
         /// By default, this is your account email.
         /// Note: if null or empty, this value is auto filled when calling
@@ -113,8 +118,9 @@ namespace QarnotSDK {
         /// <param name="token">The Api token available at https://account.qarnot.com </param>
         /// <param name="httpClientHandler">An optional HttpClientHandler if you need to setup a proxy for example.</param>
         /// <param name="retryHandler">An optional IRetryHandler if you need to setup retry for transient error (default to exponential).</param>
-        public Connection(string token, HttpClientHandler httpClientHandler = null, IRetryHandler retryHandler = null)
-            : this("https://api.qarnot.com", token, httpClientHandler, retryHandler) {
+        /// <param name="forceStoragePathStyle">An optional forceStoragePathStyle to force path style for request to storage.</param>
+        public Connection(string token, HttpClientHandler httpClientHandler = null, IRetryHandler retryHandler = null, bool forceStoragePathStyle = false)
+            : this("https://api.qarnot.com", token, httpClientHandler, retryHandler, forceStoragePathStyle) {
         }
 
         /// <summary>
@@ -123,9 +129,10 @@ namespace QarnotSDK {
         /// <param name="uri">Api Uri, should be https://api.qarnot.com </param>
         /// <param name="token">The Api token available at https://account.qarnot.com </param>
         /// <param name="httpClientHandler">An optional HttpClientHandler if you need to setup a proxy for example.</param>
-        /// <param name="retryHandler">An optional IRetryHandler if you need to setup retry for transient error (default to exponential).</param> 
-        public Connection(string uri, string token, HttpClientHandler httpClientHandler = null, IRetryHandler retryHandler = null)
-            : this(uri, null, token, httpClientHandler, retryHandler) {
+        /// <param name="retryHandler">An optional IRetryHandler if you need to setup retry for transient error (default to exponential).</param>
+        /// <param name="forceStoragePathStyle">An optional forceStoragePathStyle to force path style for request to storage.</param>
+        public Connection(string uri, string token, HttpClientHandler httpClientHandler = null, IRetryHandler retryHandler = null, bool forceStoragePathStyle = false)
+            : this(uri, null, token, httpClientHandler, retryHandler, forceStoragePathStyle) {
         }
 
         /// <summary>
@@ -137,9 +144,11 @@ namespace QarnotSDK {
         /// <param name="token">The api token available at https://account.qarnot.com </param>
         /// <param name="httpClientHandler">An optional HttpClientHandler if you need to setup a proxy for example.</param>
         /// <param name="retryHandler">An optional IRetryHandler if you need to setup retry for transient error (default to exponential).</param>
-        public Connection(string uri, string storageUri, string token, HttpClientHandler httpClientHandler = null, IRetryHandler retryHandler = null) {
+        /// <param name="forceStoragePathStyle">An optional forceStoragePathStyle to force path style for request to storage.</param>
+        public Connection(string uri, string storageUri, string token, HttpClientHandler httpClientHandler = null, IRetryHandler retryHandler = null, bool forceStoragePathStyle = false) {
             Uri = new Uri(uri);
             if (storageUri != null) StorageUri = new Uri(storageUri);
+            ForceStoragePathStyle = forceStoragePathStyle;
             Token = token;
             StorageSecretKey = token;
             _httpClientHandler = httpClientHandler ?? new HttpClientHandler();
@@ -562,7 +571,8 @@ namespace QarnotSDK {
             var s3Config = new OverloadedS3config()
             {
                 ServiceURL = StorageUri.ToString(),
-                SignatureVersion = "2"
+                SignatureVersion = "2",
+                ForcePathStyle = ForceStoragePathStyle
             };
 
             // Setup the proxy from the HttpClientHandler
