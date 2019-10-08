@@ -57,9 +57,9 @@ namespace QarnotSDK {
         /// <param name="taskTimeoutSeconds">Optional maximum number of second to wait for completion.</param>
         /// <param name="ct">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public virtual void Wait(int taskTimeoutSeconds=-1, CancellationToken ct =default(CancellationToken)) {
+        public virtual bool Wait(int taskTimeoutSeconds=-1, CancellationToken ct =default(CancellationToken)) {
             try {
-                WaitAsync(taskTimeoutSeconds, ct).Wait();
+                return WaitAsync(taskTimeoutSeconds, ct).Result;
             } catch (AggregateException ex) {
                 throw ex.InnerException;
             }

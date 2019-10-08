@@ -572,16 +572,16 @@ namespace QarnotSDK {
         /// <param name="taskTimeoutSeconds">Optional maximum number of second to wait for completion.</param>
         /// <param name="ct">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public virtual async Task WaitAsync(int taskTimeoutSeconds=-1, CancellationToken ct =default(CancellationToken)) {
+        public virtual async Task<bool> WaitAsync(int taskTimeoutSeconds=-1, CancellationToken ct =default(CancellationToken)) {
             var period = TimeSpan.FromSeconds(10).Milliseconds;
             int sleepingTimeMs=0;
             var start = DateTime.Now;
-            while(!Completed) {
+            while (!Completed) {
                 await UpdateStatusAsync();
                 var elasped = (DateTime.Now - start).Seconds;
 
                 // loop timeout exit condition
-                if(taskTimeoutSeconds > 0 && elasped > taskTimeoutSeconds) return;
+                if(taskTimeoutSeconds > 0 && elasped > taskTimeoutSeconds) return false;
 
                 // loop delay
                 if(taskTimeoutSeconds > 0)
@@ -590,6 +590,7 @@ namespace QarnotSDK {
                     sleepingTimeMs = period;
                 await Task.Delay(sleepingTimeMs);
             }
+            return true;
         }
 
         /// <summary>
