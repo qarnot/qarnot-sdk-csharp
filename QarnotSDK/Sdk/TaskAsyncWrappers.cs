@@ -41,11 +41,12 @@ namespace QarnotSDK {
         /// Run this task.
         /// </summary>
         /// <param name="taskTimeoutSeconds">Optional number of second before abort is called.</param>
+        /// <param name="outputDirectory">local directory for the retrieved files</param>
         /// <param name="ct">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public virtual void Run(int taskTimeoutSeconds=-1, CancellationToken ct =default(CancellationToken)) {
+        public virtual void Run(int taskTimeoutSeconds=-1, string outputDirectory=default, CancellationToken ct=default) {
             try {
-                RunAsync(taskTimeoutSeconds, ct).Wait();
+                RunAsync(taskTimeoutSeconds, outputDirectory, ct).Wait();
             } catch (AggregateException ex) {
                 throw ex.InnerException;
             }
@@ -110,13 +111,28 @@ namespace QarnotSDK {
         /// <summary>
         /// Commit the local task changes.
         /// </summary>
-        public virtual void Commit(CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual void Commit(CancellationToken cancellationToken = default) {
            try {
                 CommitAsync().Wait();
             } catch (AggregateException ex) {
                 throw ex.InnerException;
             }
         }
+
+        /// <summary>
+        /// Download result in the given directory
+        /// warning: Will override *output_dir* content.
+        /// </summary>
+        /// <param name="outputDirectory">local directory for the retrieved files</param>
+        /// <param name="cancellationToken">Optional token to cancel the request</param>
+        public virtual void DownloadResult (string outputDirectory, CancellationToken cancellationToken=default) {
+            try {
+                DownloadResultAsync(outputDirectory).Wait();
+            } catch (AggregateException ex) {
+                throw ex.InnerException;
+            }
+        }
+
         #endregion
     }
 }

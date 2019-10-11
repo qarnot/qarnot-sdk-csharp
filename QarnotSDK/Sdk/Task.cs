@@ -557,13 +557,22 @@ namespace QarnotSDK {
         /// Run this task.
         /// </summary>
         /// <param name="taskTimeoutSeconds">Optional number of second before abort is called.</param>
+        /// <param name="outputDirectory">local directory for the retrieved files</param> 
         /// <param name="ct">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public virtual async Task RunAsync(int taskTimeoutSeconds=-1, CancellationToken ct=default(CancellationToken)) {
+        public virtual async Task RunAsync(int taskTimeoutSeconds=-1, string outputDirectory=default, CancellationToken ct=default) {
             await SubmitAsync(null, 0, ct);
             await WaitAsync(taskTimeoutSeconds, ct);
+
             if (taskTimeoutSeconds > 0)
+            {
                 await AbortAsync(ct);
+            }
+
+            if (outputDirectory != default)
+            {
+                await DownloadResultAsync(outputDirectory, ct);
+            }
         }
 
         /// <summary>
@@ -571,10 +580,10 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="taskTimeoutSeconds">Optional maximum number of second to wait for completion.</param>
         /// <param name="ct">Optional token to cancel the request.</param>
-        /// <returns></returns>
+        /// <returns>true if the task is completed</returns>
         public virtual async Task<bool> WaitAsync(int taskTimeoutSeconds=-1, CancellationToken ct =default(CancellationToken)) {
             var period = TimeSpan.FromSeconds(10).Milliseconds;
-            int sleepingTimeMs=0;
+            int sleepingTimeMs;
             var start = DateTime.Now;
             while (!Completed) {
                 await UpdateStatusAsync();
@@ -591,6 +600,20 @@ namespace QarnotSDK {
                 await Task.Delay(sleepingTimeMs);
             }
             return true;
+        }
+
+        /// <summary>
+        /// Download result in the given directory
+        /// warning: Will override *output_dir* content.
+        /// </summary>
+        /// <param name="outputDirectory">local directory for the retrieved files</param>
+        /// <param name="cancellationToken">Optional token to cancel the request</param>
+        public virtual async Task DownloadResultAsync(string outputDirectory, CancellationToken cancellationToken=default) {
+            if (!Directory.Exists(outputDirectory)) {
+                Directory.CreateDirectory (outputDirectory);
+            }
+
+            await ResultsBucket?.DownloadFolderAsync(".", outputDirectory, cancellationToken);
         }
 
         /// <summary>
