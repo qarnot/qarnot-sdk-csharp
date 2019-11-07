@@ -104,11 +104,11 @@ namespace QarnotSDK {
         /// <summary>
         /// CPU time used in seconds.
         /// </summary>
-        public UInt64 time { get; set; }
+        public ulong Time { get; set; }
         /// <summary>
         /// CPU core numbers.
         /// </summary>
-        public UInt32 Core { get; set; }
+        public uint Core { get; set; }
 
         internal QTaskStatusExecutionTimeByCpuModel() {
         }
@@ -126,11 +126,11 @@ namespace QarnotSDK {
         /// <summary>
         /// CPU gigahertz time used in seconds.
         /// </summary>
-        public double timeGhz { get; set; }
+        public double TimeGhz { get; set; }
         /// <summary>
         /// CPU core numbers.
         /// </summary>
-        public UInt32 Core { get; set; }
+        public uint Core { get; set; }
 
         /// <summary>
         /// CPU clock ratio.
@@ -352,12 +352,12 @@ namespace QarnotSDK {
         public QTaskStatusRunningInstancesInfo RunningInstancesInfo { get; set; }
 
         /// <summary>
-        /// Get execution cpu times for each Running instance 
+        /// Execution cpu times for each Running instance 
         /// </summary>
         public List<QTaskStatusExecutionTimeByCpuModel> ExecutionTimeByCpuModel {get; set ;}
 
         /// <summary>
-        /// Get execution cpu ratio for each Running instance 
+        /// Execution cpu ratio for each Running instance 
         /// </summary>
         public List<QTaskStatusExecutionTimeGhzByCpuModel> ExecutionTimeGhzByCpuModel {get; set ;}
 
