@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace QarnotBetaSDK {
+namespace QarnotSDK.Experimental {
     /// <summary>    
     /// Basic test class
     /// </summary>    
