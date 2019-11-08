@@ -194,7 +194,7 @@ namespace QarnotSDK {
         /// <summary>
         /// CPU time used in seconds.
         /// </summary>
-        public ulong Time { get; set; }
+        public double Time { get; set; }
         /// <summary>
         /// CPU core numbers.
         /// </summary>
