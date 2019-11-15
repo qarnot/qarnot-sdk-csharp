@@ -538,8 +538,19 @@ namespace QarnotSDK {
         /// <param name="name">Constant name.</param>
         /// <param name="value">Constant value. If null, the constant is not added or deleted.</param>
         public virtual void SetConstant(string name, string value) {
-            if (_constants == null) _constants = new Dictionary<string, string>();
-            _constants.Add(name, value);
+            if (_constants == null)
+            {
+                _constants = new Dictionary<string, string>();
+            }
+
+            if (value != null)
+            {
+                _constants[name] = value;
+            }
+            else
+            {
+                _constants.Remove(name);
+            }
         }
 
         /// <summary>
