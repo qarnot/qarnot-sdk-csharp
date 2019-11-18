@@ -536,7 +536,7 @@ namespace QarnotSDK {
         /// Set a constant. If the constant already exists, it is replaced (or removed if value is null).
         /// </summary>
         /// <param name="name">Constant name.</param>
-        /// <param name="value">Constant value. If null, the constant is not added or deleted.</param>
+        /// <param name="value">Constant value. If null, the constant is deleted.</param>
         public virtual void SetConstant(string name, string value) {
             if (_constants == null)
             {
