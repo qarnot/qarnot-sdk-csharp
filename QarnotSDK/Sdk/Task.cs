@@ -546,7 +546,7 @@ namespace QarnotSDK {
         /// Set a constraint. If the constraint already exists, it is replaced (or removed if value is null).
         /// </summary>
         /// <param name="name">Constraint name.</param>
-        /// <param name="value">Constraint value. If null, the constraint is not added or deleted.</param>
+        /// <param name="value">Constraint value. If null, the constraint is deleted.</param>
         public virtual void SetConstraint(string name, string value) {
             if (_constraints == null)
             {
