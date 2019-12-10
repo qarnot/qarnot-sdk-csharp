@@ -14,17 +14,18 @@
     <dependencies>
       <!-- common -->
       <group>
-        <dependency id="Microsoft.AspNet.WebApi.Client" version="5.2.7" />
         <dependency id="AWSSDK.Core" version="3.3.100.3" />
         <dependency id="AWSSDK.S3" version="3.3.101.1" />
       </group>
       <!-- Net standard 2 -->
       <group targetFramework="netstandard2.0">
         <dependency id="Newtonsoft.Json" version="12.0.1" />
+        <dependency id="Microsoft.AspNet.WebApi.Client" version="5.2.7" />
       </group>
       <!-- net 45 -->
       <group targetFramework="net4.5">
         <dependency id="Newtonsoft.Json" version="10.0.3" />
+        <dependency id="Microsoft.AspNet.WebApi.Client" version="5.2.3" />
       </group>
     </dependencies>
   </metadata>
