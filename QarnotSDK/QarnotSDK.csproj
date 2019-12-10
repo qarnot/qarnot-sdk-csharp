@@ -30,17 +30,18 @@
   </PropertyGroup>
   <!-- Common Deps -->
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.7" />
     <PackageReference Include="AWSSDK.Core" Version="3.3.100.3" />
     <PackageReference Include="AWSSDK.S3" Version="3.3.101.1" />
     <Reference Include="System.Web" />
   </ItemGroup>
   <!-- NET45 Deps -->
   <ItemGroup Condition="'$(TargetFramework)' == 'net45'">
+    <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.3" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
   </ItemGroup>
   <!-- NETSTANDARD 2.0 Deps -->
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.7" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
   </ItemGroup>
   <!-- Config files -->
