@@ -7,7 +7,6 @@ using System.Net.Http.Headers;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Threading;
-using Amazon;
 
 namespace QarnotSDK {
     /// <summary>
