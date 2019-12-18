@@ -1,17 +1,16 @@
-﻿using System;
+using System;
 
 namespace QarnotSDK.Experimental {
-    /// <summary>    
+    /// <summary>
     /// Basic test class
-    /// </summary>    
+    /// </summary>
     public class BasicTest {
-        /// <summary>    
+        /// <summary>
         /// Basic test class methode print the string given and return true
-        /// </summary>    
+        /// </summary>
         public bool PrintTest(string test) {
             Console.WriteLine(test);
             return true;
         }
     }
-
 }

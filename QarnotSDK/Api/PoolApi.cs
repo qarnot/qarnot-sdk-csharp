@@ -356,12 +356,12 @@ namespace QarnotSDK {
         public QPoolStatusRunningInstancesInfo RunningInstancesInfo { get; set; }
 
         /// <summary>
-        /// Execution cpu times for each Running instance 
+        /// Execution cpu times for each Running instance
         /// </summary>
         public List<QPoolStatusExecutionTimeByCpuModel> ExecutionTimeByCpuModel { get; set; }
 
         /// <summary>
-        /// Execution cpu ratio for each Running instance 
+        /// Execution cpu ratio for each Running instance
         /// </summary>
         public List<QPoolStatusExecutionTimeGhzByCpuModel> ExecutionTimeGhzByCpuModel { get; set; }
 

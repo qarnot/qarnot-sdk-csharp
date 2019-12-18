@@ -141,7 +141,6 @@ namespace QarnotSDK {
         {
         }
     }
-    
 
     /// <summary>
     /// Represents the status and the statistics of a running task instance.
@@ -352,12 +351,12 @@ namespace QarnotSDK {
         public QTaskStatusRunningInstancesInfo RunningInstancesInfo { get; set; }
 
         /// <summary>
-        /// Execution cpu times for each Running instance 
+        /// Execution cpu times for each Running instance
         /// </summary>
         public List<QTaskStatusExecutionTimeByCpuModel> ExecutionTimeByCpuModel {get; set ;}
 
         /// <summary>
-        /// Execution cpu ratio for each Running instance 
+        /// Execution cpu ratio for each Running instance
         /// </summary>
         public List<QTaskStatusExecutionTimeGhzByCpuModel> ExecutionTimeGhzByCpuModel {get; set ;}
 
