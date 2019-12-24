@@ -69,11 +69,11 @@ namespace QarnotSDK {
         /// <summary>
         /// The Job unique shortname
         /// </summary>
-        [InternalDataApiName(Name="ShortName")]
-        public virtual string ShortName 
+        [InternalDataApiName(Name="Shortname")]
+        public virtual string Shortname
         {
-            get => _jobApi.ShortName;
-            set => _jobApi.ShortName = value;
+            get => _jobApi.Shortname;
+            set => _jobApi.Shortname = value;
         }
 
         /// <summary>
@@ -165,11 +165,11 @@ namespace QarnotSDK {
             : this (connection, new JobApi())
         {
             _jobApi.Name = name;
-            _jobApi.ShortName = shortname;
+            _jobApi.Shortname = shortname;
             if (pool != null)
                 _jobApi.PoolUuid = pool.Uuid.ToString();
             _jobApi.UseDependencies = UseTaskDependencies;
-            _uri = "jobs/" + _jobApi.ShortName;
+            _uri = "jobs/" + _jobApi.Shortname;
         }
 
         /// <summary>

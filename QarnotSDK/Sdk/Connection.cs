@@ -637,7 +637,7 @@ namespace QarnotSDK {
         /// <returns>The bucket.</returns>
         public virtual async Task<QBucket> RetrieveBucketAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken)) {
             using (var s3Client = await GetS3ClientAsync(cancellationToken)) {
-                bool exist = await Amazon.S3.Util.AmazonS3Util.DoesS3BucketExistAsync(s3Client, bucketName);
+                bool exist = await Amazon.S3.Util.AmazonS3Util.DoesS3BucketExistV2Async(s3Client, bucketName);
                 return exist ? await QBucket.CreateAsync(this, bucketName, create: false, ct: cancellationToken) : null;
             }
         }
