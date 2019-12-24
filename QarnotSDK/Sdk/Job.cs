@@ -69,7 +69,7 @@ namespace QarnotSDK {
         /// <summary>
         /// The Job unique shortname
         /// </summary>
-        [InternalDataApiName(Name="ShortName")]
+        [InternalDataApiName(Name="Shortname")]
         public virtual string ShortName 
         {
             get => _jobApi.ShortName;
