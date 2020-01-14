@@ -31,8 +31,8 @@
   </PropertyGroup>
   <!-- Common Deps -->
   <ItemGroup>
-    <PackageReference Include="AWSSDK.Core" Version="3.3.100.3" />
-    <PackageReference Include="AWSSDK.S3" Version="3.3.101.1" />
+    <PackageReference Include="AWSSDK.Core" Version="3.3.104.15" />
+    <PackageReference Include="AWSSDK.S3" Version="3.3.110.11" />
     <Reference Include="System.Web" />
   </ItemGroup>
   <!-- NET45 Deps -->
