@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Net.Http;
 
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("QarnotSDK.Unitests")]
+
 namespace QarnotSDK {
     internal static class Utils
     {

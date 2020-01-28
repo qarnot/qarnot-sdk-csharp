@@ -35,6 +35,10 @@ namespace QarnotSDK {
                 if (part.Contains("-")) {
                     // It's an interval
                     var bounds = part.Split('-');
+                    if (bounds.Length != 2) {
+                        throw new Exception("Range should have 2 bounds min-max instead of :" + part);
+                    }
+
                     uint begin = 0;
                     uint end = 0;
 
