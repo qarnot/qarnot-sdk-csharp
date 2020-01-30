@@ -297,7 +297,7 @@ namespace QarnotSDK
         /// <param name="value">Constant value.</param>
         [Obsolete("use SetConstant")]
         public virtual void AddConstant(string key, string value) {
-            _poolApi.Constants.Add(new KeyValHelper(key, value));
+	    this.SetConstant(key, value);
         }
 
         /// <summary>
@@ -307,15 +307,13 @@ namespace QarnotSDK
         /// <param name="value">Constant value. If null, the constant is not added or deleted.</param>
         public virtual void SetConstant(string name, string value) {
             // First, check if the constant already exists
-            var c = _poolApi.Constants.Find(x => x.Key == name);
-            if (c != null) {
-                // Exists, just replace or delete
-                if (value == null) _poolApi.Constants.Remove(c);
-                else c.Value = value;
+	    if (_constants.ContainsKey(name) && value == null) {
+                // Just delete the constant
+                _constants.Remove(name);
                 return;
             }
-            // Doesn't exist, just add
-            if (value != null) _poolApi.Constants.Add(new KeyValHelper(name, value));
+            // Add or update the constant
+            if (value != null) _constants[name] = value;
         }
 
         /// <summary>
@@ -325,15 +323,13 @@ namespace QarnotSDK
         /// <param name="value">Constraint value. If null, the constraint is not added or deleted.</param>
         public virtual void SetConstraint(string name, string value) {
             // First, check if the constraints already exists
-            var c = _poolApi.Constraints.Find(x => x.Key == name);
-            if (c != null) {
-                // Exists, just replace or delete
-                if (value == null) _poolApi.Constraints.Remove(c);
-                else c.Value = value;
+	    if (_constraints.ContainsKey(name) && value == null) {
+                // Delete a constraint
+                _constraints.Remove(name);
                 return;
             }
-            // Doesn't exist, just add
-            if (value != null) _poolApi.Constraints.Add(new KeyValHelper(name, value));
+            // Add or update the constraint
+            if (value != null) _constraints[name] = value;
         }
 
         /// <summary>

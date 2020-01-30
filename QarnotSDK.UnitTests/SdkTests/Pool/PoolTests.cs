@@ -231,12 +231,12 @@ namespace QarnotSDK.UnitTests
             poolApi.Constraints.Add(new KeyValHelper("key2", "value2"));
             var dict = new[]
             {
-                new KeyValHelper("key1", "value1"),
-                new KeyValHelper("key2", "value2"),
+                new KeyValHelper("key1", "plop3"),
+                new KeyValHelper("key2", "plop4"),
             };
             await pool.InitializeAsync(Connect, poolApi);
             pool.SetConstraint("key1", "plop3");
-            pool.SetConstraint("key2", "plop3");
+            pool.SetConstraint("key2", "plop4");
             await pool.CommitAsync();
             for (int i = 0; i < 2; i++)
             {
@@ -277,8 +277,7 @@ namespace QarnotSDK.UnitTests
             pool.SetConstraint("key2", null);
             for (int i = 0; i < 2; i++)
             {
-                Assert.AreEqual(pool._poolApi.Constraints[i].Key, dict[i].Key);
-                Assert.AreEqual(pool._poolApi.Constraints[i].Value, dict[i].Value);
+                Assert.AreEqual(pool.Constraints[dict[i].Key], dict[i].Value);
             }
         }
 
@@ -297,8 +296,7 @@ namespace QarnotSDK.UnitTests
             pool.SetConstraint("key3", "value3");
             for (int i = 0; i < 3; i++)
             {
-                Assert.AreEqual(pool._poolApi.Constraints[i].Key, dict[i].Key);
-                Assert.AreEqual(pool._poolApi.Constraints[i].Value, dict[i].Value);
+                Assert.AreEqual(pool.Constraints[dict[i].Key], dict[i].Value);
             }
         }
 
@@ -315,10 +313,9 @@ namespace QarnotSDK.UnitTests
             pool.SetConstant("key2", "value2");
             pool.SetConstant("key2", null);
             pool.SetConstant("key3", "value3");
-            for (int i = 0; i < 2; i++)
+            foreach (var d in dict)
             {
-                Assert.AreEqual(pool._poolApi.Constants[i].Key, dict[i].Key);
-                Assert.AreEqual(pool._poolApi.Constants[i].Value, dict[i].Value);
+                Assert.AreEqual(pool.Constants[d.Key], d.Value);
             }
         }
 
@@ -337,8 +334,7 @@ namespace QarnotSDK.UnitTests
             pool.SetConstant("key3", "value3");
             for (int i = 0; i < 3; i++)
             {
-                Assert.AreEqual(pool._poolApi.Constants[i].Key, dict[i].Key);
-                Assert.AreEqual(pool._poolApi.Constants[i].Value, dict[i].Value);
+                Assert.AreEqual(pool.Constants[dict[i].Key], dict[i].Value);
             }
         }
 
