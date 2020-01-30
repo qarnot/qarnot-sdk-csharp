@@ -53,5 +53,23 @@ namespace QarnotSDK {
         public virtual void Delete(bool failIfDoesntExist = false, bool purgeResources=false)
             => Delete(default(CancellationToken) ,failIfDoesntExist, purgeResources);
         #endregion
+        
+	/// <summary>
+	/// Request made on a running pool to re-sync the resource buckets to the compute nodes.
+        ///  1 - Upload new files on your resource bucket,
+        ///  2 - Call this method,
+        ///  3 - The new files will appear on all the compute nodes in the $DOCKER_WORKDIR folder
+        /// Note: There is no way to know when the files are effectively transfered. This information is available on the compute node only.
+        /// </summary>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns></returns>
+	public virtual void UpdateResources(CancellationToken cancellationToken = default(CancellationToken))
+	{
+            try {
+                UpdateResourcesAsync(cancellationToken).Wait();
+            } catch (AggregateException ex) {
+                throw ex.InnerException;
+            }
+	}
     }
 }

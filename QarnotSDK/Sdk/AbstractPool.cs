@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using System.Threading;
 using System;
-
+using System.Net.Http;
 
 namespace QarnotSDK {
 
@@ -91,5 +91,28 @@ namespace QarnotSDK {
         public virtual async Task DeleteAsync(bool failIfDoesntExist = false, bool purgeResources=false)
             => await DeleteAsync(default(CancellationToken), failIfDoesntExist, purgeResources); 
         #endregion
+
+        /// <summary>
+	/// Request made on a running pool to re-sync the resource buckets to the compute nodes.
+        ///  1 - Upload new files on your resource bucket,
+        ///  2 - Call this method,
+        ///  3 - The new files will appear on all the compute nodes in the $DOCKER_WORKDIR folder
+        /// Note: There is no way to know when the files are effectively transfered. This information is available on the compute node only.
+        /// </summary>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns></returns>
+	public async Task UpdateResourcesAsync(CancellationToken cancellationToken = default(CancellationToken))
+	{
+            if (_api.IsReadOnly) 
+	    {
+	        throw new Exception("Can't update resources, this connection is configured in read-only mode");
+	    }
+
+            var reqMsg = new HttpRequestMessage(new HttpMethod("PATCH"), _uri);
+            using (var response = await _api._client.SendAsync(reqMsg, cancellationToken))
+	    {
+                await Utils.LookForErrorAndThrowAsync(_api._client, response);
+	    }
+	}
     }
 }

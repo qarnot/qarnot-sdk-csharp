@@ -405,5 +405,19 @@ namespace QarnotSDK.UnitTests
             TestRequestAssert("PATCH", "pools/" + PoolTestsData.PoolResponseUuid);
         }
 
+        [Test]
+        public async Task UpdateResourcesShouldGetOnCorrectEndpoint()
+        {
+            HttpHandler.ResponseBody = PoolTestsData.PoolConstTagHandler;
+            var pool = new QPool();
+            var uuid = new Guid(PoolTestsData.PoolResponseUuid);
+            var poolApi = new PoolApi() { Uuid = uuid };
+            poolApi.Constraints.Add(new KeyValHelper("key1", "value1"));
+            poolApi.Constraints.Add(new KeyValHelper("key2", "value2"));
+            await pool.InitializeAsync(Connect, poolApi);
+
+            pool.UpdateResources();
+            TestRequestAssert("PATCH", "pools/" + PoolTestsData.PoolResponseUuid);
+        }
     }
 }
