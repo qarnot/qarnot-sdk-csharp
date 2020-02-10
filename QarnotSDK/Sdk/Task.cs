@@ -219,7 +219,9 @@ namespace QarnotSDK {
         }
 
         /// <summary>
-        /// Allow the automatic resize of the pool
+        /// The Task Dependencies 
+	/// Guid list of tasks to wait before running
+        /// The task need to be in a job with depencendies activated
         /// </summary>
         [InternalDataApiName(Name="Dependencies.DependsOn")]
         public virtual List<Guid> DependsOn {

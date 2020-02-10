@@ -304,7 +304,7 @@ namespace QarnotSDK
         /// Set a constant. If the constant already exists, it is replaced (or removed if value is null).
         /// </summary>
         /// <param name="name">Constant name.</param>
-        /// <param name="value">Constant value. If null, the constant is not added or deleted.</param>
+        /// <param name="value">Constant value. If null, the constant is deleted.</param>
         public virtual void SetConstant(string name, string value) {
             // First, check if the constant already exists
 	    if (_constants.ContainsKey(name) && value == null) {
@@ -320,7 +320,7 @@ namespace QarnotSDK
         /// Set a constraint. If the constraint already exists, it is replaced (or removed if value is null).
         /// </summary>
         /// <param name="name">Constraint name.</param>
-        /// <param name="value">Constraint value. If null, the constraint is not added or deleted.</param>
+        /// <param name="value">Constraint value. If null, the constraint is deleted.</param>
         public virtual void SetConstraint(string name, string value) {
             // First, check if the constraints already exists
 	    if (_constraints.ContainsKey(name) && value == null) {
