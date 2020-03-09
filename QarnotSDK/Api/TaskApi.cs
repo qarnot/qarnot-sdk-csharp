@@ -40,6 +40,51 @@ namespace QarnotSDK {
     }
 
     /// <summary>
+    /// Represents the Vpn Connection information used form the Connection.
+    /// </summary>
+    public class QTaskVpnConnection
+    {
+        /// <summary>
+        /// Vpn classless inter-domain routing ip address.
+        /// example:  10.11.12.14/16
+        /// </summary>
+        public string NodeIPAddressCidr { get; set; }
+
+        /// <summary>
+        /// System.Net.IPAddress vpn connection address.
+        /// </summary>
+        public System.Net.IPAddress IPAdress
+        {
+            get
+            {
+                return System.Net.IPAddress.Parse(NodeIPAddressCidr);
+            }
+
+            set
+            {
+                NodeIPAddressCidr = value.ToString();
+            }
+        }
+
+        /// <summary>
+        /// Vpn Connection name.
+        /// </summary>
+        public string VpnName { get; set; }
+
+        internal QTaskVpnConnection()
+        {
+        }
+
+        /// <summary>
+        /// Returns all the information about vpn information.
+        /// </summary>
+        public override string ToString()
+        {
+            return String.Format("[{0}] {1}", NodeIPAddressCidr, VpnName);
+        }
+    }
+
+    /// <summary>
     /// Represents an error that occur during a task execution.
     /// </summary>
     public class QTaskError {
@@ -210,8 +255,14 @@ namespace QarnotSDK {
         /// </summary>
         public List<QTaskStatusActiveForwards> ActiveForwards { get; set; }
 
+        /// <summary>
+        /// Vpn connection list.
+        /// </summary>
+        public List<QTaskVpnConnection> VpnConnections{ get; set; }
+
         internal QTaskStatusPerRunningInstanceInfo() {
             ActiveForwards = new List<QTaskStatusActiveForwards>();
+            VpnConnections = new List<QTaskVpnConnection>();
         }
     }
 
@@ -252,7 +303,7 @@ namespace QarnotSDK {
 
         /// <summary>
         /// Average running instance power indicator.
-        /// The power indicator shows a ratio between actual frequency and maximum frequenc 
+        /// The power indicator shows a ratio between actual frequency and maximum frequenc
         /// </summary>
         public float ClusterPowerIndicator { get; set; }
 

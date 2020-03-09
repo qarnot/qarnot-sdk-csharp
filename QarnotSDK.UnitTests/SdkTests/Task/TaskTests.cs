@@ -60,6 +60,17 @@ namespace QarnotSDK.UnitTests
             Assert.True(value);
         }
 
+        [Test]
+        public async Task CheckVpnConnectionsTestValues()
+        {
+			HttpHandler.ResponseBody = TaskTestsData.TaskResponseFullBody;
+            string uuid = Guid.NewGuid().ToString();
+            QTask task = new QTask(Connect, uuid);
+            await task.UpdateStatusAsync();
+            Assert.AreEqual(task.Status.RunningInstancesInfo.PerRunningInstanceInfo[0].VpnConnections[0].VpnName, "my-vpn");
+            Assert.AreEqual(task.Status.RunningInstancesInfo.PerRunningInstanceInfo[0].VpnConnections[0].NodeIPAddressCidr, "172.20.0.14/16");
+		}
+
         // TODO: create unitTests for SnapshotAsync
         // TODO: create unitTests for CopyStdoutToAsync
         // TODO: create unitTests for CopyStderrToAsync

@@ -221,6 +221,12 @@ namespace QarnotSDK.UnitTests
                             ""cpuModel"": ""AMD Ryzen 7 1700X Eight-Core Processor"",
                             ""coreCount"": 8,
                             ""activeForwards"": [{""applicationPort"":42, ""forwarderHost"":""host23"", ""forwarderPort"":23}],
+                            ""vpnConnections"": [
+                              {
+                                ""VpnName"":""my-vpn"",
+                                 ""NodeIPAddressCidr"":""172.20.0.14/16""
+                              }
+                            ],
                             ""memoryUsage"": 1,
                             ""clockRatio"": 1
                         },
@@ -240,6 +246,7 @@ namespace QarnotSDK.UnitTests
                             ""cpuModel"": ""AMD Ryzen 7 1700X Eight-Core Processor"",
                             ""coreCount"": 8,
                             ""activeForwards"": [],
+                            ""vpnConnections"": [],
                             ""memoryUsage"": 0.9967213,
                             ""clockRatio"": 1
                         },
@@ -259,6 +266,7 @@ namespace QarnotSDK.UnitTests
                             ""cpuModel"": """",
                             ""coreCount"": 0,
                             ""activeForwards"": [],
+                            ""vpnConnections"": [],
                             ""memoryUsage"": 0,
                             ""clockRatio"": 0
                         }
