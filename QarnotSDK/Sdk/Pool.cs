@@ -346,7 +346,7 @@ namespace QarnotSDK
             _poolApi.Constraints = new List<KeyValHelper>();
             foreach(var c in _constraints) { _poolApi.Constraints.Add(new KeyValHelper(c.Key, c.Value)); }
 
-            using (var response = await _api._client.PutAsJsonAsync<PoolApi>("pools", _poolApi, cancellationToken))
+            using (var response = await _api._client.PutAsJsonAsync<PoolApi>(_uri, _poolApi, cancellationToken))
                 await Utils.LookForErrorAndThrowAsync(_api._client, response);
         }
 

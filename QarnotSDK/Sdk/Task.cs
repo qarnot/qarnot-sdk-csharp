@@ -655,7 +655,7 @@ namespace QarnotSDK {
             foreach(var c in _constraints) { _taskApi.Constraints.Add(new KeyValHelper(c.Key, c.Value)); }
 
 
-            using (var response = await _api._client.PutAsJsonAsync<TaskApi>("tasks", _taskApi, cancellationToken))
+            using (var response = await _api._client.PutAsJsonAsync<TaskApi>(_uri, _taskApi, cancellationToken))
                 await Utils.LookForErrorAndThrowAsync(_api._client, response);
         }
 
