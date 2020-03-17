@@ -606,8 +606,8 @@ namespace QarnotSDK {
         /// <param name="ct">Optional token to cancel the request.</param>
         /// <returns>true if the task is completed</returns>
         public virtual async Task<bool> WaitAsync(int taskTimeoutSeconds=-1, CancellationToken ct =default(CancellationToken)) {
-            var period = TimeSpan.FromSeconds(10).Milliseconds;
-            int sleepingTimeMs;
+            double period = TimeSpan.FromSeconds(10).TotalMilliseconds;
+            double sleepingTimeMs;
             var start = DateTime.Now;
             while (!Completed) {
                 await UpdateStatusAsync();
@@ -618,10 +618,10 @@ namespace QarnotSDK {
 
                 // loop delay
                 if(taskTimeoutSeconds > 0)
-                    sleepingTimeMs = Math.Min(period, TimeSpan.FromSeconds(taskTimeoutSeconds - elasped).Milliseconds);
+                    sleepingTimeMs = Math.Min(period, TimeSpan.FromSeconds(taskTimeoutSeconds - elasped).TotalMilliseconds);
                 else
                     sleepingTimeMs = period;
-                await Task.Delay(sleepingTimeMs);
+                await Task.Delay(TimeSpan.FromMilliseconds(sleepingTimeMs));
             }
             return true;
         }
