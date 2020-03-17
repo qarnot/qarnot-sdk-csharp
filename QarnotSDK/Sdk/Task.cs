@@ -219,7 +219,7 @@ namespace QarnotSDK {
         }
 
         /// <summary>
-        /// The Task Dependencies 
+        /// The Task Dependencies
 	/// Guid list of tasks to wait before running
         /// The task need to be in a job with depencendies activated
         /// </summary>
@@ -773,10 +773,10 @@ namespace QarnotSDK {
             else _advancedRange = null;
 
             // update constants
-            _constants = result.Constants?.ToDictionary(kv => kv.Key, kv => kv.Value) ?? new Dictionary<string, string>();
+            _constants = result.Constants?.GroupBy(e => e.Key).ToDictionary(kv => kv.First().Key, kv => kv.First().Value) ?? new Dictionary<string, string>();
 
             // update constraints
-            _constraints = result.Constraints?.ToDictionary(kv => kv.Key, kv => kv.Value) ?? new Dictionary<string, string>();
+            _constraints = result.Constraints?.GroupBy(e => e.Key).ToDictionary(kv => kv.First().Key, kv => kv.First().Value) ?? new Dictionary<string, string>();
 
             // update the task resources
             var newResourcesCount = 0;
