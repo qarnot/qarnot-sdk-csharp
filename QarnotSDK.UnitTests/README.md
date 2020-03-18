@@ -1,5 +1,5 @@
 
-# QarnotSDK.Unitests
+# QarnotSDK.UnitTests
 
 Unitests for the C# SDK 
 
@@ -7,6 +7,6 @@ Unitests for the C# SDK
 
 ``` bash 
 cd QarnotSDK.test 
-dotnet test
+dotnet test -c Debug
 ```
 

@@ -5,7 +5,11 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Net.Http;
 
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("QarnotSDK.Unitests")]
+#if (DEBUG)
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("QarnotSDK.UnitTests")]
+#else
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("QarnotSDK.UnitTests, PublicKeyToken=498a57251e4c9100")]
+#endif
 
 namespace QarnotSDK {
     internal static class Utils
