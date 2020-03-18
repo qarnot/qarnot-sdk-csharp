@@ -322,8 +322,8 @@ namespace QarnotSDK.UnitTests
             QTask task = new QTask(connect, uuid);
 
             DateTime now = DateTime.Now;
-            DateTime min_time = now.AddMilliseconds(1900.0);
-            DateTime max_time = now.AddMilliseconds(2100.0);
+            DateTime min_time = now.AddSeconds(1);
+            DateTime max_time = now.AddSeconds(3);
 
             await task.WaitAsync(2);
 
