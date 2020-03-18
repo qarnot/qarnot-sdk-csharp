@@ -167,8 +167,15 @@ namespace QarnotSDK
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.IsElastic")]
         public virtual bool IsElastic {
-            get { return _poolApi.ElasticProperty.IsElastic; }
-            set { _poolApi.ElasticProperty.IsElastic = value; }
+            get { return _poolApi?.ElasticProperty?.IsElastic ?? false; }
+            set {
+                if (_poolApi.ElasticProperty == null)
+                {
+                    _poolApi.ElasticProperty = new QPoolElasticProperty();
+                }
+
+                _poolApi.ElasticProperty.IsElastic = value;
+            }
         }
 
         /// <summary>
@@ -176,8 +183,16 @@ namespace QarnotSDK
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.MinTotalSlots")]
         public virtual uint ElasticMinimumTotalNodes {
-            get { return _poolApi.ElasticProperty.MinTotalSlots; }
-            set { _poolApi.ElasticProperty.MinTotalSlots = value; }
+            get { return _poolApi?.ElasticProperty?.MinTotalSlots ?? 0; }
+            set
+            {
+                if (_poolApi.ElasticProperty == null)
+                {
+                    _poolApi.ElasticProperty = new QPoolElasticProperty();
+                }
+
+                _poolApi.ElasticProperty.MinTotalSlots = value;
+            }
         }
 
         /// <summary>
@@ -185,8 +200,16 @@ namespace QarnotSDK
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.MaxTotalSlots")]
         public virtual uint ElasticMaximumTotalNodes {
-            get { return _poolApi.ElasticProperty.MaxTotalSlots; }
-            set { _poolApi.ElasticProperty.MaxTotalSlots = value; }
+            get { return _poolApi?.ElasticProperty?.MaxTotalSlots ?? 0; }
+            set
+            {
+                if (_poolApi.ElasticProperty == null)
+                {
+                    _poolApi.ElasticProperty = new QPoolElasticProperty();
+                }
+
+                _poolApi.ElasticProperty.MaxTotalSlots = value;
+            }
         }
 
         /// <summary>
@@ -194,32 +217,64 @@ namespace QarnotSDK
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.MinIdleSlots")]
         public virtual uint ElasticMinimumIdlingNodes {
-            get { return _poolApi.ElasticProperty.MinIdleSlots; }
-            set { _poolApi.ElasticProperty.MinIdleSlots = value; }
+            get { return _poolApi?.ElasticProperty?.MinIdleSlots ?? 0; }
+            set
+            {
+                if (_poolApi.ElasticProperty == null)
+                {
+                    _poolApi.ElasticProperty = new QPoolElasticProperty();
+                }
+
+                _poolApi.ElasticProperty.MinIdleSlots = value;
+            }
         }
 
         /// <summary>
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.ResizePeriod")]
         public virtual uint ElasticResizePeriod {
-            get { return _poolApi.ElasticProperty.ResizePeriod; }
-            set { _poolApi.ElasticProperty.ResizePeriod = value; }
+            get { return _poolApi?.ElasticProperty?.ResizePeriod ?? 0; }
+            set
+            {
+                if (_poolApi.ElasticProperty == null)
+                {
+                    _poolApi.ElasticProperty = new QPoolElasticProperty();
+                }
+
+                _poolApi.ElasticProperty.ResizePeriod = value;
+            }
         }
 
         /// <summary>
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.RampResizeFactor")]
         public virtual float ElasticResizeFactor {
-            get { return _poolApi.ElasticProperty.RampResizeFactor; }
-            set { _poolApi.ElasticProperty.RampResizeFactor = value; }
+            get { return _poolApi?.ElasticProperty?.RampResizeFactor ?? 0; }
+            set
+            {
+                if (_poolApi.ElasticProperty == null)
+                {
+                    _poolApi.ElasticProperty = new QPoolElasticProperty();
+                }
+
+                _poolApi.ElasticProperty.RampResizeFactor = value;
+            }
         }
 
         /// <summary>
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.MinIdleTimeSeconds")]
         public virtual uint ElasticMinimumIdlingTime {
-            get { return _poolApi.ElasticProperty.MinIdleTimeSeconds; }
-            set { _poolApi.ElasticProperty.MinIdleTimeSeconds = value; }
+            get { return _poolApi?.ElasticProperty?.MinIdleTimeSeconds ?? 0; }
+            set
+            {
+                if (_poolApi.ElasticProperty == null)
+                {
+                    _poolApi.ElasticProperty = new QPoolElasticProperty();
+                }
+
+                _poolApi.ElasticProperty.MinIdleTimeSeconds = value;
+            }
         }
 
         #endregion
