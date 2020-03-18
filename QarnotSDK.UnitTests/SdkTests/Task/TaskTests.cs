@@ -325,7 +325,7 @@ namespace QarnotSDK.UnitTests
             DateTime min_time = now.AddMilliseconds(1900.0);
             DateTime max_time = now.AddMilliseconds(2100.0);
 
-            await task.WaitAsync();
+            await task.WaitAsync(2);
 
             if (DateTime.Now < min_time)
             {
