@@ -500,7 +500,8 @@ namespace QarnotSDK {
                 var s3Request = new Amazon.S3.Model.ListObjectsRequest {
                     BucketName = Shortname,
                     MaxKeys = 1000,
-                    Prefix = remoteFolder
+                    Prefix = remoteFolder,
+                    Delimiter = "/",
                 };
 
                 var files = new List<QAbstractStorageEntry>();

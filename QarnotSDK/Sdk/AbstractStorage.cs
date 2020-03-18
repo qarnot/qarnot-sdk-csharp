@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -301,6 +302,17 @@ namespace QarnotSDK {
         /// <returns></returns>
         public virtual async Task SyncRemoteToLocalAsync(string localFolderPath, CancellationToken cancellationToken, bool dontDelete = true, string remoteFolderRelativePath = "") {
             Directory.CreateDirectory(localFolderPath);
+
+            if (remoteFolderRelativePath == default)
+            {
+                remoteFolderRelativePath = string.Empty;
+            }
+
+            remoteFolderRelativePath = remoteFolderRelativePath.Trim();
+            while(remoteFolderRelativePath.StartsWith("/", ignoreCase: true, CultureInfo.InvariantCulture))
+            {
+                remoteFolderRelativePath = remoteFolderRelativePath.Substring(1, remoteFolderRelativePath.Length -1);
+            }
 
             List<QAbstractStorageEntry> existingFiles;
             try {

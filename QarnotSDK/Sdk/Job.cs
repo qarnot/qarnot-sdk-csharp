@@ -104,6 +104,7 @@ namespace QarnotSDK {
 
         /// <summary>
         /// Boolean to indicate if the job use dependency behaviour
+        /// Need to be true to allow the use of dependencies for tasks in this job.</param>
         /// </summary>
         [InternalDataApiName(Name="UseDependencies")]
         public virtual bool UseDependencies

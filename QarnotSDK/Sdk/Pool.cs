@@ -167,8 +167,15 @@ namespace QarnotSDK
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.IsElastic")]
         public virtual bool IsElastic {
-            get { return _poolApi.ElasticProperty.IsElastic; }
-            set { _poolApi.ElasticProperty.IsElastic = value; }
+            get { return _poolApi?.ElasticProperty?.IsElastic ?? false; }
+            set {
+                if (_poolApi.ElasticProperty == null)
+                {
+                    _poolApi.ElasticProperty = new QPoolElasticProperty();
+                }
+
+                _poolApi.ElasticProperty.IsElastic = value;
+            }
         }
 
         /// <summary>
@@ -176,8 +183,16 @@ namespace QarnotSDK
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.MinTotalSlots")]
         public virtual uint ElasticMinimumTotalNodes {
-            get { return _poolApi.ElasticProperty.MinTotalSlots; }
-            set { _poolApi.ElasticProperty.MinTotalSlots = value; }
+            get { return _poolApi?.ElasticProperty?.MinTotalSlots ?? 0; }
+            set
+            {
+                if (_poolApi.ElasticProperty == null)
+                {
+                    _poolApi.ElasticProperty = new QPoolElasticProperty();
+                }
+
+                _poolApi.ElasticProperty.MinTotalSlots = value;
+            }
         }
 
         /// <summary>
@@ -185,8 +200,16 @@ namespace QarnotSDK
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.MaxTotalSlots")]
         public virtual uint ElasticMaximumTotalNodes {
-            get { return _poolApi.ElasticProperty.MaxTotalSlots; }
-            set { _poolApi.ElasticProperty.MaxTotalSlots = value; }
+            get { return _poolApi?.ElasticProperty?.MaxTotalSlots ?? 0; }
+            set
+            {
+                if (_poolApi.ElasticProperty == null)
+                {
+                    _poolApi.ElasticProperty = new QPoolElasticProperty();
+                }
+
+                _poolApi.ElasticProperty.MaxTotalSlots = value;
+            }
         }
 
         /// <summary>
@@ -194,32 +217,64 @@ namespace QarnotSDK
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.MinIdleSlots")]
         public virtual uint ElasticMinimumIdlingNodes {
-            get { return _poolApi.ElasticProperty.MinIdleSlots; }
-            set { _poolApi.ElasticProperty.MinIdleSlots = value; }
+            get { return _poolApi?.ElasticProperty?.MinIdleSlots ?? 0; }
+            set
+            {
+                if (_poolApi.ElasticProperty == null)
+                {
+                    _poolApi.ElasticProperty = new QPoolElasticProperty();
+                }
+
+                _poolApi.ElasticProperty.MinIdleSlots = value;
+            }
         }
 
         /// <summary>
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.ResizePeriod")]
         public virtual uint ElasticResizePeriod {
-            get { return _poolApi.ElasticProperty.ResizePeriod; }
-            set { _poolApi.ElasticProperty.ResizePeriod = value; }
+            get { return _poolApi?.ElasticProperty?.ResizePeriod ?? 0; }
+            set
+            {
+                if (_poolApi.ElasticProperty == null)
+                {
+                    _poolApi.ElasticProperty = new QPoolElasticProperty();
+                }
+
+                _poolApi.ElasticProperty.ResizePeriod = value;
+            }
         }
 
         /// <summary>
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.RampResizeFactor")]
         public virtual float ElasticResizeFactor {
-            get { return _poolApi.ElasticProperty.RampResizeFactor; }
-            set { _poolApi.ElasticProperty.RampResizeFactor = value; }
+            get { return _poolApi?.ElasticProperty?.RampResizeFactor ?? 0; }
+            set
+            {
+                if (_poolApi.ElasticProperty == null)
+                {
+                    _poolApi.ElasticProperty = new QPoolElasticProperty();
+                }
+
+                _poolApi.ElasticProperty.RampResizeFactor = value;
+            }
         }
 
         /// <summary>
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.MinIdleTimeSeconds")]
         public virtual uint ElasticMinimumIdlingTime {
-            get { return _poolApi.ElasticProperty.MinIdleTimeSeconds; }
-            set { _poolApi.ElasticProperty.MinIdleTimeSeconds = value; }
+            get { return _poolApi?.ElasticProperty?.MinIdleTimeSeconds ?? 0; }
+            set
+            {
+                if (_poolApi.ElasticProperty == null)
+                {
+                    _poolApi.ElasticProperty = new QPoolElasticProperty();
+                }
+
+                _poolApi.ElasticProperty.MinIdleTimeSeconds = value;
+            }
         }
 
         #endregion
@@ -297,43 +352,39 @@ namespace QarnotSDK
         /// <param name="value">Constant value.</param>
         [Obsolete("use SetConstant")]
         public virtual void AddConstant(string key, string value) {
-            _poolApi.Constants.Add(new KeyValHelper(key, value));
+	    this.SetConstant(key, value);
         }
 
         /// <summary>
         /// Set a constant. If the constant already exists, it is replaced (or removed if value is null).
         /// </summary>
         /// <param name="name">Constant name.</param>
-        /// <param name="value">Constant value. If null, the constant is not added or deleted.</param>
+        /// <param name="value">Constant value. If null, the constant is deleted.</param>
         public virtual void SetConstant(string name, string value) {
             // First, check if the constant already exists
-            var c = _poolApi.Constants.Find(x => x.Key == name);
-            if (c != null) {
-                // Exists, just replace or delete
-                if (value == null) _poolApi.Constants.Remove(c);
-                else c.Value = value;
+	    if (_constants.ContainsKey(name) && value == null) {
+                // Just delete the constant
+                _constants.Remove(name);
                 return;
             }
-            // Doesn't exist, just add
-            if (value != null) _poolApi.Constants.Add(new KeyValHelper(name, value));
+            // Add or update the constant
+            if (value != null) _constants[name] = value;
         }
 
         /// <summary>
         /// Set a constraint. If the constraint already exists, it is replaced (or removed if value is null).
         /// </summary>
         /// <param name="name">Constraint name.</param>
-        /// <param name="value">Constraint value. If null, the constraint is not added or deleted.</param>
+        /// <param name="value">Constraint value. If null, the constraint is deleted.</param>
         public virtual void SetConstraint(string name, string value) {
             // First, check if the constraints already exists
-            var c = _poolApi.Constraints.Find(x => x.Key == name);
-            if (c != null) {
-                // Exists, just replace or delete
-                if (value == null) _poolApi.Constraints.Remove(c);
-                else c.Value = value;
+	    if (_constraints.ContainsKey(name) && value == null) {
+                // Delete a constraint
+                _constraints.Remove(name);
                 return;
             }
-            // Doesn't exist, just add
-            if (value != null) _poolApi.Constraints.Add(new KeyValHelper(name, value));
+            // Add or update the constraint
+            if (value != null) _constraints[name] = value;
         }
 
         /// <summary>
@@ -350,7 +401,7 @@ namespace QarnotSDK
             _poolApi.Constraints = new List<KeyValHelper>();
             foreach(var c in _constraints) { _poolApi.Constraints.Add(new KeyValHelper(c.Key, c.Value)); }
 
-            using (var response = await _api._client.PutAsJsonAsync<PoolApi>("pools", _poolApi, cancellationToken))
+            using (var response = await _api._client.PutAsJsonAsync<PoolApi>(_uri, _poolApi, cancellationToken))
                 await Utils.LookForErrorAndThrowAsync(_api._client, response);
         }
 
