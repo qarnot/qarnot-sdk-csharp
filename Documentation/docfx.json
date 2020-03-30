@@ -3,9 +3,9 @@
     {
       "src": [
         {
-	        "src": "..",
+	        "src": "../QarnotSDK",
           "files": [
-            "**/**.csproj"
+            "bin/Debug/net45/QarnotSDK.dll"
           ]
         }
       ],

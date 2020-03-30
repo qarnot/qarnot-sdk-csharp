@@ -93,7 +93,7 @@ namespace QarnotSDK {
         #endregion
 
         /// <summary>
-	/// Request made on a running pool to re-sync the resource buckets to the compute nodes.
+        /// Request made on a running pool to re-sync the resource buckets to the compute nodes.
         ///  1 - Upload new files on your resource bucket,
         ///  2 - Call this method,
         ///  3 - The new files will appear on all the compute nodes in the $DOCKER_WORKDIR folder
@@ -101,18 +101,17 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-	public async Task UpdateResourcesAsync(CancellationToken cancellationToken = default(CancellationToken))
-	{
+        public async Task UpdateResourcesAsync(CancellationToken cancellationToken = default(CancellationToken))
+        {
             if (_api.IsReadOnly) 
-	    {
-	        throw new Exception("Can't update resources, this connection is configured in read-only mode");
-	    }
-
+            {
+                throw new Exception("Can't update resources, this connection is configured in read-only mode");
+            }
             var reqMsg = new HttpRequestMessage(new HttpMethod("PATCH"), _uri);
             using (var response = await _api._client.SendAsync(reqMsg, cancellationToken))
-	    {
+            {
                 await Utils.LookForErrorAndThrowAsync(_api._client, response);
-	    }
-	}
+            }
+        }
     }
 }
