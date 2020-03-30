@@ -60,7 +60,7 @@ namespace QarnotSDK {
         public virtual async Task AbortAsync(CancellationToken cancellationToken = default(CancellationToken)) {
             if (_api.IsReadOnly) throw new Exception("Can't abort tasks, this connection is configured in read-only mode");
             using (var response = await _api._client.PostAsync(_uri + "/abort", null, cancellationToken))
-                await Utils.LookForErrorAndThrowAsync(_api._client, response);
+                await Utils.LookForErrorAndThrowAsync(_api._client, response, cancellationToken);
         }
 
         /// <summary>
@@ -99,7 +99,7 @@ namespace QarnotSDK {
             if (_api.IsReadOnly) throw new Exception("Can't update resources, this connection is configured in read-only mode");
             var reqMsg = new HttpRequestMessage(new HttpMethod("PATCH"), _uri);
             using (var response = await _api._client.SendAsync(reqMsg, cancellationToken))
-                await Utils.LookForErrorAndThrowAsync(_api._client, response);
+                await Utils.LookForErrorAndThrowAsync(_api._client, response, cancellationToken);
         }
 
         /// <summary>
@@ -112,7 +112,7 @@ namespace QarnotSDK {
         public virtual async Task SnapshotAsync(CancellationToken cancellationToken = default(CancellationToken)) {
             if (_api.IsReadOnly) throw new Exception("Can't request a snapshot, this connection is configured in read-only mode");
             using (var response = await _api._client.PostAsync(_uri + "/snapshot", null, cancellationToken))
-                await Utils.LookForErrorAndThrowAsync(_api._client, response);
+                await Utils.LookForErrorAndThrowAsync(_api._client, response, cancellationToken);
         }
 
         /// <summary>
@@ -125,8 +125,8 @@ namespace QarnotSDK {
             Snapshot s = new QarnotSDK.Snapshot();
             s.Interval = Convert.ToInt32(interval);
             if (_api.IsReadOnly) throw new Exception("Can't configure snapshots, this connection is configured in read-only mode");
-            using (var response = await _api._client.PostAsJsonAsync<Snapshot>(_uri + "/snapshot/periodic", s))
-                await Utils.LookForErrorAndThrowAsync(_api._client, response);
+            using (var response = await _api._client.PostAsJsonAsync<Snapshot>(_uri + "/snapshot/periodic", s, cancellationToken))
+                await Utils.LookForErrorAndThrowAsync(_api._client, response, cancellationToken);
         }
         #endregion
 
@@ -142,7 +142,7 @@ namespace QarnotSDK {
         public virtual async Task CopyStdoutToAsync(Stream destinationStream, CancellationToken cancellationToken = default(CancellationToken)) {
             using (var response = await _api._client.GetAsync(_uri + "/stdout", cancellationToken))
             {
-                await Utils.LookForErrorAndThrowAsync(_api._client, response);
+                await Utils.LookForErrorAndThrowAsync(_api._client, response, cancellationToken);
                 await response.Content.CopyToAsync(destinationStream);
             }
         }
@@ -157,7 +157,7 @@ namespace QarnotSDK {
         public virtual async Task CopyStderrToAsync(Stream destinationStream, CancellationToken cancellationToken = default(CancellationToken)) {
             using (var response = await _api._client.GetAsync(_uri + "/stderr", cancellationToken))
             {
-                await Utils.LookForErrorAndThrowAsync(_api._client, response);
+                await Utils.LookForErrorAndThrowAsync(_api._client, response, cancellationToken);
                 await response.Content.CopyToAsync(destinationStream);
             }
         }
@@ -172,7 +172,7 @@ namespace QarnotSDK {
             if (_api.IsReadOnly) throw new Exception("Can't retrieve fresh standard output, this connection is configured in read-only mode");
             using (var response = await _api._client.PostAsync(_uri + "/stdout", null, cancellationToken))
             {
-                await Utils.LookForErrorAndThrowAsync(_api._client, response);
+                await Utils.LookForErrorAndThrowAsync(_api._client, response, cancellationToken);
                 await response.Content.CopyToAsync(destinationStream);
             }
         }
@@ -187,7 +187,7 @@ namespace QarnotSDK {
             if (_api.IsReadOnly) throw new Exception("Can't retrieve fresh standard error, this connection is configured in read-only mode");
             using (var response = await _api._client.PostAsync(_uri + "/stderr", null, cancellationToken))
             {
-                await Utils.LookForErrorAndThrowAsync(_api._client, response);
+                await Utils.LookForErrorAndThrowAsync(_api._client, response, cancellationToken);
                 await response.Content.CopyToAsync(destinationStream);
             }
         }

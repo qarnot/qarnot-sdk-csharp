@@ -10,6 +10,9 @@ namespace QarnotSDK
         public string Shortname { get; set; }
         public string PoolUuid { get; set; }
         public string State { get; set; }
+        public string PreviousState { get; set; }
+        public DateTime StateTransitionTime { get; set; }
+        public DateTime PreviousStateTransitionTime { get; set; }
         public DateTime CreationDate { get; set; }
         public DateTime LastModified { get; set; }
         public bool UseDependencies {get; set; }

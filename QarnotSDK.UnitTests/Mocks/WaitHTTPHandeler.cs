@@ -34,7 +34,7 @@ namespace QarnotSDK.UnitTests
                 End = DateTime.Now.AddSeconds(TimeToWait);
             }
 
-            var response = await Task.FromResult( new HttpResponseMessage(HttpStatusCode.Accepted)).ConfigureAwait(false);
+            var response = await Task.FromResult(new HttpResponseMessage(HttpStatusCode.Accepted)).ConfigureAwait(false);
             if (End > DateTime.Now)
             {
                 response.Content = new StringContent(PartialMessage, Encoding.UTF8, "application/json");

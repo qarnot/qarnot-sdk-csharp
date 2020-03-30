@@ -263,6 +263,35 @@ namespace QarnotSDK.UnitTests
         }
 
         [Test]
+        public void SetPreparationTaskVerifyTheStoreValue()
+        {
+            var commanLine = "echo hello world";
+            var pool = new QPool(Connect, Guid.NewGuid());
+            var prepartionTask = new PoolPreparationTask(commanLine);
+            pool.SetPreparationTask(prepartionTask);
+            Assert.AreEqual(pool.PreparationCommandLine, commanLine);
+        }
+
+        [Test]
+        public void PoolPreparationCommandLineVerifyTheStoreValue()
+        {
+            var commanLine = "echo hello world";
+            var pool = new QPool(Connect, Guid.NewGuid());
+            pool.PreparationCommandLine = commanLine;
+            Assert.AreEqual(pool.PreparationCommandLine, commanLine);
+        }
+
+        [Test]
+        public void CheckPoolPreparationCommandLineIsSendInThePoolRequest()
+        {
+            var commanLine = "echo hello world";
+            var pool = new QPool(Connect, Guid.NewGuid());
+            pool.PreparationCommandLine = commanLine;
+            pool.StartAsync("profile", 5);
+            Assert.IsTrue(HttpHandler.ParsedRequests.Any(request => request.Content.Contains("\"CommandLine\":\"" + commanLine + "\"")));
+        }
+
+        [Test]
         public void SetConstraintDeleteOneElement()
         {
             var pool = new QPool(Connect, Guid.NewGuid());
@@ -336,6 +365,18 @@ namespace QarnotSDK.UnitTests
             {
                 Assert.AreEqual(pool.Constants[dict[i].Key], dict[i].Value);
             }
+        }
+
+        [Test]
+        public async Task CheckCoreCountTestValues()
+        {
+            HttpHandler.ResponseBody = PoolTestsData.PoolResponseFullBody;
+            string uuid = Guid.NewGuid().ToString();
+            QPool pool = new QPool(Connect, uuid);
+            await pool.UpdateStatusAsync();
+            Assert.AreEqual(pool.Status.RunningInstancesInfo.PerRunningInstanceInfo[0].CoreCount, 8);
+            Assert.AreEqual(pool.Status.RunningInstancesInfo.PerRunningInstanceInfo[1].CoreCount, 8);
+            Assert.AreEqual(pool.Status.RunningInstancesInfo.PerRunningInstanceInfo[2].CoreCount, 0);
         }
 
         [Test]

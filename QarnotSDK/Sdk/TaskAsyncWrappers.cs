@@ -109,7 +109,7 @@ namespace QarnotSDK {
         /// </summary>
         public virtual void Commit(CancellationToken cancellationToken = default) {
            try {
-                CommitAsync().Wait();
+                CommitAsync(cancellationToken).Wait();
             } catch (AggregateException ex) {
                 throw ex.InnerException;
             }
@@ -123,7 +123,7 @@ namespace QarnotSDK {
         /// <param name="cancellationToken">Optional token to cancel the request</param>
         public virtual void DownloadResult (string outputDirectory, CancellationToken cancellationToken=default) {
             try {
-                DownloadResultAsync(outputDirectory).Wait();
+                DownloadResultAsync(outputDirectory, cancellationToken).Wait();
             } catch (AggregateException ex) {
                 throw ex.InnerException;
             }

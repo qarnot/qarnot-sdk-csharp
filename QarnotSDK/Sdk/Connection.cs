@@ -324,7 +324,7 @@ namespace QarnotSDK {
         public virtual async Task<List<QTask>> RetrieveTasksAsync(CancellationToken cancellationToken = default(CancellationToken)) {
             using(var response = await _client.GetAsync("tasks", cancellationToken))
             {
-                await Utils.LookForErrorAndThrowAsync(_client, response);
+                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
 
                 var qapiTaskList = await response.Content.ReadAsAsync<List<TaskApi>>(cancellationToken);
                 var ret = new List<QTask>();
@@ -343,7 +343,7 @@ namespace QarnotSDK {
         public virtual async Task<List<QTaskSummary>> RetrieveTaskSummariesAsync(CancellationToken cancellationToken = default(CancellationToken)) {
             using (var response = await _client.GetAsync("tasks/summaries", cancellationToken))
             {
-                await Utils.LookForErrorAndThrowAsync(_client, response);
+                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
 
                 var qapiTaskList = await response.Content.ReadAsAsync<List<TaskApi>>(cancellationToken);
                 var ret = new List<QTaskSummary>();
@@ -363,7 +363,7 @@ namespace QarnotSDK {
         public virtual async Task<List<QTask>> RetrieveTasksAsync(QDataDetail<QTask> level, CancellationToken cancellationToken = default(CancellationToken)) {
             using (var response = await _client.PostAsJsonAsync<DataDetailApi<QTask>>("tasks/search", level._dataDetailApi, cancellationToken))
             {
-                await Utils.LookForErrorAndThrowAsync(_client, response);
+                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
 
                 var qapiTaskList = await response.Content.ReadAsAsync<List<TaskApi>>(cancellationToken);
                 var ret = new List<QTask>();
@@ -387,7 +387,7 @@ namespace QarnotSDK {
             var uri = "tasks/?tag=" + string.Join(",", tags.Select(tag => HttpUtility.UrlEncode(tag)));
             using (var response = await _client.GetAsync(uri, cancellationToken))
             {
-                await Utils.LookForErrorAndThrowAsync(_client, response);
+                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
 
                 var qapiTaskList = await response.Content.ReadAsAsync<List<TaskApi>>(cancellationToken);
                 var ret = new List<QTask>();
@@ -411,7 +411,7 @@ namespace QarnotSDK {
             var uri = "tasks/summaries?tag=" + string.Join(",", tags.Select(tag => HttpUtility.UrlEncode(tag)));
             using (var response = await _client.GetAsync(uri, cancellationToken))
             {
-                await Utils.LookForErrorAndThrowAsync(_client, response);
+                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
 
                 var qapiTaskList = await response.Content.ReadAsAsync<List<TaskApi>>(cancellationToken);
                 var ret = new List<QTaskSummary>();
@@ -439,7 +439,7 @@ namespace QarnotSDK {
         public virtual async Task<List<QPool>> RetrievePoolsAsync(CancellationToken cancellationToken = default(CancellationToken)) {
             using (var response = await _client.GetAsync("pools", cancellationToken))
             {
-                await Utils.LookForErrorAndThrowAsync(_client, response);
+                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
                 var list = await response.Content.ReadAsAsync<List<PoolApi>>(cancellationToken);
                 var ret = new List<QPool>();
                 foreach (var item in list) {
@@ -457,7 +457,7 @@ namespace QarnotSDK {
         public virtual async Task<List<QPoolSummary>> RetrievePoolSummariesAsync(CancellationToken cancellationToken = default(CancellationToken)) {
             using (var response = await _client.GetAsync("pools/summaries", cancellationToken))
             {
-                await Utils.LookForErrorAndThrowAsync(_client, response);
+                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
                 var list = await response.Content.ReadAsAsync<List<PoolApi>>(cancellationToken);
                 var ret = new List<QPoolSummary>();
                 foreach (var item in list) {
@@ -476,7 +476,7 @@ namespace QarnotSDK {
         public virtual async Task<List<QPool>> RetrievePoolsAsync(QDataDetail<QPool> level, CancellationToken cancellationToken = default(CancellationToken)) {
             using (var response = await _client.PostAsJsonAsync<DataDetailApi<QPool>>("pools/search", level._dataDetailApi, cancellationToken))
             {
-                await Utils.LookForErrorAndThrowAsync(_client, response);
+                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
 
                 var qapiPoolList = await response.Content.ReadAsAsync<List<PoolApi>>(cancellationToken);
                 var ret = new List<QPool>();
@@ -502,7 +502,7 @@ namespace QarnotSDK {
             var uri = baseUri + string.Join(",", tags.Select(tag => HttpUtility.UrlEncode(tag)));
             using (var response = await _client.GetAsync(uri, cancellationToken))
             {
-                await Utils.LookForErrorAndThrowAsync(_client, response);
+                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
 
                 var qapiPoolList = await response.Content.ReadAsAsync<List<PoolApi>>(cancellationToken);
                 var ret = new List<QPool>();
@@ -523,7 +523,7 @@ namespace QarnotSDK {
             var baseUri =  "jobs/search";
             using (var response = await _client.PostAsJsonAsync<DataDetailApi<QJob>>(baseUri, level._dataDetailApi, cancellationToken))
             {
-                await Utils.LookForErrorAndThrowAsync(_client, response);
+                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
 
                 var qjoblist = await response.Content.ReadAsAsync<List<JobApi>>(cancellationToken);
                 var ret = new List<QJob>();
@@ -650,7 +650,7 @@ namespace QarnotSDK {
         /// <returns>A new Bucket.</returns>
         public virtual async Task<QBucket> RetrieveOrCreateBucketAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken)) {
             var bucket = await RetrieveBucketAsync(bucketName, cancellationToken);
-            return bucket?? await CreateBucketAsync(bucketName);
+            return bucket?? await CreateBucketAsync(bucketName, cancellationToken);
         }
 
         /// <summary>
@@ -661,7 +661,7 @@ namespace QarnotSDK {
         public virtual async Task<ApiSettings> RetrieveApiSettingsAsync(CancellationToken cancellationToken = default(CancellationToken)) {
             using (var response = await _client.GetAsync("settings", cancellationToken))
             {
-                await Utils.LookForErrorAndThrowAsync(_client, response);
+                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
                 return await response.Content.ReadAsAsync<ApiSettings>(cancellationToken);
             }
         }
@@ -686,7 +686,7 @@ namespace QarnotSDK {
             UserInformation u;
             using (var response = await _client.GetAsync("info", cancellationToken))
             {
-                await Utils.LookForErrorAndThrowAsync(_client, response);
+                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
                 u = await response.Content.ReadAsAsync<UserInformation>(cancellationToken);
             }
 
@@ -710,7 +710,7 @@ namespace QarnotSDK {
         public virtual async Task<List<string>> RetrieveProfilesAsync(CancellationToken cancellationToken = default(CancellationToken)) {
             using (var response = await _client.GetAsync("profiles", cancellationToken))
             {
-                await Utils.LookForErrorAndThrowAsync(_client, response);
+                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
                 return await response.Content.ReadAsAsync<List<string>>(cancellationToken);
             }
         }
@@ -724,7 +724,7 @@ namespace QarnotSDK {
         public virtual async Task<List<Constant>> RetrieveConstantsAsync(string profile, CancellationToken cancellationToken = default(CancellationToken)) {
             using (var response = await _client.GetAsync("profiles/" + profile, cancellationToken))
             {
-                await Utils.LookForErrorAndThrowAsync(_client, response);
+                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
                 var list = await response.Content.ReadAsAsync<ProfilesConstantApi>(cancellationToken);
                 return list.Constants;
             }
@@ -763,7 +763,7 @@ namespace QarnotSDK {
         public virtual async Task<QTask> RetrieveTaskByUuidAsync(string uuid, CancellationToken cancellationToken = default(CancellationToken)) {
             using (var response = await _client.GetAsync($"tasks/{uuid}", cancellationToken))
             {
-                await Utils.LookForErrorAndThrowAsync(_client, response);
+                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
                 var apiTask = await response.Content.ReadAsAsync<TaskApi>(cancellationToken);
                 return await QTask.CreateAsync(this, apiTask);
             }
@@ -778,7 +778,7 @@ namespace QarnotSDK {
         public virtual async Task<QTaskSummary> RetrieveTaskSummaryByUuidAsync(string uuid, CancellationToken cancellationToken = default(CancellationToken)) {
             using (var response = await _client.GetAsync($"tasks/{uuid}", cancellationToken))//TODO:Add the url path for summary when api is ready
             {
-                await Utils.LookForErrorAndThrowAsync(_client, response);
+                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
                 var apiTask = await response.Content.ReadAsAsync<TaskApi>(cancellationToken);
                 return await QTaskSummary.CreateAsync(this, apiTask);
             }
@@ -794,7 +794,7 @@ namespace QarnotSDK {
         public virtual async Task<QJob> RetrieveJobByUuidAsync(string uuid, CancellationToken cancellationToken = default(CancellationToken)) {
             using (var response = await _client.GetAsync($"jobs/{uuid}", cancellationToken))
             {
-                await Utils.LookForErrorAndThrowAsync(_client, response);
+                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
                 var apiJob = await response.Content.ReadAsAsync<JobApi>(cancellationToken);
                 return new QJob (this, apiJob);
             }
@@ -832,7 +832,7 @@ namespace QarnotSDK {
         public virtual async Task<QPool> RetrievePoolByUuidAsync(string uuid, CancellationToken cancellationToken = default(CancellationToken)) {
             using (var response = await _client.GetAsync($"pools/{uuid}", cancellationToken))
             {
-                await Utils.LookForErrorAndThrowAsync(_client, response);
+                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
                 var apiPool = await response.Content.ReadAsAsync<PoolApi>(cancellationToken);
                 return await QPool.CreateAsync(this, apiPool);
             }
@@ -847,7 +847,7 @@ namespace QarnotSDK {
         public virtual async Task<QPoolSummary> RetrievePoolSummaryByUuidAsync(string uuid, CancellationToken cancellationToken = default(CancellationToken)) {
             using (var response = await _client.GetAsync($"pools/{uuid}", cancellationToken))//TODO:Add the url path for summary when api is ready
             {
-                await Utils.LookForErrorAndThrowAsync(_client, response);
+                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
                 var apiPool = await response.Content.ReadAsAsync<PoolApi>(cancellationToken);
                 return await QPoolSummary.CreateAsync(this, apiPool);
             }

@@ -14,13 +14,15 @@ namespace QarnotSDK.UnitTests
 
     public class ParsedRequest
     {
+        public ParsedRequest()
+        {
+        }
+
         public string Method { get; set; }
 
         public string Uri { get; set; }
 
         public string Content { get; set; }
-
-        public ParsedRequest() {}
 
         public override string ToString() => $"[{Method}-{Uri}] : {Content}";
     }
@@ -28,15 +30,17 @@ namespace QarnotSDK.UnitTests
     public class InterceptingFakeHttpHandler : HttpClientHandler
     {
         private const string STORAGE_RESPONSE = @"{""storage"":""https://localhost/""}";
-        private const string SUCCESS_RESPONSE = "{\"Your\":\"response\"}";
-        public readonly List<ParsedRequest> ParsedRequests = new List<ParsedRequest>();
 
-        public string ResponseBody { get; set; }
+        private const string SUCCESS_RESPONSE = "{\"Your\":\"response\"}";
 
         public InterceptingFakeHttpHandler()
             : base()
         {
         }
+
+        public List<ParsedRequest> ParsedRequests { get; } = new List<ParsedRequest>();
+
+        public string ResponseBody { get; set; }
 
         [SuppressMessage("Microsoft.Globalization", "CA1303:DoNotPassLiteralsAsLocalizedParameters", Justification = "UnitTest are not multilangues.")]
         protected override async Task<HttpResponseMessage> SendAsync(
@@ -50,6 +54,7 @@ namespace QarnotSDK.UnitTests
             {
                 return await SendHttpAsync(HttpStatusCode.Accepted, STORAGE_RESPONSE);
             }
+
             return await SendHttpAsync(HttpStatusCode.Accepted, ResponseBody ?? SUCCESS_RESPONSE);
         }
 

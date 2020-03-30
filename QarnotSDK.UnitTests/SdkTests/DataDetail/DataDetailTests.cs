@@ -123,21 +123,21 @@ namespace QarnotSDK.UnitTests
         [Test]
         public void GetAPIFilterPropertyNameForJobLastModifiedReturnTheGoodStringValue()
         {
-            var value = DataDetailHelper.GetAPIFilterPropertyName<QJob, System.DateTime>(t => t.LastModified);
+            var value = DataDetailHelper.GetAPIFilterPropertyName<QJob, System.DateTime?>(t => t.LastModified);
             Assert.AreEqual(value, "LastModified");
         }
 
         [Test]
         public void GetAPISelectPropertyNameForJobLastModifiedReturnTheGoodStringValue()
         {
-            var value = DataDetailHelper.GetAPISelectPropertyName<QJob, System.DateTime>(t => t.LastModified);
+            var value = DataDetailHelper.GetAPISelectPropertyName<QJob, System.DateTime?>(t => t.LastModified);
             Assert.AreEqual(value, "LastModified");
         }
 
         [Test]
         public void GetAPIFilterPropertyNameForJobCreationDateReturnTheGoodStringValue()
         {
-            var value = DataDetailHelper.GetAPIFilterPropertyName<QJob, System.DateTime>(t => t.CreationDate);
+            var value = DataDetailHelper.GetAPIFilterPropertyName<QJob, System.DateTime?>(t => t.CreationDate);
             Assert.AreEqual(value, "CreationDate");
         }
 
@@ -303,17 +303,17 @@ namespace QarnotSDK.UnitTests
         }
 
         [Test]
-        public void GetAPIFilterPropertyNameForPoolIsElasticReturnTheGoodStringValue()
-        {
-            var value = DataDetailHelper.GetAPIFilterPropertyName<QPool, bool>(t => t.IsElastic);
-            Assert.AreEqual(value, "ElasticProperty.IsElastic");
-        }
-
-        [Test]
         public void GetAPISelectPropertyNameForPoolIsElasticReturnTheGoodStringValue()
         {
             var value = DataDetailHelper.GetAPISelectPropertyName<QPool, bool>(t => t.IsElastic);
             Assert.AreEqual(value, "ElasticProperty.IsElastic");
+        }
+
+        [Test]
+        public void GetAPIFilterPropertyNameForPoolPreparationCommandLineReturnTheGoodStringValue()
+        {
+            var value = DataDetailHelper.GetAPIFilterPropertyName<QPool, string>(t => t.PreparationCommandLine);
+            Assert.AreEqual(value, "PreparationTask.CommandLine");
         }
 
         [Test]

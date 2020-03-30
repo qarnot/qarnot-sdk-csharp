@@ -2,11 +2,11 @@ namespace QarnotSDK.UnitTests
 {
     using System;
     using System.Collections.Generic;
-    using System.Threading.Tasks;
     using System.Reflection;
-    using NUnit.Framework;
+    using System.Threading.Tasks;
     using Amazon.Runtime;
     using Amazon.S3;
+    using NUnit.Framework;
     using QarnotSDK;
     using QarnotSDK.Internal;
 
@@ -25,15 +25,14 @@ namespace QarnotSDK.UnitTests
                 uri: computeUrl,
                 storageUri: storageUrl,
                 token: token,
-                forceStoragePathStyle: forcePathStyle
-            );
+                forceStoragePathStyle: forcePathStyle);
             connection.StorageAccessKey = storageAccess;
 
             var s3Client = await connection.GetConfiguredS3ClientAsync();
             Assert.AreEqual(new Uri(s3Client.Config.ServiceURL), new Uri(storageUrl));
 
             // Use reflection to check that the s3client is well configured
-            var field= typeof (AmazonS3Client).GetProperty(
+            var field = typeof(AmazonS3Client).GetProperty(
                 "Credentials",
                 BindingFlags.NonPublic | BindingFlags.GetProperty | BindingFlags.Instance);
 

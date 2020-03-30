@@ -1,1 +1,2 @@
 * text eol=crlf
+Documentation/build_documentation.sh text eol=lf

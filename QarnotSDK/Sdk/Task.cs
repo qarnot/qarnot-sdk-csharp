@@ -135,7 +135,76 @@ namespace QarnotSDK {
         /// Available only after the submission. Use UpdateStatus or UpdateStatusAsync to refresh.
         /// </summary>
         [InternalDataApiName(Name="State")]
-        public virtual string State { get { return _taskApi != null ? _taskApi.State : null; } }
+        public virtual string State { get { return _taskApi?.State; } }
+
+        /// <summary>
+        /// Retrieve the task previous state (see QTaskStates).
+        /// Available only after the submission. Use UpdateStatus or UpdateStatusAsync to refresh.
+        /// </summary>
+        [InternalDataApiName(Name = "PreviousState")]
+        public virtual string PreviousState { get { return _taskApi?.PreviousState; } }
+
+        /// <summary>
+        /// Retrieve the task state transition utc-time (see QTaskStates).
+        /// Available only after the submission. Use UpdateStatus or UpdateStatusAsync to refresh.
+        /// </summary>
+        [InternalDataApiName(Name = "StateTransitionTime")]
+        public virtual DateTime? StateTransitionTime
+        {
+            get
+            {
+                if (_taskApi != null)
+                {
+                    if (_taskApi.StateTransitionTime != default)
+                    {
+                        return _taskApi.StateTransitionTime;
+                    }
+                }
+
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Retrieve the task previous state transition utc-time (see QTaskStates).
+        /// Available only after the submission. Use UpdateStatus or UpdateStatusAsync to refresh.
+        /// </summary>
+        [InternalDataApiName(Name = "PreviousStateTransitionTime")]
+        public virtual DateTime? PreviousStateTransitionTime
+        {
+            get
+            {
+                if (_taskApi != null)
+                {
+                    if (_taskApi.PreviousStateTransitionTime != default)
+                    {
+                        return _taskApi.PreviousStateTransitionTime;
+                    }
+                }
+
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// The Task last modified date.
+        /// </summary>
+        [InternalDataApiName(Name = "LastModified")]
+        public virtual DateTime? LastModified
+        {
+            get
+            {
+                if (_taskApi != null)
+                {
+                    if (_taskApi.LastModified != default)
+                    {
+                        return _taskApi.LastModified;
+                    }
+                }
+
+                return null;
+            }
+        }
 
         /// <summary>
         /// Retrieve the task errors.
@@ -610,7 +679,7 @@ namespace QarnotSDK {
             double sleepingTimeMs;
             var start = DateTime.Now;
             while (!Completed) {
-                await UpdateStatusAsync();
+                await UpdateStatusAsync(ct);
                 var elasped = (DateTime.Now - start).Seconds;
 
                 // loop timeout exit condition
@@ -621,7 +690,7 @@ namespace QarnotSDK {
                     sleepingTimeMs = Math.Min(period, TimeSpan.FromSeconds(taskTimeoutSeconds - elasped).TotalMilliseconds);
                 else
                     sleepingTimeMs = period;
-                await Task.Delay(TimeSpan.FromMilliseconds(sleepingTimeMs));
+                await Task.Delay(TimeSpan.FromMilliseconds(sleepingTimeMs), ct);
             }
             return true;
         }

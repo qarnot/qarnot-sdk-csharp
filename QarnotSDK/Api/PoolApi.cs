@@ -122,6 +122,10 @@ namespace QarnotSDK {
         /// </summary>
         public UInt32 InstanceId { get; set; }
         /// <summary>
+        /// Core Count.
+        /// </summary>
+        public UInt32 CoreCount { get; set; }
+        /// <summary>
         /// Maximum frequency in Ghz.
         /// </summary>
         public float MaxFrequencyGHz { get; set; }
@@ -371,6 +375,27 @@ namespace QarnotSDK {
         }
     }
 
+    /// <summary>
+    /// Represents the preparation commands and environment of each task running by this pool.
+    /// </summary>
+    public class PoolPreparationTask
+    {
+        /// <summary>
+        /// Command line value.
+        /// </summary>
+        /// <value></value>
+        public string CommandLine { get; set; }
+
+        /// <summary>
+        /// Command line constructor.
+        /// </summary>
+        /// <param name="commandLine">command line to execute before launching a task</param>
+        public PoolPreparationTask(string commandLine)
+        {
+            CommandLine = commandLine;
+        }
+    }
+
     internal class PoolApi {
         public override string ToString() {
             return string.Format("[PoolApi: Name={0}, Profile={1}, InstanceCount={2}, State={3}, CreationDate={4}, Uuid={5}]", Name, Profile, InstanceCount, State, CreationDate, Uuid);
@@ -381,6 +406,10 @@ namespace QarnotSDK {
         public uint InstanceCount { get; set; }
         public List<string> ResourceBuckets { get; set; }
         public string State { get; set; }
+        public string PreviousState { get; set; }
+        public DateTime StateTransitionTime { get; set; }
+        public DateTime PreviousStateTransitionTime { get; set; }
+        public DateTime LastModified { get; set; }
         public List<QPoolError> Errors { get; set; }
         public DateTime CreationDate { get; set; }
         public List<KeyValHelper> Constants { get; set; }
@@ -390,7 +419,7 @@ namespace QarnotSDK {
         public string Shortname { get; set; }
         public QPoolStatus Status { get; set; }
         public QPoolElasticProperty ElasticProperty { get; set; }
-
+        public PoolPreparationTask PreparationTask { get; set; }
 
         internal PoolApi() {
             Constants = new List<KeyValHelper>();

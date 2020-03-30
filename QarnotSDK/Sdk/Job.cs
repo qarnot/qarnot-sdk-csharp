@@ -60,7 +60,7 @@ namespace QarnotSDK {
         /// The Job name
         /// </summary>
         [InternalDataApiName(Name="Name")]
-        public virtual string Name 
+        public virtual string Name
         {
             get => _jobApi.Name;
             set => _jobApi.Name = value;
@@ -86,9 +86,57 @@ namespace QarnotSDK {
         /// Retrieve the job state (see QJobStates).
         /// Available only after the submission. Use UpdateStatus or UpdateStatusAsync to refresh.
         /// </summary>
-        /// 
         [InternalDataApiName(Name="State")]
-        public virtual string State { get => _jobApi.State; }
+        public virtual string State { get { return _jobApi?.State; } }
+
+        /// <summary>
+        /// Retrieve the job previous state (see QJobStates).
+        /// Available only after the submission. Use UpdateStatus or UpdateStatusAsync to refresh.
+        /// </summary>
+        [InternalDataApiName(Name="PreviousState")]
+        public virtual string PreviousState { get { return _jobApi?.PreviousState; } }
+
+        /// <summary>
+        /// Retrieve the job state transition utc time (see QJobStates).
+        /// Available only after the submission. Use UpdateStatus or UpdateStatusAsync to refresh.
+        /// </summary>
+        [InternalDataApiName(Name = "StateTransitionTime")]
+        public virtual DateTime? StateTransitionTime
+        {
+            get
+            {
+                if (_jobApi != null)
+                {
+                    if (_jobApi.StateTransitionTime != default)
+                    {
+                        return _jobApi.StateTransitionTime;
+                    }
+                }
+
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Retrieve the job previous state transition utc time (see QJobStates).
+        /// Available only after the submission. Use UpdateStatus or UpdateStatusAsync to refresh.
+        /// </summary>
+        [InternalDataApiName(Name = "PreviousStateTransitionTime")]
+        public virtual DateTime? PreviousStateTransitionTime
+        {
+            get
+            {
+                if (_jobApi != null)
+                {
+                    if (_jobApi.PreviousStateTransitionTime != default)
+                    {
+                        return _jobApi.PreviousStateTransitionTime;
+                    }
+                }
+
+                return null;
+            }
+        }
 
         /// <summary>
         /// The Job creation date
@@ -100,11 +148,25 @@ namespace QarnotSDK {
         /// The Job last modified date
         /// </summary>
         [InternalDataApiName(Name="LastModified")]
-        public virtual DateTime LastModified { get => _jobApi.LastModified; }
+        public virtual DateTime? LastModified
+        {
+            get
+            {
+                if (_jobApi != null)
+                {
+                    if (_jobApi.LastModified != default)
+                    {
+                        return _jobApi.LastModified;
+                    }
+                }
+
+                return null;
+            }
+        }
 
         /// <summary>
         /// Boolean to indicate if the job use dependency behaviour
-        /// Need to be true to allow the use of dependencies for tasks in this job.</param>
+        /// Need to be true to allow the use of dependencies for tasks in this job.
         /// </summary>
         [InternalDataApiName(Name="UseDependencies")]
         public virtual bool UseDependencies
@@ -134,7 +196,7 @@ namespace QarnotSDK {
         }
 
         /// <summary>
-        /// The pool the job is attached to. null if the job is not attached to a pool. 
+        /// The pool the job is attached to null if the job is not attached to a pool.
         /// </summary>
         [InternalDataApiName(IsFilterable=false, IsSelectable=false)]
         public virtual QPool Pool

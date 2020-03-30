@@ -200,6 +200,10 @@ namespace QarnotSDK {
         /// </summary>
         public UInt32 InstanceId { get; set; }
         /// <summary>
+        /// Core Count.
+        /// </summary>
+        public UInt32 CoreCount { get; set; }
+        /// <summary>
         /// Maximum frequency in Ghz.
         /// </summary>
         public float MaxFrequencyGHz { get; set; }
@@ -479,6 +483,10 @@ namespace QarnotSDK {
         public List<string> ResourceBuckets { get; set; }
         public string ResultBucket { get; set; }
         public string State { get; set; }
+        public string PreviousState { get; set; }
+        public DateTime StateTransitionTime { get; set; }
+        public DateTime PreviousStateTransitionTime { get; set; }
+        public DateTime LastModified { get; set; }
         public List<QTaskError> Errors { get; set; }
         public int SnapshotInterval { get; set; }
         public uint ResultsCount { get; set; }
