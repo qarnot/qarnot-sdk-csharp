@@ -3,15 +3,16 @@
     {
       "src": [
         {
-	        "src": "../QarnotSDK",
+	  "src": "..",
           "files": [
-            "bin/Debug/net45/QarnotSDK.dll"
+            "QarnotSDK/QarnotSDK.csproj"
           ]
         }
       ],
       "dest": "sdk",
       "disableGitFeatures": false,
-      "disableDefaultFilter": false
+      "disableDefaultFilter": false,
+      "properties": { "TargetFramework": "net45" }
     }
   ],
   "build": {
