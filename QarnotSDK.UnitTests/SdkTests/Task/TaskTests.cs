@@ -63,13 +63,13 @@ namespace QarnotSDK.UnitTests
         [Test]
         public async Task CheckVpnConnectionsTestValues()
         {
-			HttpHandler.ResponseBody = TaskTestsData.TaskResponseFullBody;
+            HttpHandler.ResponseBody = TaskTestsData.TaskResponseFullBody;
             string uuid = Guid.NewGuid().ToString();
             QTask task = new QTask(Connect, uuid);
             await task.UpdateStatusAsync();
             Assert.AreEqual(task.Status.RunningInstancesInfo.PerRunningInstanceInfo[0].VpnConnections[0].VpnName, "my-vpn");
             Assert.AreEqual(task.Status.RunningInstancesInfo.PerRunningInstanceInfo[0].VpnConnections[0].NodeIPAddressCidr, "172.20.0.14/16");
-		}
+        }
 
         // TODO: create unitTests for SnapshotAsync
         // TODO: create unitTests for CopyStdoutToAsync
@@ -280,7 +280,7 @@ namespace QarnotSDK.UnitTests
         }
 
         [Test]
-        public async Task DownloadResultAsyncIntergrationTestCheckTheCreationOfADirectoryInTmp()
+        public void DownloadResultAsyncIntergrationTestCheckTheCreationOfADirectoryInTmp()
         {
             var task = new QTask(Connect, Guid.NewGuid().ToString());
             string dirName = TmpDir;
@@ -323,17 +323,12 @@ namespace QarnotSDK.UnitTests
 
             DateTime now = DateTime.Now;
             DateTime min_time = now.AddSeconds(1);
-            DateTime max_time = now.AddSeconds(3);
 
             await task.WaitAsync(2);
 
             if (DateTime.Now < min_time)
             {
                 throw new Exception($"wait job is to short... start: {now}, actual:{DateTime.Now} < {min_time}");
-            }
-            else if (DateTime.Now > max_time)
-            {
-                throw new Exception($"wait job is to long... start: {now}, actual:{DateTime.Now} > {max_time}");
             }
         }
 

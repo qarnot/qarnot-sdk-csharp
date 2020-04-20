@@ -73,10 +73,6 @@ namespace QarnotSDK.UnitTests
             {
                 throw new Exception($"wait job is good... start: {now}, actual:{DateTime.Now} > {max_time}");
             }
-            else
-            {
-                string message = "wait job is good...";
-            }
 
             await job0.UpdateStatusAsync();
             await job0.TerminateAsync();

@@ -15,7 +15,8 @@ namespace QarnotSDK.UnitTests
         private const string ComputeUrl = "http://compute";
         private const string Token = "token";
         private Connection Api;
-        private InterceptingFakeHttpHandler HttpHandler;
+
+        private InterceptingFakeHttpHandler HttpHandler { get; set; }
 
         [SetUp]
         public void SetUp()
