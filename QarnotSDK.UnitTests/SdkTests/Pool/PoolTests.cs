@@ -339,6 +339,18 @@ namespace QarnotSDK.UnitTests
         }
 
         [Test]
+        public async Task CheckCoreCountTestValues()
+        {
+            HttpHandler.ResponseBody = PoolTestsData.PoolResponseFullBody;
+            string uuid = Guid.NewGuid().ToString();
+            QPool pool = new QPool(Connect, uuid);
+            await pool.UpdateStatusAsync();
+            Assert.AreEqual(pool.Status.RunningInstancesInfo.PerRunningInstanceInfo[0].CoreCount, 8);
+            Assert.AreEqual(pool.Status.RunningInstancesInfo.PerRunningInstanceInfo[1].CoreCount, 8);
+            Assert.AreEqual(pool.Status.RunningInstancesInfo.PerRunningInstanceInfo[2].CoreCount, 0);
+        }
+
+        [Test]
         public void SetTagsFailWhenNullArgument()
         {
             var pool = new QPool(Connect, Guid.NewGuid());

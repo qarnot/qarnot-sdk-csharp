@@ -200,6 +200,10 @@ namespace QarnotSDK {
         /// </summary>
         public UInt32 InstanceId { get; set; }
         /// <summary>
+        /// Core Count.
+        /// </summary>
+        public UInt32 CoreCount { get; set; }
+        /// <summary>
         /// Maximum frequency in Ghz.
         /// </summary>
         public float MaxFrequencyGHz { get; set; }

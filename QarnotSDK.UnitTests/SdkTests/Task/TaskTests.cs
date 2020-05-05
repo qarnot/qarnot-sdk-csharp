@@ -71,6 +71,18 @@ namespace QarnotSDK.UnitTests
             Assert.AreEqual(task.Status.RunningInstancesInfo.PerRunningInstanceInfo[0].VpnConnections[0].NodeIPAddressCidr, "172.20.0.14/16");
         }
 
+        [Test]
+        public async Task CheckCoreCountTestValues()
+        {
+            HttpHandler.ResponseBody = TaskTestsData.TaskResponseFullBody;
+            string uuid = Guid.NewGuid().ToString();
+            QTask task = new QTask(Connect, uuid);
+            await task.UpdateStatusAsync();
+            Assert.AreEqual(task.Status.RunningInstancesInfo.PerRunningInstanceInfo[0].CoreCount, 8);
+            Assert.AreEqual(task.Status.RunningInstancesInfo.PerRunningInstanceInfo[1].CoreCount, 8);
+            Assert.AreEqual(task.Status.RunningInstancesInfo.PerRunningInstanceInfo[2].CoreCount, 0);
+        }
+
         // TODO: create unitTests for SnapshotAsync
         // TODO: create unitTests for CopyStdoutToAsync
         // TODO: create unitTests for CopyStderrToAsync
