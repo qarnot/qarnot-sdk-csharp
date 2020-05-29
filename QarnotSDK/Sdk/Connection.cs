@@ -650,7 +650,7 @@ namespace QarnotSDK {
         /// <returns>A new Bucket.</returns>
         public virtual async Task<QBucket> RetrieveOrCreateBucketAsync(string bucketName, CancellationToken cancellationToken = default(CancellationToken)) {
             var bucket = await RetrieveBucketAsync(bucketName, cancellationToken);
-            return bucket?? await CreateBucketAsync(bucketName);
+            return bucket?? await CreateBucketAsync(bucketName, cancellationToken);
         }
 
         /// <summary>

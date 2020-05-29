@@ -240,7 +240,7 @@ namespace QarnotSDK {
                 using (var fileStream = new FileStream(localFile, FileMode.Create, FileAccess.Write, FileShare.ReadWrite)) {
                     using (var httpStream = await DownloadStreamAsync(remoteFile, cancellationToken)) {
                         await httpStream.CopyToAsync(fileStream);
-                        await fileStream.FlushAsync();
+                        await fileStream.FlushAsync(cancellationToken);
                     }
                 }
             } catch (Exception ex) {
@@ -478,7 +478,7 @@ namespace QarnotSDK {
                 throw new IOException("No such folder " + localFolderPath);
 
             var remoteName = String.IsNullOrEmpty(remoteFolderPath) ? Path.GetFileName(localFolderPath) : remoteFolderPath;
-            await SyncLocalToRemoteAsync(localFolderPath, true, remoteName);
+            await SyncLocalToRemoteAsync(localFolderPath, cancellationToken, true, remoteName);
         }
 
         /// <summary>

@@ -125,7 +125,7 @@ namespace QarnotSDK {
             Snapshot s = new QarnotSDK.Snapshot();
             s.Interval = Convert.ToInt32(interval);
             if (_api.IsReadOnly) throw new Exception("Can't configure snapshots, this connection is configured in read-only mode");
-            using (var response = await _api._client.PostAsJsonAsync<Snapshot>(_uri + "/snapshot/periodic", s))
+            using (var response = await _api._client.PostAsJsonAsync<Snapshot>(_uri + "/snapshot/periodic", s, cancellationToken))
                 await Utils.LookForErrorAndThrowAsync(_api._client, response, cancellationToken);
         }
         #endregion

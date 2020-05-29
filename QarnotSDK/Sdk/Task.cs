@@ -610,7 +610,7 @@ namespace QarnotSDK {
             double sleepingTimeMs;
             var start = DateTime.Now;
             while (!Completed) {
-                await UpdateStatusAsync();
+                await UpdateStatusAsync(ct);
                 var elasped = (DateTime.Now - start).Seconds;
 
                 // loop timeout exit condition
