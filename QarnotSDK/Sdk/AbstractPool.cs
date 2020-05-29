@@ -59,7 +59,7 @@ namespace QarnotSDK {
         public virtual async Task StopAsync(CancellationToken cancellationToken = default(CancellationToken)) {
             if (_api.IsReadOnly) throw new Exception("Can't stop pools, this connection is configured in read-only mode");
             using (var response = await _api._client.DeleteAsync(_uri, cancellationToken))
-                await Utils.LookForErrorAndThrowAsync(_api._client, response);
+                await Utils.LookForErrorAndThrowAsync(_api._client, response, cancellationToken);
         }
 
         /// <summary>
@@ -70,7 +70,7 @@ namespace QarnotSDK {
         public virtual async Task CloseAsync(CancellationToken cancellationToken = default(CancellationToken)) {
             if (_api.IsReadOnly) throw new Exception("Can't close pools, this connection is configured in read-only mode");
             using (var response = await _api._client.PostAsync(_uri + "/close", null, cancellationToken))
-                await Utils.LookForErrorAndThrowAsync(_api._client, response);
+                await Utils.LookForErrorAndThrowAsync(_api._client, response, cancellationToken);
         }
 
         /// <summary>
@@ -89,7 +89,7 @@ namespace QarnotSDK {
         /// <param name="purgeResources">Boolean to trigger all resource storages deletion. Default is false.</param>
         /// <returns></returns>
         public virtual async Task DeleteAsync(bool failIfDoesntExist = false, bool purgeResources=false)
-            => await DeleteAsync(default(CancellationToken), failIfDoesntExist, purgeResources); 
+            => await DeleteAsync(default(CancellationToken), failIfDoesntExist, purgeResources);
         #endregion
 
         /// <summary>
@@ -103,14 +103,14 @@ namespace QarnotSDK {
         /// <returns></returns>
         public async Task UpdateResourcesAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-            if (_api.IsReadOnly) 
+            if (_api.IsReadOnly)
             {
                 throw new Exception("Can't update resources, this connection is configured in read-only mode");
             }
             var reqMsg = new HttpRequestMessage(new HttpMethod("PATCH"), _uri);
             using (var response = await _api._client.SendAsync(reqMsg, cancellationToken))
             {
-                await Utils.LookForErrorAndThrowAsync(_api._client, response);
+                await Utils.LookForErrorAndThrowAsync(_api._client, response, cancellationToken);
             }
         }
     }

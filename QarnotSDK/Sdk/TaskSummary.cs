@@ -109,7 +109,7 @@ namespace QarnotSDK {
             else {
                 try {
                     using(var response = await _api._client.DeleteAsync(_uri, cancellationToken))
-                        await Utils.LookForErrorAndThrowAsync(_api._client, response);
+                        await Utils.LookForErrorAndThrowAsync(_api._client, response, cancellationToken);
                 } catch (QarnotApiResourceNotFoundException ex) {
                     if (failIfDoesntExist) throw ex;
                 }
@@ -148,7 +148,7 @@ namespace QarnotSDK {
         public virtual async Task<QTask> GetFullQTaskAsync(CancellationToken ct = default(CancellationToken)) {
             using (var response = await _api._client.GetAsync(_uri, ct))
             {
-                await Utils.LookForErrorAndThrowAsync(_api._client, response);
+                await Utils.LookForErrorAndThrowAsync(_api._client, response, ct);
                 var result = await response.Content.ReadAsAsync<TaskApi>();
                 return await QTask.CreateAsync(Connection, result);
             }
