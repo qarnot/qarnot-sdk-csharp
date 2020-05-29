@@ -149,7 +149,7 @@ namespace QarnotSDK {
                 if (tries++ >= MaxRetries) // No more retry
                     break;
                 // Transient error, wait & retry
-                await Task.Delay(RetryInterval * tries);
+                await Task.Delay(RetryInterval * tries, cancellationToken);
             }
             return response;
         }
@@ -192,7 +192,7 @@ namespace QarnotSDK {
                 if (tries++ >= MaxRetries)// No more retry
                     break;
                 // Transient error, wait & retry
-                await Task.Delay(RetryInterval);
+                await Task.Delay(RetryInterval, cancellationToken);
             }
             return response;
         }

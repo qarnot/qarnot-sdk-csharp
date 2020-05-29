@@ -621,7 +621,7 @@ namespace QarnotSDK {
                     sleepingTimeMs = Math.Min(period, TimeSpan.FromSeconds(taskTimeoutSeconds - elasped).TotalMilliseconds);
                 else
                     sleepingTimeMs = period;
-                await Task.Delay(TimeSpan.FromMilliseconds(sleepingTimeMs));
+                await Task.Delay(TimeSpan.FromMilliseconds(sleepingTimeMs), ct);
             }
             return true;
         }
