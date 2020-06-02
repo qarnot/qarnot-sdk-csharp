@@ -415,7 +415,7 @@ namespace QarnotSDK {
             => await DownloadStreamAsync(remoteFile, pathDirectorySeparator: Path.DirectorySeparatorChar, cancellationToken: cancellationToken);
 
         /// <summary>
-        /// Get a stream on a file in this bucket.
+        /// Get a stream on a file in this bucket.(should be disposed)
         /// </summary>
         /// <param name="remoteFile">The source file name in this bucket.</param>
         /// <param name="pathDirectorySeparator">PathDirectorySeparator char that will change the remote file path to match the folder hierarchy ('/' on linux, '\' on windows).</param>
@@ -428,14 +428,8 @@ namespace QarnotSDK {
                     BucketName = Shortname,
                     Key = remoteS3FileKey,
                 };
-                var s = new MemoryStream();
-                using (var s3Response = await s3Client.GetObjectAsync(s3Request, cancellationToken))
-                using (Stream responseStream = s3Response.ResponseStream)
-                {
-                    await responseStream.CopyToAsync(s);
-                    s.Seek(0,System.IO.SeekOrigin.Begin);
-                }
-                return s;
+                var s3Response = await s3Client.GetObjectAsync(s3Request, cancellationToken);
+                return s3Response.ResponseStream;
             }
         }
 
