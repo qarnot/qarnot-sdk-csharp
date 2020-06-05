@@ -89,7 +89,76 @@ namespace QarnotSDK
         /// Available only after the pool is started. Use UpdateStatus or UpdateStatusAsync to refresh.
         /// </summary>
         [InternalDataApiName(Name="State")]
-        public virtual string State { get { return _poolApi != null ? _poolApi.State : null; } }
+        public virtual string State { get { return _poolApi?.State; } }
+
+        /// <summary>
+        /// Retrieve the pool previous state (see QPoolStates).
+        /// Available only after the submission. Use UpdateStatus or UpdateStatusAsync to refresh.
+        /// </summary>
+        [InternalDataApiName(Name = "PreviousState")]
+        public virtual string PreviousState { get { return _poolApi?.PreviousState; } }
+
+        /// <summary>
+        /// Retrieve the pool state transition utc-time (see QPoolStates).
+        /// Available only after the submission. Use UpdateStatus or UpdateStatusAsync to refresh.
+        /// </summary>
+        [InternalDataApiName(Name = "StateTransitionTime")]
+        public DateTime? StateTransitionTime
+        {
+            get
+            {
+                if (_poolApi != null)
+                {
+                    if (_poolApi.StateTransitionTime != default)
+                    {
+                        return _poolApi.StateTransitionTime;
+                    }
+                }
+
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Retrieve the pool previous state transition utc-time (see QPoolStates).
+        /// Available only after the submission. Use UpdateStatus or UpdateStatusAsync to refresh.
+        /// </summary>
+        [InternalDataApiName(Name = "PreviousStateTransitionTime")]
+        public virtual DateTime? PreviousStateTransitionTime
+        {
+            get
+            {
+                if (_poolApi != null)
+                {
+                    if (_poolApi.PreviousStateTransitionTime != default)
+                    {
+                        return _poolApi.PreviousStateTransitionTime;
+                    }
+                }
+
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// The Pool last modified date.
+        /// </summary>
+        [InternalDataApiName(Name = "LastModified")]
+        public virtual DateTime? LastModified
+        {
+            get
+            {
+                if (_poolApi != null)
+                {
+                    if (_poolApi.LastModified != default)
+                    {
+                        return _poolApi.LastModified;
+                    }
+                }
+
+                return null;
+            }
+        }
 
         /// <summary>
         /// Retrieve the pool errors.

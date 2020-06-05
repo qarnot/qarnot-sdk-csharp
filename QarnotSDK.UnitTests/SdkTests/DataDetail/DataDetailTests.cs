@@ -123,21 +123,21 @@ namespace QarnotSDK.UnitTests
         [Test]
         public void GetAPIFilterPropertyNameForJobLastModifiedReturnTheGoodStringValue()
         {
-            var value = DataDetailHelper.GetAPIFilterPropertyName<QJob, System.DateTime>(t => t.LastModified);
+            var value = DataDetailHelper.GetAPIFilterPropertyName<QJob, System.DateTime?>(t => t.LastModified);
             Assert.AreEqual(value, "LastModified");
         }
 
         [Test]
         public void GetAPISelectPropertyNameForJobLastModifiedReturnTheGoodStringValue()
         {
-            var value = DataDetailHelper.GetAPISelectPropertyName<QJob, System.DateTime>(t => t.LastModified);
+            var value = DataDetailHelper.GetAPISelectPropertyName<QJob, System.DateTime?>(t => t.LastModified);
             Assert.AreEqual(value, "LastModified");
         }
 
         [Test]
         public void GetAPIFilterPropertyNameForJobCreationDateReturnTheGoodStringValue()
         {
-            var value = DataDetailHelper.GetAPIFilterPropertyName<QJob, System.DateTime>(t => t.CreationDate);
+            var value = DataDetailHelper.GetAPIFilterPropertyName<QJob, System.DateTime?>(t => t.CreationDate);
             Assert.AreEqual(value, "CreationDate");
         }
 

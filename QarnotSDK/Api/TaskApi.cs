@@ -483,6 +483,10 @@ namespace QarnotSDK {
         public List<string> ResourceBuckets { get; set; }
         public string ResultBucket { get; set; }
         public string State { get; set; }
+        public string PreviousState { get; set; }
+        public DateTime StateTransitionTime { get; set; }
+        public DateTime PreviousStateTransitionTime { get; set; }
+        public DateTime LastModified { get; set; }
         public List<QTaskError> Errors { get; set; }
         public int SnapshotInterval { get; set; }
         public uint ResultsCount { get; set; }

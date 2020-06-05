@@ -385,6 +385,10 @@ namespace QarnotSDK {
         public uint InstanceCount { get; set; }
         public List<string> ResourceBuckets { get; set; }
         public string State { get; set; }
+        public string PreviousState { get; set; }
+        public DateTime StateTransitionTime { get; set; }
+        public DateTime PreviousStateTransitionTime { get; set; }
+        public DateTime LastModified { get; set; }
         public List<QPoolError> Errors { get; set; }
         public DateTime CreationDate { get; set; }
         public List<KeyValHelper> Constants { get; set; }

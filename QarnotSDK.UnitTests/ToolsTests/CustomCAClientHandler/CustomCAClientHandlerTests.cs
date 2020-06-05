@@ -145,22 +145,18 @@ namespace QarnotSDK.UnitTests
         {
             foreach (StoreLocation storeLocation in (StoreLocation[]) Enum.GetValues(typeof(StoreLocation)))
             {
-                foreach (StoreName storeName in (StoreName[]) Enum.GetValues(typeof(StoreName)))
+                using var store = new X509Store(StoreName.Root, storeLocation);
+                try
                 {
-                    X509Store store = new X509Store(storeName, storeLocation);
-
-                    try
+                    store.Open(OpenFlags.OpenExistingOnly);
+                    if (store.Certificates.Count > 0)
                     {
-                        store.Open(OpenFlags.OpenExistingOnly);
-
-                        if (store.Certificates.Count > 0)
-                        {
-                            return store.Certificates[0];
-                        }
+                        return store.Certificates[0];
                     }
-                    catch (CryptographicException)
-                    {
-                    }
+                }
+                catch (CryptographicException ex)
+                {
+                    Console.Error.WriteLine(ex.Message);
                 }
             }
 
