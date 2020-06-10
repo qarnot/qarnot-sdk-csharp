@@ -263,6 +263,35 @@ namespace QarnotSDK.UnitTests
         }
 
         [Test]
+        public void SetPreparationTaskVerifyTheStoreValue()
+        {
+            var commanLine = "echo hello world";
+            var pool = new QPool(Connect, Guid.NewGuid());
+            var prepartionTask = new PoolPreparationTask(commanLine);
+            pool.SetPreparationTask(prepartionTask);
+            Assert.AreEqual(pool.PreparationCommandLine, commanLine);
+        }
+
+        [Test]
+        public void PoolPreparationCommandLineVerifyTheStoreValue()
+        {
+            var commanLine = "echo hello world";
+            var pool = new QPool(Connect, Guid.NewGuid());
+            pool.PreparationCommandLine = commanLine;
+            Assert.AreEqual(pool.PreparationCommandLine, commanLine);
+        }
+
+        [Test]
+        public void CheckPoolPreparationCommandLineIsSendInThePoolRequest()
+        {
+            var commanLine = "echo hello world";
+            var pool = new QPool(Connect, Guid.NewGuid());
+            pool.PreparationCommandLine = commanLine;
+            pool.StartAsync("profile", 5);
+            Assert.IsTrue(HttpHandler.ParsedRequests.Any(request => request.Content.Contains("\"CommandLine\":\"" + commanLine + "\"")));
+        }
+
+        [Test]
         public void SetConstraintDeleteOneElement()
         {
             var pool = new QPool(Connect, Guid.NewGuid());

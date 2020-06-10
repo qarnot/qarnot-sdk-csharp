@@ -346,6 +346,25 @@ namespace QarnotSDK
             }
         }
 
+        /// <summary>
+        /// The Pool Preparation Command Line.
+        /// </summary>
+        [InternalDataApiName(Name="PreparationTask.CommandLine")]
+        public virtual string PreparationCommandLine
+        {
+            get
+            {
+                return _poolApi?.PreparationTask?.CommandLine;
+            }
+            set
+            {
+                if (_poolApi != null)
+                {
+                    _poolApi.PreparationTask = new PoolPreparationTask(value);
+                }
+            }
+        }
+
         #endregion
 
         /// <summary>
@@ -412,6 +431,14 @@ namespace QarnotSDK
         /// <param name="tags">Pool tags.</param>
         public virtual void SetTags(params String [] tags) {
             _poolApi.Tags = tags.Distinct().ToList();
+        }
+
+        /// <summary>
+        /// Set a new preparation Task.
+        /// </summary>
+        /// <param name="preparationTask">Pool Preparation Task.</param>
+        public virtual void SetPreparationTask(PoolPreparationTask preparationTask) {
+            _poolApi.PreparationTask = preparationTask;
         }
 
         /// <summary>

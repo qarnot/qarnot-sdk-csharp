@@ -303,17 +303,17 @@ namespace QarnotSDK.UnitTests
         }
 
         [Test]
-        public void GetAPIFilterPropertyNameForPoolIsElasticReturnTheGoodStringValue()
-        {
-            var value = DataDetailHelper.GetAPIFilterPropertyName<QPool, bool>(t => t.IsElastic);
-            Assert.AreEqual(value, "ElasticProperty.IsElastic");
-        }
-
-        [Test]
         public void GetAPISelectPropertyNameForPoolIsElasticReturnTheGoodStringValue()
         {
             var value = DataDetailHelper.GetAPISelectPropertyName<QPool, bool>(t => t.IsElastic);
             Assert.AreEqual(value, "ElasticProperty.IsElastic");
+        }
+
+        [Test]
+        public void GetAPIFilterPropertyNameForPoolPreparationCommandLineReturnTheGoodStringValue()
+        {
+            var value = DataDetailHelper.GetAPIFilterPropertyName<QPool, string>(t => t.PreparationCommandLine);
+            Assert.AreEqual(value, "PreparationTask.CommandLine");
         }
 
         [Test]
