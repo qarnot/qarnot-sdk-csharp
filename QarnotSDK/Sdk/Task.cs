@@ -426,6 +426,33 @@ namespace QarnotSDK {
             set { _taskApi.SnapshotBlacklist = value; }
         }
 
+        /// <summary>
+        /// AutoDeleteOnCompletion: Field allowing the automatic deletion of the task when in a final state.
+        /// Must be set before the submission.
+        /// </summary>
+        [InternalDataApiName(IsFilterable = false, IsSelectable = false)]
+        public bool AutoDeleteOnCompletion {
+            get {
+                return _taskApi.AutoDeleteOnCompletion;
+            }
+            set {
+                _taskApi.AutoDeleteOnCompletion = value;
+            }
+        }
+
+        /// <summary>
+        /// CompletionTimeToLive: Final State Duration before deletion of the task.
+        /// Must be set before the submission.
+        /// </summary>
+        [InternalDataApiName(IsFilterable = false, IsSelectable = false)]
+        public TimeSpan CompletionTimeToLive {
+            get {
+                return _taskApi.CompletionTimeToLive;
+            }
+            set {
+                _taskApi.CompletionTimeToLive = value;
+            }
+        }
 
         /// <summary>
         /// Create a new task outside of a pool.

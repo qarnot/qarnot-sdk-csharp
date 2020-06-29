@@ -196,6 +196,34 @@ namespace QarnotSDK {
         }
 
         /// <summary>
+        /// AutoDeleteOnCompletion: Field allowing the automatic deletion of the job when in a final state.
+        /// Must be set before the submission.
+        /// </summary>
+        [InternalDataApiName(IsFilterable = false, IsSelectable = false)]
+        public bool AutoDeleteOnCompletion {
+            get {
+                return _jobApi.AutoDeleteOnCompletion;
+            }
+            set {
+                _jobApi.AutoDeleteOnCompletion = value;
+            }
+        }
+
+        /// <summary>
+        /// CompletionTimeToLive: Final State Duration before deletion of the job.
+        /// Must be set before the submission.
+        /// </summary>
+        [InternalDataApiName(IsFilterable = false, IsSelectable = false)]
+        public TimeSpan CompletionTimeToLive {
+            get {
+                return _jobApi.CompletionTimeToLive;
+            }
+            set {
+                _jobApi.CompletionTimeToLive = value;
+            }
+        }
+
+        /// <summary>
         /// The pool the job is attached to null if the job is not attached to a pool.
         /// </summary>
         [InternalDataApiName(IsFilterable=false, IsSelectable=false)]
