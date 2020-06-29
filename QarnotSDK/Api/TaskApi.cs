@@ -504,6 +504,8 @@ namespace QarnotSDK {
         public string ResultsWhitelist { get; set; }
         public string ResultsBlacklist { get; set; }
         public Dependency Dependencies { get; set; }
+        public bool AutoDeleteOnCompletion { get; set; }
+        public TimeSpan CompletionTimeToLive { get; set; }
 
         internal TaskApi() {
             Constants = new List<KeyValHelper>();
@@ -512,6 +514,7 @@ namespace QarnotSDK {
             ResourceBuckets = new List<String>();
             Errors = new List<QTaskError>();
             CompletedInstances = new List<QTaskCompletedInstance>();
+            AutoDeleteOnCompletion = false;
         }
     }
 

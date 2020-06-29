@@ -365,6 +365,34 @@ namespace QarnotSDK
             }
         }
 
+        /// <summary>
+        /// AutoDeleteOnCompletion: Field allowing the automatic deletion of the pool when in a final state.
+        /// Must be set before the submission.
+        /// </summary>
+        [InternalDataApiName(IsFilterable = false, IsSelectable = false)]
+        public bool AutoDeleteOnCompletion {
+            get {
+                return _poolApi.AutoDeleteOnCompletion;
+            }
+            set {
+                _poolApi.AutoDeleteOnCompletion = value;
+            }
+        }
+
+        /// <summary>
+        /// CompletionTimeToLive: Final State Duration before deletion of the pool.
+        /// Must be set before the submission.
+        /// </summary>
+        [InternalDataApiName(IsFilterable = false, IsSelectable = false)]
+        public TimeSpan CompletionTimeToLive {
+            get {
+                return _poolApi.CompletionTimeToLive;
+            }
+            set {
+                _poolApi.CompletionTimeToLive = value;
+            }
+        }
+
         #endregion
 
         /// <summary>
