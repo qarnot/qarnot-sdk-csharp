@@ -420,6 +420,8 @@ namespace QarnotSDK {
         public QPoolStatus Status { get; set; }
         public QPoolElasticProperty ElasticProperty { get; set; }
         public PoolPreparationTask PreparationTask { get; set; }
+        public bool AutoDeleteOnCompletion { get; set; }
+        public TimeSpan CompletionTimeToLive { get; set; }
 
         internal PoolApi() {
             Constants = new List<KeyValHelper>();
@@ -428,6 +430,7 @@ namespace QarnotSDK {
             ResourceBuckets = new List<String>();
             Errors = new List<QPoolError>();
             ElasticProperty = new QPoolElasticProperty();
+            AutoDeleteOnCompletion = false;
         }
     }
 }

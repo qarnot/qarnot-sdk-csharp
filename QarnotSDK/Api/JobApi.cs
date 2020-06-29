@@ -17,10 +17,14 @@ namespace QarnotSDK
         public DateTime LastModified { get; set; }
         public bool UseDependencies {get; set; }
         public Nullable<TimeSpan> MaxWallTime { get; set; }
+        public bool AutoDeleteOnCompletion { get; set; }
+        public TimeSpan CompletionTimeToLive { get; set; }
+
 
         internal JobApi()
         {
             UseDependencies = false;
+            AutoDeleteOnCompletion = false;
         }
 
         public override string ToString()
