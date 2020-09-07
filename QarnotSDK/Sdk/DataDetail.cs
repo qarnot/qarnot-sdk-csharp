@@ -1,6 +1,7 @@
 using System;
 using System.Reflection;
 using System.Linq;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace QarnotSDK
@@ -224,12 +225,46 @@ namespace QarnotSDK
         }
 
         /// <summary>
+        /// Logical Equal filter array element
+        /// </summary>
+        /// <param name="property">the property array to filter</param>
+        /// <param name="value">one of the values it should be equal to</param>
+        /// <returns>the filter</returns>
+        public static QFilter<T> Contains<VType>(Expression<Func<T, IEnumerable<VType>>> property, VType value)
+        {
+            var internalFilter = new UnitValueLeaf<T, VType>
+            {
+                Field = DataDetailHelper.GetAPIFilterPropertyName(property),
+                Operator = Leaf<T>.FilterOperator.Equal,
+                Value = value
+            };
+            return new QFilter<T>() { _filterApi = internalFilter };
+        }
+
+        /// <summary>
         /// Logical Not Equal filter
         /// </summary>
         /// <param name="property">the property to filter</param>
         /// <param name="value">the value it should not be equal to</param>
         /// <returns>the filter</returns>
         public static QFilter<T> Neq<VType>(Expression<Func<T, VType>> property, VType value)
+        {
+            var internalFilter = new UnitValueLeaf<T, VType>
+            {
+                Field = DataDetailHelper.GetAPIFilterPropertyName(property),
+                Operator = Leaf<T>.FilterOperator.NotEqual,
+                Value = value
+            };
+            return new QFilter<T>() { _filterApi = internalFilter };
+        }
+
+        /// <summary>
+        /// Logical Not Equal filter array element
+        /// </summary>
+        /// <param name="property">the property array to filter</param>
+        /// <param name="value">one of the values it should not be equal to</param>
+        /// <returns>the filter</returns>
+        public static QFilter<T> NotContains<VType>(Expression<Func<T, IEnumerable<VType>>> property, VType value)
         {
             var internalFilter = new UnitValueLeaf<T, VType>
             {
