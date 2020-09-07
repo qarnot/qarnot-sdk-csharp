@@ -692,6 +692,177 @@ namespace QarnotSDK.UnitTests
         }
 
         [Test]
+        public async Task RetrieveTasksPaginateAsyncShouldGetOnCorrectEndpoint()
+        {
+            HttpHandler.ResponseBody = ConnectionTestsData.GetEmptyPage;
+
+            PaginatedResponse<QTask> tasks = await Api.RetrievePaginatedTaskAsync(new PaginatedRequest<QTask>(1));
+
+            Assert.True(HttpHandler.ParsedRequests.Any(req =>
+                req.Method.Contains("POST", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ComputeUrl}/tasks/paginate", StringComparison.InvariantCultureIgnoreCase)));
+        }
+
+        [Test]
+        public async Task RetrieveTasksPaginateAsyncShouldSendTheCorrectJsonRequest()
+        {
+            HttpHandler.ResponseBody = ConnectionTestsData.GetEmptyPage;
+            var name = "task_name";
+
+            PaginatedResponse<QTask> task_page = await Api.RetrievePaginatedTaskAsync(new PaginatedRequest<QTask>(1));
+            task_page = await Api.RetrievePaginatedTaskAsync(new PaginatedRequest<QTask>(5, "token_value", QFilter<QTask>.Gt(t => t.Name, name)));
+
+            var first_request = "{\"Token\":null,\"Filter\":null,\"MaximumResults\":1}";
+            var second_request = "{\"Token\":\"token_value\",\"Filter\":{\"Value\":\"" + name + "\",\"Field\":\"Name\",\"Operator\":\"GreaterThan\"},\"MaximumResults\":5}";
+
+            Assert.True(HttpHandler.ParsedRequests.Any(req => req.Content.Contains(first_request, StringComparison.InvariantCultureIgnoreCase)));
+            Assert.True(HttpHandler.ParsedRequests.Any(req => req.Content.Contains(second_request, StringComparison.InvariantCultureIgnoreCase)));
+        }
+
+        [Test]
+        public async Task RetrieveTasksSummariesPaginateAsyncShouldGetOnCorrectEndpoint()
+        {
+            HttpHandler.ResponseBody = ConnectionTestsData.GetEmptyPage;
+
+            PaginatedResponse<QTaskSummary> tasks = await Api.RetrievePaginatedTaskSummariesAsync(new PaginatedRequest<QTaskSummary>(1));
+
+            Assert.True(HttpHandler.ParsedRequests.Any(req =>
+                req.Method.Contains("POST", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ComputeUrl}/tasks/summaries/paginate", StringComparison.InvariantCultureIgnoreCase)));
+        }
+
+        [Test]
+        public async Task RetrieveTasksSummariesPaginateAsyncShouldSendTheCorrectJsonRequest()
+        {
+            HttpHandler.ResponseBody = ConnectionTestsData.GetEmptyPage;
+
+            PaginatedResponse<QTaskSummary> task_page = await Api.RetrievePaginatedTaskSummariesAsync(new PaginatedRequest<QTaskSummary>(1));
+
+            var first_request = "{\"Token\":null,\"Filter\":null,\"MaximumResults\":1}";
+
+            Assert.True(HttpHandler.ParsedRequests.Any(req => req.Content.Contains(first_request, StringComparison.InvariantCultureIgnoreCase)));
+        }
+
+        [Test]
+        public async Task RetrieveTaskSummariesPaginateAsyncShouldReturnAnHydratedResponse()
+        {
+            HttpHandler.ResponseBody = ConnectionTestsData.GetOneTaskPage;
+
+            PaginatedResponse<QTaskSummary> taskPage = await Api.RetrievePaginatedTaskSummariesAsync(new PaginatedRequest<QTaskSummary>(1));
+
+            Assert.True(taskPage.IsTruncated);
+            Assert.AreEqual(taskPage.Token, "token");
+            Assert.AreEqual(taskPage.NextToken, "next_token");
+            Assert.AreEqual(taskPage.Data[0].Uuid.ToString(), ConnectionTestsData.GetDefaultBodyUuid);
+        }
+
+        [Test]
+        public async Task RetrievePoolsPaginateAsyncShouldGetOnCorrectEndpoint()
+        {
+            HttpHandler.ResponseBody = ConnectionTestsData.GetEmptyPage;
+
+            PaginatedResponse<QPool> pools = await Api.RetrievePaginatedPoolAsync(new PaginatedRequest<QPool>(1));
+
+            Assert.True(HttpHandler.ParsedRequests.Any(req =>
+                req.Method.Contains("POST", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ComputeUrl}/pools/paginate", StringComparison.InvariantCultureIgnoreCase)));
+        }
+
+        [Test]
+        public async Task RetrievePoolsPaginateAsyncShouldSendTheCorrectJsonRequest()
+        {
+            HttpHandler.ResponseBody = ConnectionTestsData.GetEmptyPage;
+            var name = "pool_name";
+
+            PaginatedResponse<QPool> pool_page = await Api.RetrievePaginatedPoolAsync(new PaginatedRequest<QPool>(1));
+            pool_page = await Api.RetrievePaginatedPoolAsync(new PaginatedRequest<QPool>(5, "token_value", QFilter<QPool>.Gt(t => t.Name, name)));
+
+            var first_request = "{\"Token\":null,\"Filter\":null,\"MaximumResults\":1}";
+            var second_request = "{\"Token\":\"token_value\",\"Filter\":{\"Value\":\"" + name + "\",\"Field\":\"Name\",\"Operator\":\"GreaterThan\"},\"MaximumResults\":5}";
+
+            Assert.True(HttpHandler.ParsedRequests.Any(req => req.Content.Contains(first_request, StringComparison.InvariantCultureIgnoreCase)));
+            Assert.True(HttpHandler.ParsedRequests.Any(req => req.Content.Contains(second_request, StringComparison.InvariantCultureIgnoreCase)));
+        }
+
+        [Test]
+        public async Task RetrievePoolsSummariesPaginateAsyncShouldGetOnCorrectEndpoint()
+        {
+            HttpHandler.ResponseBody = ConnectionTestsData.GetEmptyPage;
+
+            PaginatedResponse<QPoolSummary> pools = await Api.RetrievePaginatedPoolSummariesAsync(new PaginatedRequest<QPoolSummary>(1));
+
+            Assert.True(HttpHandler.ParsedRequests.Any(req =>
+                req.Method.Contains("POST", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ComputeUrl}/pools/summaries/paginate", StringComparison.InvariantCultureIgnoreCase)));
+        }
+
+        [Test]
+        public async Task RetrievePoolSummariesPaginateAsyncShouldSendTheCorrectJsonRequest()
+        {
+            HttpHandler.ResponseBody = ConnectionTestsData.GetEmptyPage;
+
+            PaginatedResponse<QPoolSummary> pool_page = await Api.RetrievePaginatedPoolSummariesAsync(new PaginatedRequest<QPoolSummary>(1));
+
+            var first_request = "{\"Token\":null,\"Filter\":null,\"MaximumResults\":1}";
+
+            Assert.True(HttpHandler.ParsedRequests.Any(req => req.Content.Contains(first_request, StringComparison.InvariantCultureIgnoreCase)));
+        }
+
+        [Test]
+        public async Task RetrievePoolSummariesPaginateAsyncShouldReturnAnHydratedResponse()
+        {
+            HttpHandler.ResponseBody = ConnectionTestsData.GetOnePoolPage;
+
+            PaginatedResponse<QPoolSummary> poolPage = await Api.RetrievePaginatedPoolSummariesAsync(new PaginatedRequest<QPoolSummary>(1));
+
+            Assert.True(poolPage.IsTruncated);
+            Assert.AreEqual(poolPage.Token, "token");
+            Assert.AreEqual(poolPage.NextToken, "next_token");
+            Assert.AreEqual(poolPage.Data[0].Uuid.ToString(), ConnectionTestsData.GetDefaultBodyUuid);
+        }
+
+        [Test]
+        public async Task RetrieveJobsPaginateAsyncShouldGetOnCorrectEndpoint()
+        {
+            HttpHandler.ResponseBody = ConnectionTestsData.GetEmptyPage;
+
+            PaginatedResponse<QJob> jobs = await Api.RetrievePaginatedJobAsync(new PaginatedRequest<QJob>(1));
+
+            Assert.True(HttpHandler.ParsedRequests.Any(req =>
+                req.Method.Contains("POST", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ComputeUrl}/jobs/paginate", StringComparison.InvariantCultureIgnoreCase)));
+        }
+
+        [Test]
+        public async Task RetrieveJobsPaginateAsyncShouldSendTheCorrectJsonRequest()
+        {
+            HttpHandler.ResponseBody = ConnectionTestsData.GetEmptyPage;
+            var name = "job_name";
+
+            PaginatedResponse<QJob> jobs = await Api.RetrievePaginatedJobAsync(new PaginatedRequest<QJob>(1));
+            jobs = await Api.RetrievePaginatedJobAsync(new PaginatedRequest<QJob>(5, "token_value", QFilter<QJob>.Gt(t => t.Name, name)));
+
+            var first_request = "{\"Token\":null,\"Filter\":null,\"MaximumResults\":1}";
+            var second_request = "{\"Token\":\"token_value\",\"Filter\":{\"Value\":\"" + name + "\",\"Field\":\"Name\",\"Operator\":\"GreaterThan\"},\"MaximumResults\":5}";
+
+            Assert.True(HttpHandler.ParsedRequests.Any(req => req.Content.Contains(first_request, StringComparison.InvariantCultureIgnoreCase)));
+            Assert.True(HttpHandler.ParsedRequests.Any(req => req.Content.Contains(second_request, StringComparison.InvariantCultureIgnoreCase)));
+        }
+
+        [Test]
+        public async Task RetrieveJobsPaginateAsyncShouldReturnAnHydratedResponse()
+        {
+            HttpHandler.ResponseBody = ConnectionTestsData.GetOneJobPage;
+
+            PaginatedResponse<QJob> jobPage = await Api.RetrievePaginatedJobAsync(new PaginatedRequest<QJob>(1));
+
+            Assert.True(jobPage.IsTruncated);
+            Assert.AreEqual(jobPage.Token, "token");
+            Assert.AreEqual(jobPage.NextToken, "next_token");
+            Assert.AreEqual(jobPage.Data[0].Uuid.ToString(), ConnectionTestsData.GetDefaultBodyUuid);
+        }
+
+        [Test]
         public void CreateTaskFromConnectionCheckReturnBody()
         {
             Connection connect = new Connection("https://localhost", "token");
@@ -730,6 +901,21 @@ namespace QarnotSDK.UnitTests
             Assert.AreEqual(pool.Profile, "profile");
         }
 
+        [Test]
+        public void CheckConnectionConstructorsS3HttpClientFactory()
+        {
+            Connection connect = null;
+
+            connect = new Connection("https://localhost/uri", "https://localhost/stockage_uri", "token", httpClientHandler: default(HttpClientHandler), retryHandler: default(IRetryHandler), forceStoragePathStyle: true, s3HttpClientFactory: new S3HttpClientFactory());
+            connect = new Connection("https://localhost/uri", "https://localhost/stockage_uri", "token", httpClientHandler: default(HttpClientHandler), retryHandler: default(IRetryHandler), forceStoragePathStyle: true, s3HttpClientFactory: new CustomCAS3HttpClientFactory("hello-world"));
+            connect = new Connection("https://localhost/uri", "https://localhost/stockage_uri", "token", httpClientHandler: default(HttpClientHandler), retryHandler: default(IRetryHandler), forceStoragePathStyle: true, s3HttpClientFactory: new UnsafeS3HttpClientFactory());
+            connect = new Connection("https://localhost/uri", "token", httpClientHandler: default(HttpClientHandler), retryHandler: default(IRetryHandler), forceStoragePathStyle: true, s3HttpClientFactory: new S3HttpClientFactory());
+            connect = new Connection("https://localhost/uri", "token", httpClientHandler: default(HttpClientHandler), retryHandler: default(IRetryHandler), forceStoragePathStyle: true, s3HttpClientFactory: new CustomCAS3HttpClientFactory("hello-world"));
+            connect = new Connection("https://localhost/uri", "token", httpClientHandler: default(HttpClientHandler), retryHandler: default(IRetryHandler), forceStoragePathStyle: true, s3HttpClientFactory: new UnsafeS3HttpClientFactory());
+            connect = new Connection("token", httpClientHandler: default(HttpClientHandler), retryHandler: default(IRetryHandler), forceStoragePathStyle: true, s3HttpClientFactory: new S3HttpClientFactory());
+            connect = new Connection("token", httpClientHandler: default(HttpClientHandler), retryHandler: default(IRetryHandler), forceStoragePathStyle: true, s3HttpClientFactory: new CustomCAS3HttpClientFactory("hello-world"));
+            connect = new Connection("token", httpClientHandler: default(HttpClientHandler), retryHandler: default(IRetryHandler), forceStoragePathStyle: true, s3HttpClientFactory: new UnsafeS3HttpClientFactory());
+        }
         [Test]
         public void CheckConnectionConstructorsSetValues()
         {

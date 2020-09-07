@@ -4,6 +4,38 @@ namespace QarnotSDK.UnitTests
     {
         public const string GetDefaultBodyUuid = "f78fdff8-7081-46e1-bb2f-d9cd4e185ece";
 
+        public const string GetEmptyPage = @"{
+            ""Data"": [],
+            ""Token"": null,
+            ""NextToken"": null,
+            ""IsTruncated"": false
+            }
+";
+
+        public const string GetOneJobPage = @"{
+            ""Data"": [" + GetJobBody + @"],
+            ""Token"": ""token"",
+            ""NextToken"": ""next_token"",
+            ""IsTruncated"": true
+            }
+";
+
+        public const string GetOneTaskPage = @"{
+            ""Data"": [" + GetTaskBody + @"],
+            ""Token"": ""token"",
+            ""NextToken"": ""next_token"",
+            ""IsTruncated"": true
+            }
+";
+
+        public const string GetOnePoolPage = @"{
+            ""Data"": [" + GetPoolBody + @"],
+            ""Token"": ""token"",
+            ""NextToken"": ""next_token"",
+            ""IsTruncated"": true
+            }
+";
+
         public const string GetDefaultBodyName = "default_name";
 
         public const string GetDefaultBodyProfile = "docker-bash";

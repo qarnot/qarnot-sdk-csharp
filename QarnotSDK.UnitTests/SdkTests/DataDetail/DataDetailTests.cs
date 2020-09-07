@@ -1124,6 +1124,21 @@ namespace QarnotSDK.UnitTests
         }
 
         [Test]
+        public void EqFilterArrayValues()
+        {
+            string value = "tag_45";
+            string theOperator = "Equal";
+            string field = "Tags";
+            var regexDetails = new QDataDetail<QTask>()
+            {
+                Filter = QFilter<QTask>.Contains(t => t.Tags, value),
+            };
+            Assert.AreEqual(((UnitValueLeaf<QTask, string>)regexDetails.Filter._filterApi).Value, value);
+            Assert.AreEqual(((UnitValueLeaf<QTask, string>)regexDetails.Filter._filterApi).Operator, theOperator);
+            Assert.AreEqual(((UnitValueLeaf<QTask, string>)regexDetails.Filter._filterApi).Field, field);
+        }
+
+        [Test]
         public void NeqFilterSimpleTest()
         {
             int max = 2;
@@ -1136,6 +1151,18 @@ namespace QarnotSDK.UnitTests
                 MaximumResults = max,
             };
             Assert.AreEqual(regexDetails.MaximumResults, max);
+            Assert.AreEqual(((UnitValueLeaf<QTask, string>)regexDetails.Filter._filterApi).Value, value);
+            Assert.AreEqual(((UnitValueLeaf<QTask, string>)regexDetails.Filter._filterApi).Operator, theOperator);
+            Assert.AreEqual(((UnitValueLeaf<QTask, string>)regexDetails.Filter._filterApi).Field, field);
+        }
+
+        [Test]
+        public void NeqFilterArrayValues()
+        {
+            string value = "tag_45";
+            string theOperator = "NotEqual";
+            string field = "Tags";
+            var regexDetails = new QDataDetail<QTask>() { Filter = QFilter<QTask>.NotContains(t => t.Tags, value) };
             Assert.AreEqual(((UnitValueLeaf<QTask, string>)regexDetails.Filter._filterApi).Value, value);
             Assert.AreEqual(((UnitValueLeaf<QTask, string>)regexDetails.Filter._filterApi).Operator, theOperator);
             Assert.AreEqual(((UnitValueLeaf<QTask, string>)regexDetails.Filter._filterApi).Field, field);

@@ -111,6 +111,8 @@ namespace QarnotSDK {
             }
         }
 
+        private Amazon.Runtime.HttpClientFactory S3HttpClientFactory;
+
         /// <summary>
         /// Construct a new Connection object using your token.
         /// </summary>
@@ -118,8 +120,9 @@ namespace QarnotSDK {
         /// <param name="httpClientHandler">An optional HttpClientHandler if you need to setup a proxy for example.</param>
         /// <param name="retryHandler">An optional IRetryHandler if you need to setup retry for transient error (default to exponential).</param>
         /// <param name="forceStoragePathStyle">An optional forceStoragePathStyle to force path style for request to storage.</param>
-        public Connection(string token, HttpClientHandler httpClientHandler = null, IRetryHandler retryHandler = null, bool forceStoragePathStyle = false)
-            : this("https://api.qarnot.com", token, httpClientHandler, retryHandler, forceStoragePathStyle) {
+        /// <param name="s3HttpClientFactory">An optional HttpClient factory for the S3 storage, if you need to setup a custom certificate for example.</param>
+        public Connection(string token, HttpClientHandler httpClientHandler = null, IRetryHandler retryHandler = null, bool forceStoragePathStyle = false, Amazon.Runtime.HttpClientFactory s3HttpClientFactory = null)
+            : this("https://api.qarnot.com", token, httpClientHandler, retryHandler, forceStoragePathStyle, s3HttpClientFactory) {
         }
 
         /// <summary>
@@ -130,8 +133,9 @@ namespace QarnotSDK {
         /// <param name="httpClientHandler">An optional HttpClientHandler if you need to setup a proxy for example.</param>
         /// <param name="retryHandler">An optional IRetryHandler if you need to setup retry for transient error (default to exponential).</param>
         /// <param name="forceStoragePathStyle">An optional forceStoragePathStyle to force path style for request to storage.</param>
-        public Connection(string uri, string token, HttpClientHandler httpClientHandler = null, IRetryHandler retryHandler = null, bool forceStoragePathStyle = false)
-            : this(uri, null, token, httpClientHandler, retryHandler, forceStoragePathStyle) {
+        /// <param name="s3HttpClientFactory">An optional HttpClient factory for the S3 storage, if you need to setup a custom certificate for example.</param>
+        public Connection(string uri, string token, HttpClientHandler httpClientHandler = null, IRetryHandler retryHandler = null, bool forceStoragePathStyle = false, Amazon.Runtime.HttpClientFactory s3HttpClientFactory = null)
+            : this(uri, null, token, httpClientHandler, retryHandler, forceStoragePathStyle, s3HttpClientFactory) {
         }
 
         /// <summary>
@@ -141,31 +145,45 @@ namespace QarnotSDK {
         /// <param name="uri">Api Uri, should be https://api.qarnot.com </param>
         /// <param name="storageUri">Storage Uri, should be null or https://storage.qarnot.com </param>
         /// <param name="token">The api token available at https://account.qarnot.com </param>
-        /// <param name="httpClientHandler">An optional HttpClientHandler if you need to setup a proxy for example.</param>
+        /// <param name="httpClientHandler">An optional HttpClientHandler for the api, if you need to setup a proxy for example.</param>
         /// <param name="retryHandler">An optional IRetryHandler if you need to setup retry for transient error (default to exponential).</param>
         /// <param name="forceStoragePathStyle">An optional forceStoragePathStyle to force path style for request to storage.</param>
-        public Connection(string uri, string storageUri, string token, HttpClientHandler httpClientHandler = null, IRetryHandler retryHandler = null, bool forceStoragePathStyle = false) {
+        /// <param name="s3HttpClientFactory">An optional HttpClient factory for the S3 storage, if you need to setup a custom certificate for example.</param>
+        /// <param name="delegatingHandlers">A list of hander used by the api connection. Default will create a list with the QarnotSrvHandler.</param>
+        /// <param name="dnsSrvLoadBalancingCacheTime">the cache time in minutes before retrieve the values of the QarnotSrvHandler. Unless you have a strong reason, you should keep the default value.</param>
+        public Connection(string uri, string storageUri, string token, HttpClientHandler httpClientHandler = null, IRetryHandler retryHandler = null, bool forceStoragePathStyle = false, Amazon.Runtime.HttpClientFactory s3HttpClientFactory = null, List<DelegatingHandler> delegatingHandlers = null, uint? dnsSrvLoadBalancingCacheTime = 5) {
             Uri = new Uri(uri);
             if (storageUri != null) StorageUri = new Uri(storageUri);
             ForceStoragePathStyle = forceStoragePathStyle;
             Token = token;
             StorageSecretKey = token;
             _httpClientHandler = httpClientHandler ?? new HttpClientHandler();
+            S3HttpClientFactory = s3HttpClientFactory;
+            _retryHandler = retryHandler ?? new ExponentialRetryHandler();
 
-            if (retryHandler != null)
+            if (delegatingHandlers == null)
             {
-                retryHandler.InnerHandler = _httpClientHandler;
-                _retryHandler = retryHandler;
+                delegatingHandlers = delegatingHandlers ?? new List<DelegatingHandler>();
             }
-            else
-                _retryHandler = new ExponentialRetryHandler(_httpClientHandler);
 
-            _client = new HttpClient(_retryHandler);
+            AddDnsLoadBalancerToTheDelegateHandlers(dnsSrvLoadBalancingCacheTime, delegatingHandlers);
+            delegatingHandlers.Add(_retryHandler);
+            _client = new HttpClient(Utils.LinkHandlers(delegatingHandlers, _httpClientHandler));
             _client.BaseAddress = Uri;
             _client.DefaultRequestHeaders.Clear();
             _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(Token);
             _client.DefaultRequestHeaders.Add("User-Agent", SdkUserAgent);
+        }
+
+        private void AddDnsLoadBalancerToTheDelegateHandlers(uint? dnsSrvLoadBalancingCacheTime, List<DelegatingHandler> delegatingHandlers)
+        {
+            var qarnotDnsLoadBalancerHandlerFactory = new QarnotDnsLoadBalancerHandlerFactory(Uri, dnsSrvLoadBalancingCacheTime);
+            var qarnotDnsLoadBalancerHandler = qarnotDnsLoadBalancerHandlerFactory.DnsBalancingMessageHandler;
+            if (qarnotDnsLoadBalancerHandler != null)
+            {
+                delegatingHandlers.Add(qarnotDnsLoadBalancerHandler);
+            }
         }
 
         #region CreateX
@@ -286,10 +304,10 @@ namespace QarnotSDK {
         /// The newly created task has to be submitted.
         /// </summary>
         /// <param name="name">The name of the task.</param>
-        /// <param name="job">The job, the task will be attached to.</param>        
+        /// <param name="job">The job, the task will be attached to.</param>
         /// <param name="range">Which instance ids of the task have to run.</param>
         /// <param name="shortname">optional unique friendly shortname of the task.</param>
-        /// <param name="profile">optional task profile when using a job detached from a pool.</param> 
+        /// <param name="profile">optional task profile when using a job detached from a pool.</param>
         /// <returns>A new task.</returns>
         public virtual QTask CreateTask(string name, QJob job, AdvancedRanges range, string shortname = default(string), string profile = default(string)) {
             return new QTask(this, name, job, range, shortname, profile);
@@ -423,6 +441,40 @@ namespace QarnotSDK {
         }
 
         /// <summary>
+        /// Retrieve a page of the tasks list summaries.
+        /// </summary>
+        /// <param name="pageDetails">The pagination details, with the result number by page, the filters and the token of the page to reach.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A response page with list of tasks.</returns>
+        public virtual async Task<PaginatedResponse<QTaskSummary>> RetrievePaginatedTaskSummariesAsync(PaginatedRequest<QTaskSummary> pageDetails, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            using (var response = await _client.PostAsJsonAsync<PaginatedRequestApi<QTaskSummary>>("tasks/summaries/paginate", pageDetails._pageRequestApi, cancellationToken))
+            {
+                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
+
+                var qapiTaskSummariesPages = await response.Content.ReadAsAsync<PaginatedResponseAPI<TaskApi>>(cancellationToken);
+                return await PaginatedResponse<QTaskSummary>.CreateAsync(this, qapiTaskSummariesPages, QTaskSummary.CreateAsync);
+            }
+        }
+
+        /// <summary>
+        /// Retrieve a page of the tasks list.
+        /// </summary>
+        /// <param name="pageDetails">The pagination details, with the result number by page, the filters and the token of the page to reach.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A page with a list of tasks.</returns>
+        public virtual async Task<PaginatedResponse<QTask>> RetrievePaginatedTaskAsync(PaginatedRequest<QTask> pageDetails, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            using (var response = await _client.PostAsJsonAsync<PaginatedRequestApi<QTask>>("tasks/paginate", pageDetails._pageRequestApi, cancellationToken))
+            {
+                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
+
+                var qapiTaskPages = await response.Content.ReadAsAsync<PaginatedResponseAPI<TaskApi>>(cancellationToken);
+                return await PaginatedResponse<QTask>.CreateAsync(this, qapiTaskPages, QTask.CreateAsync);
+            }
+        }
+
+        /// <summary>
         /// Retrieve the pools list. (deprecated)
         /// </summary>
         /// <param name="summary">Obsolete params to get a summary version of a pool.</param>
@@ -464,6 +516,40 @@ namespace QarnotSDK {
                     ret.Add(await QPoolSummary.CreateAsync(this, item));
                 }
                 return ret;
+            }
+        }
+
+        /// <summary>
+        /// Retrieve a page of the pools list.
+        /// </summary>
+        /// <param name="pageDetails">The pagination details, with the result number by page, the filters and the token of the page to reach.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A page with a list of pools.</returns>
+        public virtual async Task<PaginatedResponse<QPool>> RetrievePaginatedPoolAsync(PaginatedRequest<QPool> pageDetails, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            using (var response = await _client.PostAsJsonAsync<PaginatedRequestApi<QPool>>("pools/paginate", pageDetails._pageRequestApi, cancellationToken))
+            {
+                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
+
+                var qapiPoolPages = await response.Content.ReadAsAsync<PaginatedResponseAPI<PoolApi>>(cancellationToken);
+                return await PaginatedResponse<QPool>.CreateAsync(this, qapiPoolPages, QPool.CreateAsync);
+            }
+        }
+
+        /// <summary>
+        /// Retrieve a page of the pools list summaries.
+        /// </summary>
+        /// <param name="pageDetails">The pagination details, with the result number by page, the filters and the token of the page to reach.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A response page with list of pools.</returns>
+        public virtual async Task<PaginatedResponse<QPoolSummary>> RetrievePaginatedPoolSummariesAsync(PaginatedRequest<QPoolSummary> pageDetails, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            using (var response = await _client.PostAsJsonAsync<PaginatedRequestApi<QPoolSummary>>("pools/summaries/paginate", pageDetails._pageRequestApi, cancellationToken))
+            {
+                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
+
+                var qapiPoolSummariesPages = await response.Content.ReadAsAsync<PaginatedResponseAPI<PoolApi>>(cancellationToken);
+                return await PaginatedResponse<QPoolSummary>.CreateAsync(this, qapiPoolSummariesPages, QPoolSummary.CreateAsync);
             }
         }
 
@@ -546,10 +632,28 @@ namespace QarnotSDK {
                 await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
                 var list = await response.Content.ReadAsAsync<List<JobApi>>(cancellationToken);
                 var ret = new List<QJob>();
-                foreach (var item in list) {
+                foreach (var item in list)
+                {
                     ret.Add(new QJob(this, item));
                 }
                 return ret;
+            }
+        }
+
+        /// <summary>
+        /// Retrieve a page of the jobs list.
+        /// </summary>
+        /// <param name="pageDetails">The pagination details, with the result number by page, the filters and the token of the page to reach.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A page with a list of jobs.</returns>
+        public virtual async Task<PaginatedResponse<QJob>> RetrievePaginatedJobAsync(PaginatedRequest<QJob> pageDetails, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            using (var response = await _client.PostAsJsonAsync<PaginatedRequestApi<QJob>>("jobs/paginate", pageDetails._pageRequestApi, cancellationToken))
+            {
+                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
+
+                var qapiJobPages = await response.Content.ReadAsAsync<PaginatedResponseAPI<JobApi>>(cancellationToken);
+                return await PaginatedResponse<QJob>.CreateAsync(this, qapiJobPages, (connec, jApi) => Task.FromResult(new QJob(connec, jApi)));
             }
         }
 
@@ -573,6 +677,13 @@ namespace QarnotSDK {
                 SignatureVersion = "2",
                 ForcePathStyle = ForceStoragePathStyle
             };
+
+#if (!NET45)
+            if (S3HttpClientFactory != null)
+            {
+                s3Config.HttpClientFactory = S3HttpClientFactory;
+            }
+#endif
 
             // Setup the proxy from the HttpClientHandler
             if (_httpClientHandler != null) {

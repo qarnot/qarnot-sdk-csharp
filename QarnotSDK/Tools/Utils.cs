@@ -59,6 +59,24 @@ namespace QarnotSDK {
         {
             return (collection == null || collection.Count() < 1);
         }
+
+        internal static DelegatingHandler LinkHandlers(List<DelegatingHandler> handlers, HttpClientHandler httpClientHandler)
+        {
+            DelegatingHandler actual = null;
+
+            foreach (var handler in handlers)
+            {
+                if (actual != null)
+                {
+                    actual.InnerHandler = handler;
+                }
+                actual = handler;
+            }
+
+            actual.InnerHandler = httpClientHandler;
+
+            return handlers.First();
+        }
+
     }
 }
-
