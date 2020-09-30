@@ -3,3 +3,4 @@ packages/
 QarnotSDK/obj
 QarnotSDK/bin
 Documentation/Help
+.sonarqube

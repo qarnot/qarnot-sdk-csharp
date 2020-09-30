@@ -111,6 +111,8 @@ namespace QarnotSDK {
             }
         }
 
+        private Amazon.Runtime.HttpClientFactory S3HttpClientFactory;
+
         /// <summary>
         /// Construct a new Connection object using your token.
         /// </summary>
@@ -118,8 +120,9 @@ namespace QarnotSDK {
         /// <param name="httpClientHandler">An optional HttpClientHandler if you need to setup a proxy for example.</param>
         /// <param name="retryHandler">An optional IRetryHandler if you need to setup retry for transient error (default to exponential).</param>
         /// <param name="forceStoragePathStyle">An optional forceStoragePathStyle to force path style for request to storage.</param>
-        public Connection(string token, HttpClientHandler httpClientHandler = null, IRetryHandler retryHandler = null, bool forceStoragePathStyle = false)
-            : this("https://api.qarnot.com", token, httpClientHandler, retryHandler, forceStoragePathStyle) {
+        /// <param name="s3HttpClientFactory">An optional HttpClient factory for the S3 storage, if you need to setup a custom certificate for example.</param>
+        public Connection(string token, HttpClientHandler httpClientHandler = null, IRetryHandler retryHandler = null, bool forceStoragePathStyle = false, Amazon.Runtime.HttpClientFactory s3HttpClientFactory = null)
+            : this("https://api.qarnot.com", token, httpClientHandler, retryHandler, forceStoragePathStyle, s3HttpClientFactory) {
         }
 
         /// <summary>
@@ -130,8 +133,9 @@ namespace QarnotSDK {
         /// <param name="httpClientHandler">An optional HttpClientHandler if you need to setup a proxy for example.</param>
         /// <param name="retryHandler">An optional IRetryHandler if you need to setup retry for transient error (default to exponential).</param>
         /// <param name="forceStoragePathStyle">An optional forceStoragePathStyle to force path style for request to storage.</param>
-        public Connection(string uri, string token, HttpClientHandler httpClientHandler = null, IRetryHandler retryHandler = null, bool forceStoragePathStyle = false)
-            : this(uri, null, token, httpClientHandler, retryHandler, forceStoragePathStyle) {
+        /// <param name="s3HttpClientFactory">An optional HttpClient factory for the S3 storage, if you need to setup a custom certificate for example.</param>
+        public Connection(string uri, string token, HttpClientHandler httpClientHandler = null, IRetryHandler retryHandler = null, bool forceStoragePathStyle = false, Amazon.Runtime.HttpClientFactory s3HttpClientFactory = null)
+            : this(uri, null, token, httpClientHandler, retryHandler, forceStoragePathStyle, s3HttpClientFactory) {
         }
 
         /// <summary>
@@ -141,16 +145,18 @@ namespace QarnotSDK {
         /// <param name="uri">Api Uri, should be https://api.qarnot.com </param>
         /// <param name="storageUri">Storage Uri, should be null or https://storage.qarnot.com </param>
         /// <param name="token">The api token available at https://account.qarnot.com </param>
-        /// <param name="httpClientHandler">An optional HttpClientHandler if you need to setup a proxy for example.</param>
+        /// <param name="httpClientHandler">An optional HttpClientHandler for the api, if you need to setup a proxy for example.</param>
         /// <param name="retryHandler">An optional IRetryHandler if you need to setup retry for transient error (default to exponential).</param>
         /// <param name="forceStoragePathStyle">An optional forceStoragePathStyle to force path style for request to storage.</param>
-        public Connection(string uri, string storageUri, string token, HttpClientHandler httpClientHandler = null, IRetryHandler retryHandler = null, bool forceStoragePathStyle = false) {
+        /// <param name="s3HttpClientFactory">An optional HttpClient factory for the S3 storage, if you need to setup a custom certificate for example.</param>
+        public Connection(string uri, string storageUri, string token, HttpClientHandler httpClientHandler = null, IRetryHandler retryHandler = null, bool forceStoragePathStyle = false, Amazon.Runtime.HttpClientFactory s3HttpClientFactory = null) {
             Uri = new Uri(uri);
             if (storageUri != null) StorageUri = new Uri(storageUri);
             ForceStoragePathStyle = forceStoragePathStyle;
             Token = token;
             StorageSecretKey = token;
             _httpClientHandler = httpClientHandler ?? new HttpClientHandler();
+            S3HttpClientFactory = s3HttpClientFactory;
 
             if (retryHandler != null)
             {
@@ -658,6 +664,13 @@ namespace QarnotSDK {
                 SignatureVersion = "2",
                 ForcePathStyle = ForceStoragePathStyle
             };
+
+#if (!NET45)
+            if (S3HttpClientFactory != null)
+            {
+                s3Config.HttpClientFactory = S3HttpClientFactory;
+            }
+#endif
 
             // Setup the proxy from the HttpClientHandler
             if (_httpClientHandler != null) {
