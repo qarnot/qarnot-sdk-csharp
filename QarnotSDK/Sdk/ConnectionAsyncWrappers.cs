@@ -114,6 +114,42 @@ namespace QarnotSDK {
         }
 
         /// <summary>
+        /// Retrieve a page of the tasks list summaries.
+        /// </summary>
+        /// <param name="pageDetails">The pagination details, with the result number by page, the filters and the token of the page to reach.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A response page with list of tasks.</returns>
+        public virtual PaginatedResponse<QTaskSummary> RetrievePaginatedTaskSummaries(PaginatedRequest<QTaskSummary> pageDetails, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            try
+            {
+                return RetrievePaginatedTaskSummariesAsync(pageDetails, cancellationToken).Result;
+            }
+            catch (AggregateException ex)
+            {
+                throw ex.InnerException;
+            }
+        }
+
+        /// <summary>
+        /// Retrieve a page of the tasks list.
+        /// </summary>
+        /// <param name="pageDetails">The pagination details, with the result number by page, the filters and the token of the page to reach.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A page with a list of tasks.</returns>
+        public virtual PaginatedResponse<QTask> RetrievePaginatedTask(PaginatedRequest<QTask> pageDetails, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            try
+            {
+                return RetrievePaginatedTaskAsync(pageDetails, cancellationToken).Result;
+            }
+            catch (AggregateException ex)
+            {
+                throw ex.InnerException;
+            }
+        }
+
+        /// <summary>
         /// Retrieve the pools list. (deprecated)
         /// </summary>
         /// <param name="summary">Obsolete params to get a summary version of a pool.</param>
@@ -144,6 +180,42 @@ namespace QarnotSDK {
             try {
                 return RetrievePoolSummariesAsync(cancellationToken).Result;
             } catch (AggregateException ex) {
+                throw ex.InnerException;
+            }
+        }
+
+        /// <summary>
+        /// Retrieve a page of the pools list.
+        /// </summary>
+        /// <param name="pageDetails">The pagination details, with the result number by page, the filters and the token of the page to reach.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A page with a list of pools.</returns>
+        public virtual PaginatedResponse<QPool> RetrievePaginatedPool(PaginatedRequest<QPool> pageDetails, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            try
+            {
+                return RetrievePaginatedPoolAsync(pageDetails, cancellationToken).Result;
+            }
+            catch (AggregateException ex)
+            {
+                throw ex.InnerException;
+            }
+        }
+
+        /// <summary>
+        /// Retrieve a page of the pools list summaries.
+        /// </summary>
+        /// <param name="pageDetails">The pagination details, with the result number by page, the filters and the token of the page to reach.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A response page with list of pools.</returns>
+        public virtual PaginatedResponse<QPoolSummary> RetrievePaginatedPoolSummaries(PaginatedRequest<QPoolSummary> pageDetails, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            try
+            {
+                return RetrievePaginatedPoolSummariesAsync(pageDetails, cancellationToken).Result;
+            }
+            catch (AggregateException ex)
+            {
                 throw ex.InnerException;
             }
         }
@@ -200,6 +272,24 @@ namespace QarnotSDK {
             try {
                 return RetrieveJobsAsync(level, cancellationToken).Result;
             } catch (AggregateException ex) {
+                throw ex.InnerException;
+            }
+        }
+
+        /// <summary>
+        /// Retrieve a page of the jobs list.
+        /// </summary>
+        /// <param name="pageDetails">The pagination details, with the result number by page, the filters and the token of the page to reach.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A page with a list of jobs.</returns>
+        public virtual PaginatedResponse<QJob> RetrievePaginatedJob(PaginatedRequest<QJob> pageDetails, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            try
+            {
+                return RetrievePaginatedJobAsync(pageDetails, cancellationToken).Result;
+            }
+            catch (AggregateException ex)
+            {
                 throw ex.InnerException;
             }
         }
