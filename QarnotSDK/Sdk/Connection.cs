@@ -149,7 +149,9 @@ namespace QarnotSDK {
         /// <param name="retryHandler">An optional IRetryHandler if you need to setup retry for transient error (default to exponential).</param>
         /// <param name="forceStoragePathStyle">An optional forceStoragePathStyle to force path style for request to storage.</param>
         /// <param name="s3HttpClientFactory">An optional HttpClient factory for the S3 storage, if you need to setup a custom certificate for example.</param>
-        public Connection(string uri, string storageUri, string token, HttpClientHandler httpClientHandler = null, IRetryHandler retryHandler = null, bool forceStoragePathStyle = false, Amazon.Runtime.HttpClientFactory s3HttpClientFactory = null) {
+        /// <param name="delegatingHandlers">A list of hander used by the api connection. Default will create a list with the QarnotSrvHandler.</param>
+        /// <param name="dnsSrvLoadBalancingCacheTime">the cache time in minutes before retrieve the values of the QarnotSrvHandler. Unless you have a strong reason, you should keep the default value.</param>
+        public Connection(string uri, string storageUri, string token, HttpClientHandler httpClientHandler = null, IRetryHandler retryHandler = null, bool forceStoragePathStyle = false, Amazon.Runtime.HttpClientFactory s3HttpClientFactory = null, List<DelegatingHandler> delegatingHandlers = null, uint? dnsSrvLoadBalancingCacheTime = 5) {
             Uri = new Uri(uri);
             if (storageUri != null) StorageUri = new Uri(storageUri);
             ForceStoragePathStyle = forceStoragePathStyle;
@@ -157,21 +159,31 @@ namespace QarnotSDK {
             StorageSecretKey = token;
             _httpClientHandler = httpClientHandler ?? new HttpClientHandler();
             S3HttpClientFactory = s3HttpClientFactory;
+            _retryHandler = retryHandler ?? new ExponentialRetryHandler();
 
-            if (retryHandler != null)
+            if (delegatingHandlers == null)
             {
-                retryHandler.InnerHandler = _httpClientHandler;
-                _retryHandler = retryHandler;
+                delegatingHandlers = delegatingHandlers ?? new List<DelegatingHandler>();
             }
-            else
-                _retryHandler = new ExponentialRetryHandler(_httpClientHandler);
 
-            _client = new HttpClient(_retryHandler);
+            AddDnsLoadBalancerToTheDelegateHandlers(dnsSrvLoadBalancingCacheTime, delegatingHandlers);
+            delegatingHandlers.Add(_retryHandler);
+            _client = new HttpClient(Utils.LinkHandlers(delegatingHandlers, _httpClientHandler));
             _client.BaseAddress = Uri;
             _client.DefaultRequestHeaders.Clear();
             _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(Token);
             _client.DefaultRequestHeaders.Add("User-Agent", SdkUserAgent);
+        }
+
+        private void AddDnsLoadBalancerToTheDelegateHandlers(uint? dnsSrvLoadBalancingCacheTime, List<DelegatingHandler> delegatingHandlers)
+        {
+            var qarnotDnsLoadBalancerHandlerFactory = new QarnotDnsLoadBalancerHandlerFactory(Uri, dnsSrvLoadBalancingCacheTime);
+            var qarnotDnsLoadBalancerHandler = qarnotDnsLoadBalancerHandlerFactory.DnsBalancingMessageHandler;
+            if (qarnotDnsLoadBalancerHandler != null)
+            {
+                delegatingHandlers.Add(qarnotDnsLoadBalancerHandler);
+            }
         }
 
         #region CreateX
@@ -620,7 +632,8 @@ namespace QarnotSDK {
                 await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
                 var list = await response.Content.ReadAsAsync<List<JobApi>>(cancellationToken);
                 var ret = new List<QJob>();
-                foreach (var item in list) {
+                foreach (var item in list)
+                {
                     ret.Add(new QJob(this, item));
                 }
                 return ret;
