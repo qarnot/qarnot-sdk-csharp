@@ -1,14 +1,17 @@
-using System;
-
-public interface IEnvironmentWrapper
+namespace QarnotSDK
 {
-    string GetEnvironmentVariable(string environmentName);
-}
+    using System;
 
-public class EnvironmentWrapper:IEnvironmentWrapper
-{
-    public string GetEnvironmentVariable(string environmentName)
+    internal interface IEnvironmentWrapper
     {
-        return Environment.GetEnvironmentVariable(environmentName);
+        string GetEnvironmentVariable(string environmentName);
+    }
+
+    internal class EnvironmentWrapper : IEnvironmentWrapper
+    {
+        public string GetEnvironmentVariable(string environmentName)
+        {
+            return Environment.GetEnvironmentVariable(environmentName);
+        }
     }
 }
