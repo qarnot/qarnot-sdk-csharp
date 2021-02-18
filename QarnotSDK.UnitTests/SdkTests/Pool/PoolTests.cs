@@ -460,5 +460,28 @@ namespace QarnotSDK.UnitTests
             pool.UpdateResources();
             TestRequestAssert("PATCH", "pools/" + PoolTestsData.PoolResponseUuid);
         }
+
+        [Test]
+        public async Task GetNodeStatusListReturnTheGoodList()
+        {
+            HttpHandler.ResponseBody = PoolTestsData.PoolResponseFullBody;
+            var tolerance = 0.0001;
+            string uuid = Guid.NewGuid().ToString();
+            QPool pool = new QPool(Connect, uuid);
+            await pool.UpdateStatusAsync();
+            var pollNodeStatusList = pool.GetNodeStatusList();
+
+            Assert.AreEqual(pollNodeStatusList[0].State, "Execution");
+            Assert.AreEqual(pollNodeStatusList[0].Progress, 0);
+            Assert.That(pollNodeStatusList[0].ExecutionTimeGHz, Is.EqualTo(341.31247).Within(tolerance));
+
+            Assert.AreEqual(pollNodeStatusList[1].State, "Execution");
+            Assert.AreEqual(pollNodeStatusList[1].Progress, 0);
+            Assert.That(pollNodeStatusList[1].ExecutionTimeGHz, Is.EqualTo(340.12228).Within(tolerance));
+
+            Assert.AreEqual(pollNodeStatusList[2].State, "Execution");
+            Assert.AreEqual(pollNodeStatusList[2].Progress, 0);
+            Assert.That(pollNodeStatusList[2].ExecutionTimeGHz, Is.EqualTo(0).Within(tolerance));
+        }
     }
 }

@@ -600,10 +600,10 @@ namespace QarnotSDK
             _poolApi = result;
 
             // update constants
-            _constants = result.Constants?.ToDictionary(kv => kv.Key, kv => kv.Value) ?? new Dictionary<string, string>(); 
+            _constants = result.Constants?.ToDictionary(kv => kv.Key, kv => kv.Value) ?? new Dictionary<string, string>();
 
             // update constraints
-            _constraints = result.Constraints?.ToDictionary(kv => kv.Key, kv => kv.Value) ?? new Dictionary<string, string>(); 
+            _constraints = result.Constraints?.ToDictionary(kv => kv.Key, kv => kv.Value) ?? new Dictionary<string, string>();
 
             var newResourcesCount = 0;
             if (_poolApi.ResourceBuckets != null) newResourcesCount += _poolApi.ResourceBuckets.Count;
@@ -705,6 +705,22 @@ namespace QarnotSDK
                 }
             }
             return null;
+        }
+
+        /// <summary>
+        /// Get the list of the running nodes status.
+        /// Note: the status of a node could be retrieved in the Status.RunningInstancesInfo.PerRunningInstanceInfo
+        ///  structure. This method provides an
+        ///  easy way to retrieve those information.
+        /// </summary>
+        /// <returns>The status list of nodes.</returns>
+        public virtual List<QPoolNodeStatus> GetNodeStatusList() {
+            return _poolApi
+                ?.Status
+                ?.RunningInstancesInfo
+                ?.PerRunningInstanceInfo
+                ?.Select(rii => new QPoolNodeStatus(rii))
+                .ToList() ?? new List<QPoolNodeStatus>();
         }
         #endregion
     }
