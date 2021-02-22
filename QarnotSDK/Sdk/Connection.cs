@@ -98,6 +98,12 @@ namespace QarnotSDK {
         public virtual int MaxRetry { get { return _retryHandler.MaxRetries; } set { _retryHandler.MaxRetries = value; } }
 
         /// <summary>
+        /// Maximum number of retries in case of storage error.
+        /// Default is 3 times.
+        /// </summary>
+        public virtual int MaxStorageRetry { get; set; } = 3;
+
+        /// <summary>
         /// Interval between retries (in milliseconds).
         /// Default is 500 ms.
         /// </summary>
@@ -675,7 +681,8 @@ namespace QarnotSDK {
             {
                 ServiceURL = StorageUri.ToString(),
                 SignatureVersion = "2",
-                ForcePathStyle = ForceStoragePathStyle
+                ForcePathStyle = ForceStoragePathStyle,
+                MaxErrorRetry = MaxStorageRetry
             };
 
 #if (!NET45)

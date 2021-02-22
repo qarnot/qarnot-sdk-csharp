@@ -4,6 +4,7 @@ namespace QarnotSDK.UnitTests
     using System.Collections.Generic;
     using System.Linq;
     using System.Net.Http;
+    using System.Threading;
     using System.Threading.Tasks;
     using NUnit.Framework;
     using QarnotSDK;
@@ -899,6 +900,22 @@ namespace QarnotSDK.UnitTests
             pool = Api.CreatePool("name", profile: "profile", initialNodeCount: 5, shortname: "shortname");
             Assert.AreEqual(pool.Shortname, "shortname");
             Assert.AreEqual(pool.Profile, "profile");
+        }
+
+        [Test]
+        public async Task S3ClientChangeRetryClientValue()
+        {
+            var newConnection1 = new Connection(ComputeUrl, StorageUrl, Token, HttpHandler){
+                StorageAccessKey = "notEmpty@qarnot.com",
+            };
+            var S3Client = await newConnection1.GetS3ClientAsync(new CancellationToken());
+            Assert.AreEqual(S3Client.Config.MaxErrorRetry, 3);
+            var newConnection2 = new Connection(ComputeUrl, StorageUrl, Token, HttpHandler) {
+                StorageAccessKey = "notEmpty@qarnot.com",
+                MaxStorageRetry = 10
+            };
+            S3Client = await newConnection2.GetS3ClientAsync(new CancellationToken());
+            Assert.AreEqual(S3Client.Config.MaxErrorRetry, 10);
         }
 
         [Test]
