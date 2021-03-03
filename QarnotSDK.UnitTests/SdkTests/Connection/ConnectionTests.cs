@@ -919,19 +919,27 @@ namespace QarnotSDK.UnitTests
         }
 
         [Test]
+        public void AddS3HttpClinetFactory()
+        {
+            var connect = new Connection("token"){
+                S3HttpClientFactory = new UnsafeS3HttpClientFactory()
+            };
+        }
+
+        [Test]
         public void CheckConnectionConstructorsS3HttpClientFactory()
         {
             Connection connect = null;
 
-            connect = new Connection("https://localhost/uri", "https://localhost/stockage_uri", "token", httpClientHandler: default(HttpClientHandler), retryHandler: default(IRetryHandler), forceStoragePathStyle: true, s3HttpClientFactory: new S3HttpClientFactory());
-            connect = new Connection("https://localhost/uri", "https://localhost/stockage_uri", "token", httpClientHandler: default(HttpClientHandler), retryHandler: default(IRetryHandler), forceStoragePathStyle: true, s3HttpClientFactory: new CustomCAS3HttpClientFactory("hello-world"));
-            connect = new Connection("https://localhost/uri", "https://localhost/stockage_uri", "token", httpClientHandler: default(HttpClientHandler), retryHandler: default(IRetryHandler), forceStoragePathStyle: true, s3HttpClientFactory: new UnsafeS3HttpClientFactory());
-            connect = new Connection("https://localhost/uri", "token", httpClientHandler: default(HttpClientHandler), retryHandler: default(IRetryHandler), forceStoragePathStyle: true, s3HttpClientFactory: new S3HttpClientFactory());
-            connect = new Connection("https://localhost/uri", "token", httpClientHandler: default(HttpClientHandler), retryHandler: default(IRetryHandler), forceStoragePathStyle: true, s3HttpClientFactory: new CustomCAS3HttpClientFactory("hello-world"));
-            connect = new Connection("https://localhost/uri", "token", httpClientHandler: default(HttpClientHandler), retryHandler: default(IRetryHandler), forceStoragePathStyle: true, s3HttpClientFactory: new UnsafeS3HttpClientFactory());
-            connect = new Connection("token", httpClientHandler: default(HttpClientHandler), retryHandler: default(IRetryHandler), forceStoragePathStyle: true, s3HttpClientFactory: new S3HttpClientFactory());
-            connect = new Connection("token", httpClientHandler: default(HttpClientHandler), retryHandler: default(IRetryHandler), forceStoragePathStyle: true, s3HttpClientFactory: new CustomCAS3HttpClientFactory("hello-world"));
-            connect = new Connection("token", httpClientHandler: default(HttpClientHandler), retryHandler: default(IRetryHandler), forceStoragePathStyle: true, s3HttpClientFactory: new UnsafeS3HttpClientFactory());
+            connect = new Connection("https://localhost/uri", "https://localhost/stockage_uri", "token", httpClientHandler: default(HttpClientHandler), retryHandler: default(IRetryHandler), forceStoragePathStyle: true);
+            connect = new Connection("https://localhost/uri", "https://localhost/stockage_uri", "token", httpClientHandler: default(HttpClientHandler), retryHandler: default(IRetryHandler), forceStoragePathStyle: true);
+            connect = new Connection("https://localhost/uri", "https://localhost/stockage_uri", "token", httpClientHandler: default(HttpClientHandler), retryHandler: default(IRetryHandler), forceStoragePathStyle: true);
+            connect = new Connection("https://localhost/uri", "token", httpClientHandler: default(HttpClientHandler), retryHandler: default(IRetryHandler), forceStoragePathStyle: true);
+            connect = new Connection("https://localhost/uri", "token", httpClientHandler: default(HttpClientHandler), retryHandler: default(IRetryHandler), forceStoragePathStyle: true);
+            connect = new Connection("https://localhost/uri", "token", httpClientHandler: default(HttpClientHandler), retryHandler: default(IRetryHandler), forceStoragePathStyle: true);
+            connect = new Connection("token", httpClientHandler: default(HttpClientHandler), retryHandler: default(IRetryHandler), forceStoragePathStyle: true);
+            connect = new Connection("token", httpClientHandler: default(HttpClientHandler), retryHandler: default(IRetryHandler), forceStoragePathStyle: true);
+            connect = new Connection("token", httpClientHandler: default(HttpClientHandler), retryHandler: default(IRetryHandler), forceStoragePathStyle: true);
         }
         [Test]
         public void CheckConnectionConstructorsSetValues()
