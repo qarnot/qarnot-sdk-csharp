@@ -14,6 +14,7 @@ using System.Net.Http;
                                                                                             + "23b6d8f40bde0bffff0d8a4cf2b0d0ea365b2f58c1293854c2f23ed7e8196a06e5e33a1e25f5fd"
                                                                                             + "3ab01d88")]
 #endif
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("DynamicProxyGenAssembly2")]
 
 namespace QarnotSDK {
     internal static class Utils
