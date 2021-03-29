@@ -459,7 +459,8 @@ namespace QarnotSDK {
                 return _snapshot_bucket;
             }
             set {
-                _taskApi.SnapshotBucket = value.Shortname;
+                if (_taskApi != null)
+                    _taskApi.SnapshotBucket = value.Shortname;
                 _snapshot_bucket = QBucket.GetBucketFromResource(value);
                 }
         }
@@ -470,10 +471,11 @@ namespace QarnotSDK {
         [InternalDataApiName(Name="SnapshotBucketPrefix")]
         public virtual string SnapshotBucketPrefix {
             get {
-                return _taskApi.SnapshotBucketPrefix;
+                return _taskApi?.SnapshotBucketPrefix;
             }
             set {
-                _taskApi.SnapshotBucketPrefix = value;
+                if (_taskApi != null)
+                    _taskApi.SnapshotBucketPrefix = value;
             }
         }
 
