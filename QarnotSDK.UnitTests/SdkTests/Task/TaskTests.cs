@@ -514,12 +514,13 @@ namespace QarnotSDK.UnitTests
         public void SnapshotBucketCheckTheValuesAdd()
         {
             QTask task = new QTask(Connect, Guid.NewGuid().ToString());
-            var moqBucket = new Mock<QBucket>();// new QBucket(Connect, "bucket1");
+            var moqBucket = new Mock<QBucket>();
             moqBucket.Setup(foo => foo.Shortname).Returns("bucket-name");
 
             QBucket bucket = moqBucket.Object;
             task.SnapshotBucket = bucket;
             CollectionAssert.AreEqual("bucket-name", task.SnapshotBucket.Shortname);
+            CollectionAssert.AreEqual("bucket-name", task._taskApi.SnapshotBucket);
         }
 
         [Test]
