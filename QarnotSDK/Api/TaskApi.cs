@@ -504,6 +504,8 @@ namespace QarnotSDK {
         public List<QTaskCompletedInstance> CompletedInstances { get; set; }
         public string SnapshotWhitelist { get; set; }
         public string SnapshotBlacklist { get; set; }
+        public string SnapshotBucket { get; set; }
+        public string SnapshotBucketPrefix { get; set; }
         public string ResultsWhitelist { get; set; }
         public string ResultsBlacklist { get; set; }
         public Dependency Dependencies { get; set; }
