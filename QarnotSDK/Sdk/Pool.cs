@@ -192,6 +192,32 @@ namespace QarnotSDK
         /// </summary>
         [InternalDataApiName(Name="InstanceCount")]
         public virtual uint NodeCount { get { return _poolApi.InstanceCount; } }
+
+
+        /// <summary>
+        /// The actual running instance count.
+        /// </summary>
+        [InternalDataApiName(Name = "RunningInstanceCount")]
+        public virtual uint RunningInstanceCount
+        {
+            get
+            {
+                return _poolApi?.RunningInstanceCount ?? default(uint);
+            }
+        }
+
+        /// <summary>
+        /// The actual running cores count.
+        /// </summary>
+        [InternalDataApiName(Name = "RunningCoreCount")]
+        public virtual uint RunningCoreCount
+        {
+            get
+            {
+                return _poolApi?.RunningCoreCount ?? default(uint);
+            }
+        }
+
         /// <summary>
         /// The custom pool tag list.
         /// </summary>

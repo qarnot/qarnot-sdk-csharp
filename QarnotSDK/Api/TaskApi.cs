@@ -480,6 +480,8 @@ namespace QarnotSDK {
         public string PoolUuid { get; set; }
         public string JobUuid { get; set; }
         public uint InstanceCount { get; set; }
+        public uint? RunningInstanceCount { get; set; }
+        public uint? RunningCoreCount { get; set; }
         public List<string> ResourceBuckets { get; set; }
         public List<ApiAdvancedResourceBucket> AdvancedResourceBuckets { get; set; }
         public string ResultBucket { get; set; }
