@@ -378,6 +378,28 @@ namespace QarnotSDK {
         }
 
         /// <summary>
+        /// The actual running instance count.
+        /// </summary>
+        [InternalDataApiName(Name="RunningInstanceCount")]
+        public virtual uint RunningInstanceCount {
+            get
+            {
+                return _taskApi?.RunningInstanceCount ?? default(uint);
+            }
+        }
+
+        /// <summary>
+        /// The actual running cores count.
+        /// </summary>
+        [InternalDataApiName(Name="RunningCoreCount")]
+        public virtual uint RunningCoreCount {
+            get
+            {
+                return _taskApi?.RunningCoreCount ?? default(uint);
+            }
+        }
+
+        /// <summary>
         /// The results include only the files matching that regular expression.
         /// Must be set before the submission.
         /// </summary>
