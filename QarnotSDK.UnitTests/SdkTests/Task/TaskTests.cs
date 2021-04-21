@@ -1,6 +1,7 @@
 namespace QarnotSDK.UnitTests
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Threading;
@@ -626,5 +627,200 @@ namespace QarnotSDK.UnitTests
 
             Assert.True(task.Shortname == shortname);
         }
+    }
+
+
+    [TestFixture]
+    public class TaskTestsAdvancedResources
+    {
+        private const string StorageUrl = "http://storage";
+        private const string ApiUrl = "http://api";
+        private const string Token = "token";
+
+        private Connection Connect { get; set; }
+        private InterceptingFakeHttpHandler HttpHandler { get; set; }
+
+        private Connection ConnectLegacyBucket { get; set; }
+        private InterceptingFakeHttpHandler HttpHandlerLegacyBucket { get; set; }
+
+        [SetUp]
+        public void SetUp()
+        {
+            HttpHandler = new InterceptingFakeHttpHandler()
+            {
+                ResponseBody = TaskTestsData.TaskResponseWithAdvancedBucketsFullBody,
+            };
+            Connect = new Connection(ApiUrl, StorageUrl, Token, HttpHandler);
+
+            HttpHandlerLegacyBucket = new InterceptingFakeHttpHandler()
+            {
+                ResponseBody = TaskTestsData.TaskResponseWithLegacyBucketsFullBody,
+            };
+            ConnectLegacyBucket = new Connection(ApiUrl, StorageUrl, Token, HttpHandlerLegacyBucket);
+        }
+
+
+        [Test]
+        public async Task TestTaskPreSubmitAsync_WithPrefixFiltering_FillsUpApiTask()
+        {
+            string prefix = "filter/prefix";
+            QBucket bucket = new QBucket(Connect, "the-bucket", create: false);
+            QTask task = Connect.CreateTask("task-name", "task-profile", 1);
+            task.Resources = new List<QAbstractStorage> { bucket.WithFiltering(new BucketFilteringPrefix(prefix)) };
+            await task.PreSubmitAsync(default);
+
+            Assert.That(task._taskApi.ResourceBuckets, Is.Null.Or.Empty);
+            Assert.AreEqual(1, task._taskApi.AdvancedResourceBuckets.Count());
+
+            var apiResource = task._taskApi.AdvancedResourceBuckets[0];
+
+            Assert.AreEqual("the-bucket", apiResource.BucketName);
+            Assert.IsNull(apiResource.ResourcesTransformation);
+            Assert.IsNotNull(apiResource.Filtering);
+            Assert.IsNotNull(apiResource.Filtering.PrefixFiltering);
+            Assert.AreEqual(prefix, apiResource.Filtering.PrefixFiltering.Prefix);
+        }
+
+
+        [Test]
+        public async Task TestTaskPreSubmitAsync_WithResourcesTransformation_FillsUpApiTask()
+        {
+            string prefix = "filter/prefix";
+            QBucket bucket = new QBucket(Connect, "the-bucket", create: false);
+            QTask task = Connect.CreateTask("task-name", "task-profile", 1);
+            task.Resources = new List<QAbstractStorage> { bucket.WithResourcesTransformation(new ResourcesTransformationStripPrefix(prefix)) };
+            await task.PreSubmitAsync(default);
+
+            Assert.That(task._taskApi.ResourceBuckets, Is.Null.Or.Empty);
+            Assert.AreEqual(1, task._taskApi.AdvancedResourceBuckets.Count());
+
+            var apiResource = task._taskApi.AdvancedResourceBuckets[0];
+
+            Assert.AreEqual("the-bucket", apiResource.BucketName);
+            Assert.IsNull(apiResource.Filtering);
+            Assert.IsNotNull(apiResource.ResourcesTransformation);
+            Assert.IsNotNull(apiResource.ResourcesTransformation.StripPrefix);
+            Assert.AreEqual(prefix, apiResource.ResourcesTransformation.StripPrefix.Prefix);
+        }
+
+
+
+        // Check that chaining both With* calls is correct
+        [Test]
+        public async Task TestTaskPreSubmitAsync_WithPrefixFiltering_AndResourcesTransformation_FillsUpApiTask()
+        {
+            string prefix = "filter/prefix";
+            QBucket bucket = new QBucket(Connect, "the-bucket", create: false);
+            QTask task = Connect.CreateTask("task-name", "task-profile", 1);
+            task.Resources = new List<QAbstractStorage> {
+                bucket.WithFiltering(new BucketFilteringPrefix(prefix))
+                      .WithResourcesTransformation(new ResourcesTransformationStripPrefix(prefix))
+            };
+            await task.PreSubmitAsync(default);
+
+            Assert.That(task._taskApi.ResourceBuckets, Is.Null.Or.Empty);
+            Assert.AreEqual(1, task._taskApi.AdvancedResourceBuckets.Count());
+
+            var apiResource = task._taskApi.AdvancedResourceBuckets[0];
+
+            Assert.AreEqual("the-bucket", apiResource.BucketName);
+            Assert.IsNotNull(apiResource.Filtering);
+            Assert.IsNotNull(apiResource.Filtering.PrefixFiltering);
+            Assert.AreEqual(prefix, apiResource.Filtering.PrefixFiltering.Prefix);
+
+            Assert.IsNotNull(apiResource.ResourcesTransformation);
+            Assert.IsNotNull(apiResource.ResourcesTransformation.StripPrefix);
+            Assert.AreEqual(prefix, apiResource.ResourcesTransformation.StripPrefix.Prefix);
+        }
+
+
+
+        // NOTE: this test is there so that the SDK remains BC with older versions of rest-computing.
+        // When all rest-computing have migrated, this test and the behavior it tests can be
+        // removed.
+        [Test]
+        public async Task TestTaskPreSubmitAsync_WithoutFilterOrTransformation_UsesLegacyResources()
+        {
+            string prefix = "filter/prefix";
+            QBucket bucket = new QBucket(Connect, "the-bucket", create: false);
+            QTask task = Connect.CreateTask("task-name", "task-profile", 1);
+            task.Resources = new List<QAbstractStorage> { bucket };
+            await task.PreSubmitAsync(default);
+
+            Assert.That(task._taskApi.AdvancedResourceBuckets, Is.Null.Or.Empty);
+
+            Assert.That(task._taskApi.ResourceBuckets.Count, Is.EqualTo(1));
+            Assert.That(task._taskApi.ResourceBuckets[0], Is.EqualTo("the-bucket"));
+        }
+
+
+        [Test]
+        public async Task TestTaskBuildFromJson_FillsUpFilterAndTransformation_InApiProxyObject()
+        {
+            var task = await Connect.RetrieveTaskByUuidAsync("11111111-1111-1111-1111-111111111111");
+
+            Assert.That(task._taskApi.ResourceBuckets, Is.Null.Or.Empty);
+            Assert.That(task._taskApi.AdvancedResourceBuckets.Count, Is.EqualTo(2));
+
+            var firstBucket = task._taskApi.AdvancedResourceBuckets[0];
+            var secondBucket = task._taskApi.AdvancedResourceBuckets[1];
+
+            Assert.That(firstBucket.BucketName, Is.EqualTo("someBucket"));
+            Assert.That(firstBucket.Filtering, Is.Not.Null);
+            Assert.That(firstBucket.Filtering.PrefixFiltering, Is.Not.Null);
+            Assert.That(firstBucket.Filtering.PrefixFiltering.Prefix, Is.EqualTo("some/prefix/"));
+            Assert.That(firstBucket.ResourcesTransformation, Is.Not.Null);
+            Assert.That(firstBucket.ResourcesTransformation.StripPrefix, Is.Not.Null);
+            Assert.That(firstBucket.ResourcesTransformation.StripPrefix.Prefix, Is.EqualTo("transformed-prefix/"));
+
+            Assert.That(secondBucket.BucketName, Is.EqualTo("someOtherBucket"));
+            Assert.That(secondBucket.Filtering, Is.Null);
+            Assert.That(secondBucket.ResourcesTransformation, Is.Null);
+        }
+
+
+        [Test]
+        public async Task TestTaskBuildFromJson_FillsUpFilterAndTransformation_InSDKObject()
+        {
+            var task = await Connect.RetrieveTaskByUuidAsync("11111111-1111-1111-1111-111111111111");
+
+            Assert.That(task.Resources.Count(), Is.EqualTo(2));
+
+            var firstBucket = task.Resources[0] as QBucket;
+            var secondBucket = task.Resources[1] as QBucket;
+
+            Assert.That(firstBucket.Shortname, Is.EqualTo("someBucket"));
+            Assert.That(firstBucket.Filtering, Is.Not.Null);
+            Assert.That(firstBucket.Filtering, Is.AssignableFrom(typeof(BucketFilteringPrefix)));
+            Assert.That((firstBucket.Filtering as BucketFilteringPrefix).Prefix, Is.EqualTo("some/prefix/"));
+            Assert.That(firstBucket.ResourcesTransformation, Is.Not.Null);
+            Assert.That(firstBucket.ResourcesTransformation, Is.AssignableFrom(typeof(ResourcesTransformationStripPrefix)));
+            Assert.That((firstBucket.ResourcesTransformation as ResourcesTransformationStripPrefix).Prefix, Is.EqualTo("transformed-prefix/"));
+
+            Assert.That(secondBucket.Shortname, Is.EqualTo("someOtherBucket"));
+            Assert.That(secondBucket.Filtering, Is.Null);
+            Assert.That(secondBucket.ResourcesTransformation, Is.Null);
+        }
+
+
+        [Test]
+        public async Task TestTaskBuildFromJson_FillsUpFilterAndTransformation_InSDKObject_WithLegacyResources()
+        {
+            var task = await ConnectLegacyBucket.RetrieveTaskByUuidAsync("11111111-1111-1111-1111-111111111111");
+
+            Assert.That(task.Resources.Count(), Is.EqualTo(2));
+
+            var firstBucket = task.Resources[0] as QBucket;
+            var secondBucket = task.Resources[1] as QBucket;
+
+            Assert.That(firstBucket.Shortname, Is.EqualTo("someBucket"));
+            Assert.That(firstBucket.Filtering, Is.Null);
+            Assert.That(firstBucket.ResourcesTransformation, Is.Null);
+
+            Assert.That(secondBucket.Shortname, Is.EqualTo("someOtherBucket"));
+            Assert.That(secondBucket.Filtering, Is.Null);
+            Assert.That(secondBucket.ResourcesTransformation, Is.Null);
+        }
+
     }
 }

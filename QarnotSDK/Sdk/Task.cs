@@ -820,10 +820,31 @@ namespace QarnotSDK {
 
             // Build the resource bucket list
             _taskApi.ResourceBuckets = new List<string>();
+            bool useAdvancedResources = _resources.Any(res => res?.Filtering != null || res?.ResourcesTransformation != null);
             foreach (var item in _resources) {
                 var resQBucket = item as QBucket;
                 if (resQBucket != null) {
-                    _taskApi.ResourceBuckets.Add(resQBucket.Shortname);
+                    if (useAdvancedResources) {
+                        _taskApi.AdvancedResourceBuckets.Add(new ApiAdvancedResourceBucket {
+                            BucketName = resQBucket.Shortname,
+                            Filtering = resQBucket.Filtering is BucketFilteringPrefix prefixFiltering ?
+                                new ApiBucketFiltering {
+                                    PrefixFiltering = new ApiBucketFilteringPrefix {
+                                        Prefix = prefixFiltering.Prefix
+                                    }
+                                }
+                                : null,
+                            ResourcesTransformation = resQBucket.ResourcesTransformation is ResourcesTransformationStripPrefix stripPrefixTransformation ?
+                                new ApiResourcesTransformation {
+                                    StripPrefix = new ApiResourcesTransformationStripPrefix {
+                                        Prefix = stripPrefixTransformation.Prefix
+                                    }
+                                }
+                                : null,
+                        });
+                    } else {
+                        _taskApi.ResourceBuckets.Add(resQBucket.Shortname);
+                    }
                 } else {
                     throw new Exception("Unknown IQStorage implementation");
                 }
@@ -877,12 +898,18 @@ namespace QarnotSDK {
             // update the task resources
             var newResourcesCount = 0;
             if (_taskApi.ResourceBuckets != null) newResourcesCount += _taskApi.ResourceBuckets.Count;
+            if (_taskApi.AdvancedResourceBuckets != null) newResourcesCount += _taskApi.AdvancedResourceBuckets.Count;
 
             if (_resources.Count != newResourcesCount) {
                 _resources.Clear();
 
                 if (_taskApi.ResourceBuckets != null) {
                     foreach (var r in _taskApi.ResourceBuckets) {
+                        _resources.Add(await QBucket.CreateAsync(_api, r, create: false));
+                    }
+                }
+                if (_taskApi.AdvancedResourceBuckets != null) {
+                    foreach (var r in _taskApi.AdvancedResourceBuckets) {
                         _resources.Add(await QBucket.CreateAsync(_api, r, create: false));
                     }
                 }

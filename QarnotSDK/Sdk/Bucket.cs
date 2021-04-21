@@ -8,6 +8,50 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace QarnotSDK {
+
+    /// <summary>
+    /// Abstract base class for bucket filtering
+    /// </summary>
+    public abstract class ABucketFiltering {}
+
+
+    /// <summary>
+    /// Filter a bucket by prefix
+    /// </summary>
+    public sealed class BucketFilteringPrefix : ABucketFiltering {
+        /// <summary> Prefix by which to filter </summary>
+        public string Prefix { get; private set; }
+
+        /// <summary> Create a prefix filtering </summary>
+        /// <param name="prefix">The prefix to filter by</param>
+        public BucketFilteringPrefix(string prefix) {
+            Prefix = prefix;
+        }
+
+    }
+
+
+    /// <summary>
+    /// Abstract base class for resources transformation
+    /// </summary>
+    public abstract class AResourcesTransformation {}
+
+
+    /// <summary>
+    /// Transform resources by stripping a prefix from the object name in the bucket
+    /// </summary>
+    public sealed class ResourcesTransformationStripPrefix : AResourcesTransformation {
+        /// <summary> Prefix to strip </summary>
+        public string Prefix { get; private set; }
+
+        /// <summary> Build a resources transformation stripping prefixes</summary>
+        /// <param name="prefix">The prefix to strip</param>
+        public ResourcesTransformationStripPrefix(string prefix) {
+            Prefix = prefix;
+        }
+    }
+
+
     /// <summary>
     /// Represents an entry (file or folder) in a bucket.
     /// </summary>
@@ -229,6 +273,16 @@ namespace QarnotSDK {
         public override DateTime CreationDate { get; }
 
         /// <summary>
+        /// Add filtering to the bucket content so that only part of it is made available to tasks
+        /// </summary>
+        public ABucketFiltering Filtering { get; protected set; }
+
+        /// <summary>
+        /// Add a transformation to resources as seen in the execution environment
+        /// </summary>
+        public AResourcesTransformation ResourcesTransformation { get; protected set; }
+
+        /// <summary>
         /// Create a bucket object.
         /// </summary>
         /// <param name="connection">The inner connection object.</param>
@@ -244,6 +298,11 @@ namespace QarnotSDK {
 
         internal QBucket() {}
 
+        internal QBucket(QBucket originalBucket) : this(originalBucket.Connection, originalBucket.Shortname, create: false) {
+            Filtering = originalBucket.Filtering;
+            ResourcesTransformation = originalBucket.ResourcesTransformation;
+        }
+
         internal QBucket(Connection connection, Amazon.S3.Model.S3Bucket s3Bucket) : this(connection, s3Bucket.BucketName, create: false) {
             CreationDate = s3Bucket.CreationDate;
         }
@@ -257,8 +316,28 @@ namespace QarnotSDK {
             return this;
         }
 
+
+        internal async Task<QBucket> InitializeAsync(Connection qapi, ApiAdvancedResourceBucket advancedBucket, bool create=true, CancellationToken ct=default(CancellationToken)) {
+             _api = qapi;
+            Shortname = advancedBucket.BucketName;
+            if (advancedBucket.Filtering?.PrefixFiltering != null) {
+                Filtering = new BucketFilteringPrefix(advancedBucket.Filtering.PrefixFiltering.Prefix);
+            }
+            if (advancedBucket.ResourcesTransformation?.StripPrefix != null) {
+                ResourcesTransformation = new ResourcesTransformationStripPrefix(advancedBucket.ResourcesTransformation.StripPrefix.Prefix);
+            }
+
+            if (create)
+                await this.CreateAsync(ct);
+            return this;
+        }
+
         internal async static Task<QBucket> CreateAsync(Connection qapi, string shortname, bool create=true, CancellationToken ct=default(CancellationToken)) {
             return await new QBucket().InitializeAsync(qapi, shortname, create, ct);
+        }
+
+        internal async static Task<QBucket> CreateAsync(Connection qapi, ApiAdvancedResourceBucket advancedBucket, bool create=true, CancellationToken ct=default(CancellationToken)) {
+            return await new QBucket().InitializeAsync(qapi, advancedBucket, create, ct);
         }
 
         internal static  List<QBucket> GetBucketsFromResources(IEnumerable<QAbstractStorage> storages) {
@@ -550,6 +629,24 @@ namespace QarnotSDK {
 
                 return files;
             }
+        }
+
+
+        /// <summary> Returns a copy of the bucket object with a filtering added </summary>
+        /// <param name="filtering"> The filtering to add </param>
+        public QBucket WithFiltering(ABucketFiltering filtering) {
+            var newBucket = new QBucket(this);
+            newBucket.Filtering = filtering;
+            return newBucket;
+        }
+
+
+        /// <summary> Returns a copy of the bucket object with a resources transformation added </summary>
+        /// <param name="transformation"> The resources transformation to add </param>
+        public QBucket WithResourcesTransformation(AResourcesTransformation transformation) {
+            var newBucket = new QBucket(this);
+            newBucket.ResourcesTransformation = transformation;
+            return newBucket;
         }
 
     }
