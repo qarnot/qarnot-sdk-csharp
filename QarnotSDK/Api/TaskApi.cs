@@ -481,6 +481,7 @@ namespace QarnotSDK {
         public string JobUuid { get; set; }
         public uint InstanceCount { get; set; }
         public List<string> ResourceBuckets { get; set; }
+        public List<ApiAdvancedResourceBucket> AdvancedResourceBuckets { get; set; }
         public string ResultBucket { get; set; }
         public string State { get; set; }
         public string PreviousState { get; set; }
@@ -515,6 +516,7 @@ namespace QarnotSDK {
             Constraints = new List<KeyValHelper>();
             Tags = new List<String>();
             ResourceBuckets = new List<String>();
+            AdvancedResourceBuckets = new List<ApiAdvancedResourceBucket>();
             Errors = new List<QTaskError>();
             CompletedInstances = new List<QTaskCompletedInstance>();
             AutoDeleteOnCompletion = false;
