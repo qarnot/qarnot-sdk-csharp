@@ -523,12 +523,6 @@ namespace QarnotSDK {
         }
     }
 
-    internal class Snapshot {
-        public int Interval { get; set; }
-        internal Snapshot() {
-        }
-    }
-
     internal class Dependency
     {
         public List<Guid> DependsOn { get; set; }

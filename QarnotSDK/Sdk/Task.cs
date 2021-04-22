@@ -970,13 +970,21 @@ namespace QarnotSDK {
             }
         }
 
-        /// <summary>
-        /// Update this task state and status.
-        /// </summary>
-        /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        /// <param name="updateQBucketsInfo">If set to true, the resources and results bucket objects are also updated.</param>
-        /// <returns></returns>
-        public virtual async Task UpdateStatusAsync(CancellationToken cancellationToken, bool updateQBucketsInfo = true) {
+        public virtual async Task TriggerPeriodicSnapshotAsync(uint interval, string whitelist = null, string blacklist = null, QBucket bucket = null, string bucketPrefix = null, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            await base.TriggerPeriodicSnapshotAsync(interval, whitelist, blacklist, bucket, bucketPrefix, cancellationToken);
+
+            // Retrieve the task status once to update the other fields (result bucket uuid etc..)
+            await UpdateStatusAsync(cancellationToken);
+        }
+
+    /// <summary>
+    /// Update this task state and status.
+    /// </summary>
+    /// <param name="cancellationToken">Optional token to cancel the request.</param>
+    /// <param name="updateQBucketsInfo">If set to true, the resources and results bucket objects are also updated.</param>
+    /// <returns></returns>
+    public virtual async Task UpdateStatusAsync(CancellationToken cancellationToken, bool updateQBucketsInfo = true) {
             using (var response = await _api._client.GetAsync(_uri, cancellationToken)) // get task status
             {
                 await Utils.LookForErrorAndThrowAsync(_api._client, response);

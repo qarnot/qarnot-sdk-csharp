@@ -33,7 +33,10 @@ namespace QarnotSDK.UnitTests
             {
                 ResponseBody = TaskTestsData.TaskResponseFullBody,
             };
-            Connect = new Connection(ApiUrl, StorageUrl, Token, HttpHandler);
+            Connect = new Connection(ApiUrl, StorageUrl, Token, HttpHandler)
+            {
+                StorageAccessKey = "fake@mail.com"
+            };
             ReadonlyConnect = new Connection(ApiUrl, StorageUrl, Token, HttpHandler)
             {
                 IsReadOnly = true,
@@ -44,6 +47,15 @@ namespace QarnotSDK.UnitTests
         public void TearDown()
         {
             HttpHandler.Dispose();
+        }
+
+        public void TestBodyRequestAssert(string methodCall, string partialPath, string body)
+        {
+            ParsedRequest value = HttpHandler.ParsedRequests.Find(req =>
+                req.Method.Contains(methodCall, StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ApiUrl}/{partialPath}", StringComparison.InvariantCultureIgnoreCase));
+
+            Assert.AreEqual(body, value.Content);
         }
 
         public void TestRequestAssert(string methodCall, string partialPath)
@@ -286,12 +298,172 @@ namespace QarnotSDK.UnitTests
         }
 
         [Test]
-        public async Task AbortAsyncShouldGetOnCorrectEndpoint()
+        public async Task AbortAsyncShouldPostOnCorrectEndpoint()
         {
             var id = Guid.NewGuid();
             QTask task = new QTask(Connect, id);
             await task.AbortAsync();
             TestRequestAssert("POST", $"tasks/{id}/abort");
+        }
+
+        [Test]
+        public void SnapshotAsyncReadonlyFailTest()
+        {
+            QTask task = new QTask(ReadonlyConnect, Guid.NewGuid().ToString());
+            Exception ex = Assert.ThrowsAsync<Exception>(async () => await task.SnapshotAsync());
+            Assert.IsNotNull(ex);
+        }
+
+        [Test]
+        public async Task SnapshotAsyncShouldPostOnCorrectEndpoint()
+        {
+            var id = Guid.NewGuid();
+            QTask task = new QTask(Connect, id);
+            await task.SnapshotAsync();
+            TestRequestAssert("POST", $"tasks/{id}/snapshot");
+        }
+
+        [Test]
+        public async Task SnapshotAsyncBodyValuesCheck()
+        {
+            var id = Guid.NewGuid();
+            QTask task = new QTask(Connect, id);
+            task.SnapshotBlacklist = "BlackList";
+            task.SnapshotWhitelist = "WhiteList";
+            task.SnapshotBucket = new QBucket(Connect, "bucket", false);
+            task.SnapshotBucketPrefix = "Prefix";
+            string body = "{\"Whitelist\":null,\"Blacklist\":null,\"Bucket\":null,\"BucketPrefix\":null}";
+
+            await task.SnapshotAsync();
+            TestBodyRequestAssert("POST", $"tasks/{id}/snapshot", body);
+        }
+
+        [Test]
+        public void TriggerSnapshotAsyncReadonlyFailTest()
+        {
+            QTask task = new QTask(ReadonlyConnect, Guid.NewGuid().ToString());
+            Exception ex = Assert.ThrowsAsync<Exception>(async () => await task.TriggerSnapshotAsync());
+            Assert.IsNotNull(ex);
+        }
+
+        [Test]
+        public async Task TriggerSnapshotAsyncShouldPostOnCorrectEndpoint()
+        {
+            var id = Guid.NewGuid();
+            QTask task = new QTask(Connect, id);
+            await task.TriggerSnapshotAsync();
+            TestRequestAssert("POST", $"tasks/{id}/snapshot");
+        }
+
+        [Test]
+        public async Task TriggerSnapshotAsyncBodyValuesCheck()
+        {
+            var id = Guid.NewGuid();
+            QTask task = new QTask(Connect, id);
+            task.SnapshotBlacklist = "BlackList";
+            task.SnapshotWhitelist = "WhiteList";
+            task.SnapshotBucket = new QBucket(Connect, "bucket", false);
+            task.SnapshotBucketPrefix = "Prefix";
+            string body = "{\"Whitelist\":null,\"Blacklist\":null,\"Bucket\":null,\"BucketPrefix\":null}";
+
+            await task.TriggerSnapshotAsync();
+            TestBodyRequestAssert("POST", $"tasks/{id}/snapshot", body);
+        }
+
+        [Test]
+        public async Task TriggerSnapshotAsyncChangeBodyValuesCheck()
+        {
+            var id = Guid.NewGuid();
+            QTask task = new QTask(Connect, id);
+            task.SnapshotBlacklist = "BlackList";
+            task.SnapshotWhitelist = "WhiteList";
+            task.SnapshotBucket = new QBucket(Connect, "bucket", false);
+            task.SnapshotBucketPrefix = "Prefix";
+            string body = "{\"Whitelist\":\"White2List\",\"Blacklist\":\"Black2List\",\"Bucket\":\"buc2ket\",\"BucketPrefix\":\"Pre2fix\"}";
+
+            await task.TriggerSnapshotAsync("White2List", "Black2List", new QBucket(Connect, "buc2ket", false), "Pre2fix");
+            TestBodyRequestAssert("POST", $"tasks/{id}/snapshot", body);
+        }
+
+        [Test]
+        public void SnapshotPeriodicAsyncReadonlyFailTest()
+        {
+            QTask task = new QTask(ReadonlyConnect, Guid.NewGuid().ToString());
+            Exception ex = Assert.ThrowsAsync<Exception>(async () => await task.SnapshotPeriodicAsync(1));
+            Assert.IsNotNull(ex);
+        }
+
+        [Test]
+        public async Task SnapshotPeriodicAsyncShouldPostOnCorrectEndpoint()
+        {
+            var id = Guid.NewGuid();
+            QTask task = new QTask(Connect, id);
+
+            await task.SnapshotPeriodicAsync(1);
+            TestRequestAssert("POST", $"tasks/{id}/snapshot/periodic");
+        }
+
+        [Test]
+        public async Task SnapshotPeriodicAsyncBodyValuesCheck()
+        {
+            var id = Guid.NewGuid();
+            QTask task = new QTask(Connect, id);
+            task.SnapshotBlacklist = "BlackList";
+            task.SnapshotWhitelist = "WhiteList";
+            task.SnapshotBucket = new QBucket(Connect, "bucket", false);
+            task.SnapshotBucketPrefix = "Prefix";
+            string body = "{\"Interval\":1,\"Whitelist\":null,\"Blacklist\":null,\"Bucket\":null,\"BucketPrefix\":null}";
+
+            await task.SnapshotPeriodicAsync(1);
+            TestBodyRequestAssert("POST", $"tasks/{id}/snapshot/periodic", body);
+        }
+
+        [Test]
+        public void TriggerPeriodicSnapshotAsyncReadonlyFailTest()
+        {
+            QTask task = new QTask(ReadonlyConnect, Guid.NewGuid().ToString());
+            Exception ex = Assert.ThrowsAsync<Exception>(async () => await task.TriggerPeriodicSnapshotAsync(1));
+            Assert.IsNotNull(ex);
+        }
+
+        [Test]
+        public async Task TriggerPeriodicSnapshotAsyncShouldPostOnCorrectEndpoint()
+        {
+            var id = Guid.NewGuid();
+            QTask task = new QTask(Connect, id);
+
+            await task.TriggerPeriodicSnapshotAsync(1);
+            TestRequestAssert("POST", $"tasks/{id}/snapshot/periodic");
+        }
+
+        [Test]
+        public async Task TriggerPeriodicSnapshotAsyncBodyValuesCheck()
+        {
+            var id = Guid.NewGuid();
+            QTask task = new QTask(Connect, id);
+            task.SnapshotBlacklist = "BlackList";
+            task.SnapshotWhitelist = "WhiteList";
+            task.SnapshotBucket = new QBucket(Connect, "bucket", false);
+            task.SnapshotBucketPrefix = "Prefix";
+            string body = "{\"Interval\":1,\"Whitelist\":null,\"Blacklist\":null,\"Bucket\":null,\"BucketPrefix\":null}";
+
+            await task.TriggerPeriodicSnapshotAsync(1);
+            TestBodyRequestAssert("POST", $"tasks/{id}/snapshot/periodic", body);
+        }
+
+        [Test]
+        public async Task TriggerPeriodicSnapshotAsyncChangeBodyValuesCheck()
+        {
+            var id = Guid.NewGuid();
+            QTask task = new QTask(Connect, id);
+            task.SnapshotBlacklist = "BlackList";
+            task.SnapshotWhitelist = "WhiteList";
+            task.SnapshotBucket = new QBucket(Connect, "bucket", false);
+            task.SnapshotBucketPrefix = "Prefix";
+            string body = "{\"Interval\":1,\"Whitelist\":\"White2List\",\"Blacklist\":\"Black2List\",\"Bucket\":\"buc2ket\",\"BucketPrefix\":\"Pre2fix\"}";
+
+            await task.TriggerPeriodicSnapshotAsync(1, "White2List", "Black2List", new QBucket(Connect, "buc2ket", false), "Pre2fix");
+            TestBodyRequestAssert("POST", $"tasks/{id}/snapshot", body);
         }
 
         [Test]
