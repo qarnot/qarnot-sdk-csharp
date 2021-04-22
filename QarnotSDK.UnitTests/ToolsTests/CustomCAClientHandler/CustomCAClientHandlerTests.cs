@@ -140,48 +140,5 @@ namespace QarnotSDK.UnitTests
 
             Assert.IsTrue(handler.ServerCertificateCustomValidationCallback(null, certificateToCheck, x509Chain, SslPolicyErrors.None));
         }
-
-        private X509Certificate2 getOneValidCertificate()
-        {
-            foreach (StoreLocation storeLocation in (StoreLocation[]) Enum.GetValues(typeof(StoreLocation)))
-            {
-                using var store = new X509Store(StoreName.Root, storeLocation);
-                try
-                {
-                    store.Open(OpenFlags.OpenExistingOnly);
-                    if (store.Certificates.Count > 0)
-                    {
-                        return store.Certificates[0];
-                    }
-                }
-                catch (CryptographicException ex)
-                {
-                    Console.Error.WriteLine(ex.Message);
-                }
-            }
-
-            return null;
-        }
-
-        [Test]
-        public void CustomCAClientHandlerAccepteValidRootCertificate()
-        {
-            using var validCertificate = getOneValidCertificate();
-
-            if (validCertificate == null)
-            {
-                return ;
-            }
-
-            var customCertificateList = new List<X509Certificate2> { validCertificate };
-            using var handler = new CustomCAClientHandler(customCertificateList);
-
-            using var x509Chain = new X509Chain();
-            x509Chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
-
-            x509Chain.Build(validCertificate);
-
-            Assert.IsTrue(handler.ServerCertificateCustomValidationCallback(null, validCertificate, x509Chain, SslPolicyErrors.None));
-        }
     }
 }

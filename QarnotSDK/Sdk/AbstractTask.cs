@@ -92,6 +92,7 @@ namespace QarnotSDK {
         ///  2 - Call this method,
         ///  3 - The new files will appear on all the compute nodes in the $DOCKER_WORKDIR folder
         /// Note: There is no way to know when the files are effectively transfered. This information is available on the compute node only.
+        /// Note: The update is additive only: files deleted from the bucket will NOT be deleted from the task's resources directory.
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
@@ -110,8 +111,30 @@ namespace QarnotSDK {
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
         public virtual async Task SnapshotAsync(CancellationToken cancellationToken = default(CancellationToken)) {
+            await TriggerSnapshotAsync(cancellationToken: cancellationToken);
+        }
+
+        /// <summary>
+        /// Start a snapshotting of the results with customized parameters.
+        /// It can have a different whitelist, blacklist, bucket and bucket prefix than a normal snapshot.
+        /// </summary>
+        /// <param name="whitelist">Specify a custom whitelist for this snapshot.</param>
+        /// <param name="blacklist">Specify a custom blacklist for this snapshot.</param>
+        /// <param name="bucketName">Specify the name of a custom bucket this snapshot.</param>
+        /// <param name="bucketPrefix">Specify a custom prefix for this snapshot.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns></returns>
+        public virtual async Task TriggerSnapshotAsync(string whitelist = null, string blacklist = null, QBucket bucket = null, string bucketPrefix = null, CancellationToken cancellationToken = default(CancellationToken)) {
+            var s = new UniqueSnapshot()
+            {
+                Whitelist = whitelist,
+                Blacklist = blacklist,
+                Bucket = bucket?.UniqueId,
+                BucketPrefix = bucketPrefix,
+            };
+
             if (_api.IsReadOnly) throw new Exception("Can't request a snapshot, this connection is configured in read-only mode");
-            using (var response = await _api._client.PostAsync(_uri + "/snapshot", null, cancellationToken))
+            using (var response = await _api._client.PostAsJsonAsync<UniqueSnapshot>(_uri + "/snapshot", s, cancellationToken))
                 await Utils.LookForErrorAndThrowAsync(_api._client, response, cancellationToken);
         }
 
@@ -122,10 +145,32 @@ namespace QarnotSDK {
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
         public virtual async Task SnapshotPeriodicAsync(uint interval, CancellationToken cancellationToken = default(CancellationToken)) {
-            Snapshot s = new QarnotSDK.Snapshot();
-            s.Interval = Convert.ToInt32(interval);
+            await TriggerPeriodicSnapshotAsync(interval, cancellationToken: cancellationToken);
+        }
+
+        /// <summary>
+        /// Start a periodic snapshotting of the results with customized parameters.
+        /// It can have a different whitelist, blacklist, bucket and bucket prefix than a normal snapshot.
+        /// </summary>
+        /// <param name="interval">Interval in seconds between two snapshots.</param>
+        /// <param name="whitelist">Specify a custom whitelist for this periodic snapshot.</param>
+        /// <param name="blacklist">Specify a custom blacklist for this periodic snapshot.</param>
+        /// <param name="bucketName">Specify the name of a custom bucket for this periodic snapshot.</param>
+        /// <param name="bucketPrefix">Specify a custom prefix for this periodic snapshot.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns></returns>
+        public virtual async Task TriggerPeriodicSnapshotAsync(uint interval, string whitelist = null, string blacklist = null, QBucket bucket = null, string bucketPrefix = null, CancellationToken cancellationToken = default(CancellationToken)) {
+            var s = new PeriodicSnapshot()
+            {
+                Interval = Convert.ToInt32(interval),
+                Whitelist = whitelist,
+                Blacklist = blacklist,
+                Bucket = bucket?.UniqueId,
+                BucketPrefix = bucketPrefix,
+            };
+
             if (_api.IsReadOnly) throw new Exception("Can't configure snapshots, this connection is configured in read-only mode");
-            using (var response = await _api._client.PostAsJsonAsync<Snapshot>(_uri + "/snapshot/periodic", s, cancellationToken))
+            using (var response = await _api._client.PostAsJsonAsync<PeriodicSnapshot>(_uri + "/snapshot/periodic", s, cancellationToken))
                 await Utils.LookForErrorAndThrowAsync(_api._client, response, cancellationToken);
         }
         #endregion
