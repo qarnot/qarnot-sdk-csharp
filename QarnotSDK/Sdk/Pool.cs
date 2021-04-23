@@ -219,6 +219,42 @@ namespace QarnotSDK
         }
 
         /// <summary>
+        /// The pool execution time.
+        /// </summary>
+        [InternalDataApiName(Name = "ExecutionTime")]
+        public virtual TimeSpan ExecutionTime
+        {
+            get
+            {
+                return _poolApi?.ExecutionTime ?? default(TimeSpan);
+            }
+        }
+
+        /// <summary>
+        /// The pool wall time.
+        /// </summary>
+        [InternalDataApiName(Name = "WallTime")]
+        public virtual TimeSpan WallTime
+        {
+            get
+            {
+                return _poolApi?.WallTime ?? default(TimeSpan);
+            }
+        }
+
+        /// <summary>
+        /// The pool end date.
+        /// </summary>
+        [InternalDataApiName(Name = "EndDate")]
+        public virtual DateTime EndDate
+        {
+            get
+            {
+                return _poolApi?.EndDate ?? default(DateTime);
+            }
+        }
+
+        /// <summary>
         /// The custom pool tag list.
         /// </summary>
         [InternalDataApiName(Name="Tags")]

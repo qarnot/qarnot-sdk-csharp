@@ -482,6 +482,9 @@ namespace QarnotSDK {
         public uint InstanceCount { get; set; }
         public uint? RunningInstanceCount { get; set; }
         public uint? RunningCoreCount { get; set; }
+        public TimeSpan? ExecutionTime { get; set; }
+        public TimeSpan? WallTime { get; set; }
+        public DateTime EndDate { get; set; }
         public List<string> ResourceBuckets { get; set; }
         public string ResultBucket { get; set; }
         public string State { get; set; }

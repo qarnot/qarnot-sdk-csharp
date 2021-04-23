@@ -400,6 +400,42 @@ namespace QarnotSDK {
         }
 
         /// <summary>
+        /// The task execution time.
+        /// </summary>
+        [InternalDataApiName(Name = "ExecutionTime")]
+        public virtual TimeSpan ExecutionTime
+        {
+            get
+            {
+                return _taskApi?.ExecutionTime ?? default(TimeSpan);
+            }
+        }
+
+        /// <summary>
+        /// The task wall time.
+        /// </summary>
+        [InternalDataApiName(Name = "WallTime")]
+        public virtual TimeSpan WallTime
+        {
+            get
+            {
+                return _taskApi?.WallTime ?? default(TimeSpan);
+            }
+        }
+
+        /// <summary>
+        /// The task end date.
+        /// </summary>
+        [InternalDataApiName(Name = "EndDate")]
+        public virtual DateTime EndDate
+        {
+            get
+            {
+                return _taskApi?.EndDate ?? default(DateTime);
+            }
+        }
+
+        /// <summary>
         /// The results include only the files matching that regular expression.
         /// Must be set before the submission.
         /// </summary>
