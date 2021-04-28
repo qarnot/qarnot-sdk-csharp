@@ -64,11 +64,28 @@ namespace QarnotSDK {
         /// List all the files and folders from the root of the bucket.
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        /// <returns>A list of QFile</returns>
-        public virtual List<QAbstractStorageEntry> ListFiles(CancellationToken cancellationToken = default(CancellationToken)) {
-            try {
-                return ListFilesAsync(cancellationToken).Result;
-            } catch (AggregateException ex) {
+        /// <returns>A list of storage entries</returns>
+        public virtual List<QAbstractStorageEntry> ListFiles(CancellationToken cancellationToken = default)
+        {
+            return ListFiles(prefix: default, cancellationToken: cancellationToken);
+        }
+
+        /// <summary>
+        /// List all the files and folders from the root of the bucket.
+        /// </summary>
+        /// <param name="prefix">Prefix for file search.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A list of storage entries</returns>
+        public virtual List<QAbstractStorageEntry> ListFiles(
+            string prefix,
+            CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                return ListFilesAsync(prefix, cancellationToken).Result;
+            }
+            catch (AggregateException ex)
+            {
                 throw ex.InnerException;
             }
         }
