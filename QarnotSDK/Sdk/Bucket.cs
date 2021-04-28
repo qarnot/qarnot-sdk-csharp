@@ -604,10 +604,31 @@ namespace QarnotSDK {
         /// List all files and folders from the root of the bucket.
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        /// <returns>A list of QAbstractStorageEntry</returns>
-        public override async Task<List<QAbstractStorageEntry>> ListFilesAsync(CancellationToken cancellationToken = default(CancellationToken)) {
-            using (var s3Client = await _api.GetS3ClientAsync(cancellationToken)) {
-                var s3Request = new Amazon.S3.Model.ListObjectsRequest {
+        /// <returns>A list of storage entries</returns>
+        public override Task<List<QAbstractStorageEntry>> ListFilesAsync(CancellationToken cancellationToken = default) {
+            return ListFilesAsync(prefix: default, cancellationToken: cancellationToken);
+        }
+
+        /// <summary>
+        /// List all files and folders from the root of the bucket.
+        /// </summary>
+        /// <param name="prefix">Prefix for file search.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A list of storage entries</returns>
+        public override async Task<List<QAbstractStorageEntry>> ListFilesAsync(
+            string prefix,
+            CancellationToken cancellationToken = default)
+        {
+            using (var s3Client = await _api.GetS3ClientAsync(cancellationToken))
+            {
+                if (string.IsNullOrWhiteSpace(prefix) || prefix == "/")
+                {
+                    prefix = string.Empty;
+                }
+
+                var s3Request = new Amazon.S3.Model.ListObjectsRequest
+                {
+                    Prefix = prefix,
                     BucketName = Shortname,
                     MaxKeys = 1000,
                 };
