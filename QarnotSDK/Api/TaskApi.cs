@@ -508,6 +508,7 @@ namespace QarnotSDK {
         public string SnapshotBucketPrefix { get; set; }
         public string ResultsWhitelist { get; set; }
         public string ResultsBlacklist { get; set; }
+        public string ResultsBucketPrefix { get; set; }
         public Dependency Dependencies { get; set; }
         public bool AutoDeleteOnCompletion { get; set; }
         public TimeSpan CompletionTimeToLive { get; set; }

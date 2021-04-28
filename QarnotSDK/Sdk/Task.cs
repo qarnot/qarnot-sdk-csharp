@@ -425,6 +425,21 @@ namespace QarnotSDK {
 
 
         /// <summary>
+        /// The results bucket prefixes.
+        /// </summary>
+        [InternalDataApiName(Name="ResultsBucketPrefix")]
+        public virtual string ResultsBucketPrefix {
+            get {
+                return _taskApi?.ResultsBucketPrefix;
+            }
+            set {
+                if (_taskApi != null)
+                    _taskApi.ResultsBucketPrefix = value;
+            }
+        }
+
+
+        /// <summary>
         /// The snapshots include only the files matching that regular expression.
         /// Must be set before the submission.
         /// </summary>

@@ -524,6 +524,15 @@ namespace QarnotSDK.UnitTests
         }
 
         [Test]
+        public void ResultsBucketPrefixCheckTheValuesAdd()
+        {
+            QTask task = new QTask(Connect, Guid.NewGuid().ToString());
+            string bucketPrefix = "bucket-prefix";
+            task.ResultsBucketPrefix = bucketPrefix;
+            Assert.AreEqual(bucketPrefix, task.ResultsBucketPrefix);
+        }
+
+        [Test]
         public void SnapshotBucketPrefixCheckTheValuesAdd()
         {
             QTask task = new QTask(Connect, Guid.NewGuid().ToString());
