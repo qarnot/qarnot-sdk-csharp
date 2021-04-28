@@ -519,17 +519,17 @@ namespace QarnotSDK.UnitTests
 
             QBucket bucket = moqBucket.Object;
             task.SnapshotBucket = bucket;
-            CollectionAssert.AreEqual("bucket-name", task.SnapshotBucket.Shortname);
-            CollectionAssert.AreEqual("bucket-name", task._taskApi.SnapshotBucket);
+            Assert.AreEqual("bucket-name", task.SnapshotBucket.Shortname);
+            Assert.AreEqual("bucket-name", task._taskApi.SnapshotBucket);
         }
 
         [Test]
         public void SnapshotBucketPrefixCheckTheValuesAdd()
         {
             QTask task = new QTask(Connect, Guid.NewGuid().ToString());
-            string bucket_prefix = "bucket-prefix";
-            task.SnapshotBucketPrefix = bucket_prefix;
-            CollectionAssert.AreEqual(bucket_prefix, task.SnapshotBucketPrefix);
+            string bucketPrefix = "bucket-prefix";
+            task.SnapshotBucketPrefix = bucketPrefix;
+            Assert.AreEqual(bucketPrefix, task.SnapshotBucketPrefix);
         }
 
         [Test]
