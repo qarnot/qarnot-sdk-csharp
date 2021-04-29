@@ -7,6 +7,8 @@ namespace QarnotSDK.UnitTests
     using System.Threading.Tasks;
     using NUnit.Framework;
     using QarnotSDK;
+    using Moq;
+
 
     [TestFixture]
     public class TaskTests
@@ -505,6 +507,37 @@ namespace QarnotSDK.UnitTests
             string[] tags = new string[] { "tag1", "tag2" };
             task.SetTags(tags);
             CollectionAssert.AreEqual(tags, task.Tags);
+        }
+
+        [Test]
+        public void SnapshotBucketCheckTheValuesAdd()
+        {
+            QTask task = new QTask(Connect, Guid.NewGuid().ToString());
+            var moqBucket = new Mock<QBucket>();
+            moqBucket.Setup(foo => foo.Shortname).Returns("bucket-name");
+
+            QBucket bucket = moqBucket.Object;
+            task.SnapshotBucket = bucket;
+            Assert.AreEqual("bucket-name", task.SnapshotBucket.Shortname);
+            Assert.AreEqual("bucket-name", task._taskApi.SnapshotBucket);
+        }
+
+        [Test]
+        public void ResultsBucketPrefixCheckTheValuesAdd()
+        {
+            QTask task = new QTask(Connect, Guid.NewGuid().ToString());
+            string bucketPrefix = "bucket-prefix";
+            task.ResultsBucketPrefix = bucketPrefix;
+            Assert.AreEqual(bucketPrefix, task.ResultsBucketPrefix);
+        }
+
+        [Test]
+        public void SnapshotBucketPrefixCheckTheValuesAdd()
+        {
+            QTask task = new QTask(Connect, Guid.NewGuid().ToString());
+            string bucketPrefix = "bucket-prefix";
+            task.SnapshotBucketPrefix = bucketPrefix;
+            Assert.AreEqual(bucketPrefix, task.SnapshotBucketPrefix);
         }
 
         [Test]

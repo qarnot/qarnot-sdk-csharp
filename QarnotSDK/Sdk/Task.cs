@@ -461,6 +461,21 @@ namespace QarnotSDK {
 
 
         /// <summary>
+        /// The results bucket prefixes.
+        /// </summary>
+        [InternalDataApiName(Name="ResultsBucketPrefix")]
+        public virtual string ResultsBucketPrefix {
+            get {
+                return _taskApi?.ResultsBucketPrefix;
+            }
+            set {
+                if (_taskApi != null)
+                    _taskApi.ResultsBucketPrefix = value;
+            }
+        }
+
+
+        /// <summary>
         /// The snapshots include only the files matching that regular expression.
         /// Must be set before the submission.
         /// </summary>
@@ -482,6 +497,37 @@ namespace QarnotSDK {
                 return _taskApi.SnapshotBlacklist;
             }
             set { _taskApi.SnapshotBlacklist = value; }
+        }
+
+        private QBucket _snapshotBucket { get; set; }
+
+        /// <summary>
+        /// The snapshots bucket, can be different from the Result bucket.
+        /// </summary>
+        [InternalDataApiName(Name="SnapshotBucket")]
+        public virtual QBucket SnapshotBucket {
+            get {
+                return _snapshotBucket;
+            }
+            set {
+                if (_taskApi != null)
+                    _taskApi.SnapshotBucket = value.Shortname;
+                _snapshotBucket = QBucket.GetBucketFromResource(value);
+            }
+        }
+
+        /// <summary>
+        /// The snapshots bucket prefixes.
+        /// </summary>
+        [InternalDataApiName(Name="SnapshotBucketPrefix")]
+        public virtual string SnapshotBucketPrefix {
+            get {
+                return _taskApi?.SnapshotBucketPrefix;
+            }
+            set {
+                if (_taskApi != null)
+                    _taskApi.SnapshotBucketPrefix = value;
+            }
         }
 
         /// <summary>
@@ -949,6 +995,10 @@ namespace QarnotSDK {
             if (_results == null && _taskApi.ResultBucket != null) {
                 _results = await QBucket.CreateAsync(_api, _taskApi.ResultBucket, create: false);
             }
+            // update the task result
+            if (_snapshotBucket == null && _taskApi.SnapshotBucket != null) {
+                _snapshotBucket = await QBucket.CreateAsync(_api, _taskApi.SnapshotBucket, create: false);
+            }
         }
 
         /// <summary>
@@ -971,6 +1021,9 @@ namespace QarnotSDK {
                     }
                     if (_results != null) {
                         await _results.UpdateAsync(cancellationToken);
+                    }
+                    if (_snapshotBucket != null) {
+                        await _snapshotBucket.UpdateAsync(cancellationToken);
                     }
                 }
             }
