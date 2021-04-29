@@ -682,7 +682,6 @@ namespace QarnotSDK {
             var s3Config = new OverloadedS3config()
             {
                 ServiceURL = StorageUri.ToString(),
-                SignatureVersion = "2",
                 ForcePathStyle = ForceStoragePathStyle,
                 MaxErrorRetry = MaxStorageRetry
             };
