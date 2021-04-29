@@ -192,6 +192,68 @@ namespace QarnotSDK
         /// </summary>
         [InternalDataApiName(Name="InstanceCount")]
         public virtual uint NodeCount { get { return _poolApi.InstanceCount; } }
+
+
+        /// <summary>
+        /// The actual running instance count.
+        /// </summary>
+        [InternalDataApiName(Name = "RunningInstanceCount")]
+        public virtual uint RunningInstanceCount
+        {
+            get
+            {
+                return _poolApi?.RunningInstanceCount ?? default(uint);
+            }
+        }
+
+        /// <summary>
+        /// The actual running cores count.
+        /// </summary>
+        [InternalDataApiName(Name = "RunningCoreCount")]
+        public virtual uint RunningCoreCount
+        {
+            get
+            {
+                return _poolApi?.RunningCoreCount ?? default(uint);
+            }
+        }
+
+        /// <summary>
+        /// The pool execution time.
+        /// </summary>
+        [InternalDataApiName(Name = "ExecutionTime")]
+        public virtual TimeSpan ExecutionTime
+        {
+            get
+            {
+                return _poolApi?.ExecutionTime ?? default(TimeSpan);
+            }
+        }
+
+        /// <summary>
+        /// The pool wall time.
+        /// </summary>
+        [InternalDataApiName(Name = "WallTime")]
+        public virtual TimeSpan WallTime
+        {
+            get
+            {
+                return _poolApi?.WallTime ?? default(TimeSpan);
+            }
+        }
+
+        /// <summary>
+        /// The pool end date.
+        /// </summary>
+        [InternalDataApiName(Name = "EndDate")]
+        public virtual DateTime EndDate
+        {
+            get
+            {
+                return _poolApi?.EndDate ?? default(DateTime);
+            }
+        }
+
         /// <summary>
         /// The custom pool tag list.
         /// </summary>
@@ -539,14 +601,8 @@ namespace QarnotSDK
             await StartAsync(default(CancellationToken), profile, initialNodeCount);
         }
 
-        /// <summary>
-        /// Start the pool.
-        /// </summary>
-        /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        /// <param name="profile">The pool profile. Optional if it has already been defined in the constructor.</param>
-        /// <param name="initialNodeCount">The number of compute nodes this pool will have. Optional if it has already been defined in the constructor.</param>
-        /// <returns></returns>
-        public virtual async Task StartAsync(CancellationToken cancellationToken, string profile = null, uint initialNodeCount = 0) {
+
+        internal void PreSubmit(string profile=null, uint initialNodeCount=0) {
             // build the constants
             _poolApi.Constants = new List<KeyValHelper>();
             foreach(var c in _constants) { _poolApi.Constants.Add(new KeyValHelper(c.Key, c.Value)); }
@@ -556,11 +612,31 @@ namespace QarnotSDK
             foreach(var c in _constraints) { _poolApi.Constraints.Add(new KeyValHelper(c.Key, c.Value)); }
 
             _poolApi.ResourceBuckets = new List<string>();
+            bool useAdvancedResources = _resources.Any(res => res?.Filtering != null || res?.ResourcesTransformation != null);
             foreach (var item in _resources) {
-                if (item != null) {
-                    _poolApi.ResourceBuckets.Add(item.Shortname);
-                } else {
-                    throw new Exception("Unknown null bucket");
+                var resQBucket = item as QBucket;
+                if (resQBucket != null) {
+                    if (useAdvancedResources) {
+                        _poolApi.AdvancedResourceBuckets.Add(new ApiAdvancedResourceBucket {
+                            BucketName = resQBucket.Shortname,
+                            Filtering = resQBucket.Filtering is BucketFilteringPrefix prefixFiltering ?
+                                new ApiBucketFiltering {
+                                    PrefixFiltering = new ApiBucketFilteringPrefix {
+                                        Prefix = prefixFiltering.Prefix
+                                    }
+                                }
+                                : null,
+                            ResourcesTransformation = resQBucket.ResourcesTransformation is ResourcesTransformationStripPrefix stripPrefixTransformation ?
+                                new ApiResourcesTransformation {
+                                    StripPrefix = new ApiResourcesTransformationStripPrefix {
+                                        Prefix = stripPrefixTransformation.Prefix
+                                    }
+                                }
+                                : null,
+                        });
+                    } else {
+                        _poolApi.ResourceBuckets.Add(resQBucket.Shortname);
+                    }
                 }
             }
 
@@ -570,6 +646,18 @@ namespace QarnotSDK
             if (initialNodeCount > 0) {
                 _poolApi.InstanceCount = initialNodeCount;
             }
+        }
+
+
+        /// <summary>
+        /// Start the pool.
+        /// </summary>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <param name="profile">The pool profile. Optional if it has already been defined in the constructor.</param>
+        /// <param name="initialNodeCount">The number of compute nodes this pool will have. Optional if it has already been defined in the constructor.</param>
+        /// <returns></returns>
+        public virtual async Task StartAsync(CancellationToken cancellationToken, string profile = null, uint initialNodeCount = 0) {
+            PreSubmit(profile, initialNodeCount);
 
             if (_api.IsReadOnly) throw new Exception("Can't start pools, this connection is configured in read-only mode");
             using (var response = await _api._client.PostAsJsonAsync<PoolApi> ("pools", _poolApi, cancellationToken))
@@ -607,12 +695,18 @@ namespace QarnotSDK
 
             var newResourcesCount = 0;
             if (_poolApi.ResourceBuckets != null) newResourcesCount += _poolApi.ResourceBuckets.Count;
+            if (_poolApi.AdvancedResourceBuckets != null) newResourcesCount += _poolApi.AdvancedResourceBuckets.Count;
 
             if (_resources.Count != newResourcesCount) {
                 _resources.Clear();
 
                 if (_poolApi.ResourceBuckets != null) {
                     foreach (var r in _poolApi.ResourceBuckets) {
+                        _resources.Add(await QBucket.CreateAsync(_api, r, create: false));
+                    }
+                }
+                if (_poolApi.AdvancedResourceBuckets != null) {
+                    foreach (var r in _poolApi.AdvancedResourceBuckets) {
                         _resources.Add(await QBucket.CreateAsync(_api, r, create: false));
                     }
                 }

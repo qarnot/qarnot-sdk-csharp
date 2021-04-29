@@ -378,6 +378,64 @@ namespace QarnotSDK {
         }
 
         /// <summary>
+        /// The actual running instance count.
+        /// </summary>
+        [InternalDataApiName(Name="RunningInstanceCount")]
+        public virtual uint RunningInstanceCount {
+            get
+            {
+                return _taskApi?.RunningInstanceCount ?? default(uint);
+            }
+        }
+
+        /// <summary>
+        /// The actual running cores count.
+        /// </summary>
+        [InternalDataApiName(Name="RunningCoreCount")]
+        public virtual uint RunningCoreCount {
+            get
+            {
+                return _taskApi?.RunningCoreCount ?? default(uint);
+            }
+        }
+
+        /// <summary>
+        /// The task execution time.
+        /// </summary>
+        [InternalDataApiName(Name = "ExecutionTime")]
+        public virtual TimeSpan ExecutionTime
+        {
+            get
+            {
+                return _taskApi?.ExecutionTime ?? default(TimeSpan);
+            }
+        }
+
+        /// <summary>
+        /// The task wall time.
+        /// </summary>
+        [InternalDataApiName(Name = "WallTime")]
+        public virtual TimeSpan WallTime
+        {
+            get
+            {
+                return _taskApi?.WallTime ?? default(TimeSpan);
+            }
+        }
+
+        /// <summary>
+        /// The task end date.
+        /// </summary>
+        [InternalDataApiName(Name = "EndDate")]
+        public virtual DateTime EndDate
+        {
+            get
+            {
+                return _taskApi?.EndDate ?? default(DateTime);
+            }
+        }
+
+        /// <summary>
         /// The results include only the files matching that regular expression.
         /// Must be set before the submission.
         /// </summary>
@@ -403,6 +461,21 @@ namespace QarnotSDK {
 
 
         /// <summary>
+        /// The results bucket prefixes.
+        /// </summary>
+        [InternalDataApiName(Name="ResultsBucketPrefix")]
+        public virtual string ResultsBucketPrefix {
+            get {
+                return _taskApi?.ResultsBucketPrefix;
+            }
+            set {
+                if (_taskApi != null)
+                    _taskApi.ResultsBucketPrefix = value;
+            }
+        }
+
+
+        /// <summary>
         /// The snapshots include only the files matching that regular expression.
         /// Must be set before the submission.
         /// </summary>
@@ -424,6 +497,37 @@ namespace QarnotSDK {
                 return _taskApi.SnapshotBlacklist;
             }
             set { _taskApi.SnapshotBlacklist = value; }
+        }
+
+        private QBucket _snapshotBucket { get; set; }
+
+        /// <summary>
+        /// The snapshots bucket, can be different from the Result bucket.
+        /// </summary>
+        [InternalDataApiName(Name="SnapshotBucket")]
+        public virtual QBucket SnapshotBucket {
+            get {
+                return _snapshotBucket;
+            }
+            set {
+                if (_taskApi != null)
+                    _taskApi.SnapshotBucket = value.Shortname;
+                _snapshotBucket = QBucket.GetBucketFromResource(value);
+            }
+        }
+
+        /// <summary>
+        /// The snapshots bucket prefixes.
+        /// </summary>
+        [InternalDataApiName(Name="SnapshotBucketPrefix")]
+        public virtual string SnapshotBucketPrefix {
+            get {
+                return _taskApi?.SnapshotBucketPrefix;
+            }
+            set {
+                if (_taskApi != null)
+                    _taskApi.SnapshotBucketPrefix = value;
+            }
         }
 
         /// <summary>
@@ -820,10 +924,31 @@ namespace QarnotSDK {
 
             // Build the resource bucket list
             _taskApi.ResourceBuckets = new List<string>();
+            bool useAdvancedResources = _resources.Any(res => res?.Filtering != null || res?.ResourcesTransformation != null);
             foreach (var item in _resources) {
                 var resQBucket = item as QBucket;
                 if (resQBucket != null) {
-                    _taskApi.ResourceBuckets.Add(resQBucket.Shortname);
+                    if (useAdvancedResources) {
+                        _taskApi.AdvancedResourceBuckets.Add(new ApiAdvancedResourceBucket {
+                            BucketName = resQBucket.Shortname,
+                            Filtering = resQBucket.Filtering is BucketFilteringPrefix prefixFiltering ?
+                                new ApiBucketFiltering {
+                                    PrefixFiltering = new ApiBucketFilteringPrefix {
+                                        Prefix = prefixFiltering.Prefix
+                                    }
+                                }
+                                : null,
+                            ResourcesTransformation = resQBucket.ResourcesTransformation is ResourcesTransformationStripPrefix stripPrefixTransformation ?
+                                new ApiResourcesTransformation {
+                                    StripPrefix = new ApiResourcesTransformationStripPrefix {
+                                        Prefix = stripPrefixTransformation.Prefix
+                                    }
+                                }
+                                : null,
+                        });
+                    } else {
+                        _taskApi.ResourceBuckets.Add(resQBucket.Shortname);
+                    }
                 } else {
                     throw new Exception("Unknown IQStorage implementation");
                 }
@@ -877,6 +1002,7 @@ namespace QarnotSDK {
             // update the task resources
             var newResourcesCount = 0;
             if (_taskApi.ResourceBuckets != null) newResourcesCount += _taskApi.ResourceBuckets.Count;
+            if (_taskApi.AdvancedResourceBuckets != null) newResourcesCount += _taskApi.AdvancedResourceBuckets.Count;
 
             if (_resources.Count != newResourcesCount) {
                 _resources.Clear();
@@ -886,10 +1012,19 @@ namespace QarnotSDK {
                         _resources.Add(await QBucket.CreateAsync(_api, r, create: false));
                     }
                 }
+                if (_taskApi.AdvancedResourceBuckets != null) {
+                    foreach (var r in _taskApi.AdvancedResourceBuckets) {
+                        _resources.Add(await QBucket.CreateAsync(_api, r, create: false));
+                    }
+                }
             }
             // update the task result
             if (_results == null && _taskApi.ResultBucket != null) {
                 _results = await QBucket.CreateAsync(_api, _taskApi.ResultBucket, create: false);
+            }
+            // update the task result
+            if (_snapshotBucket == null && _taskApi.SnapshotBucket != null) {
+                _snapshotBucket = await QBucket.CreateAsync(_api, _taskApi.SnapshotBucket, create: false);
             }
         }
 
@@ -913,6 +1048,9 @@ namespace QarnotSDK {
                     }
                     if (_results != null) {
                         await _results.UpdateAsync(cancellationToken);
+                    }
+                    if (_snapshotBucket != null) {
+                        await _snapshotBucket.UpdateAsync(cancellationToken);
                     }
                 }
             }

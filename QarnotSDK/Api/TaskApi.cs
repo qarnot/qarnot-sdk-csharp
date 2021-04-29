@@ -480,7 +480,13 @@ namespace QarnotSDK {
         public string PoolUuid { get; set; }
         public string JobUuid { get; set; }
         public uint InstanceCount { get; set; }
+        public uint? RunningInstanceCount { get; set; }
+        public uint? RunningCoreCount { get; set; }
+        public TimeSpan? ExecutionTime { get; set; }
+        public TimeSpan? WallTime { get; set; }
+        public DateTime EndDate { get; set; }
         public List<string> ResourceBuckets { get; set; }
+        public List<ApiAdvancedResourceBucket> AdvancedResourceBuckets { get; set; }
         public string ResultBucket { get; set; }
         public string State { get; set; }
         public string PreviousState { get; set; }
@@ -501,8 +507,11 @@ namespace QarnotSDK {
         public List<QTaskCompletedInstance> CompletedInstances { get; set; }
         public string SnapshotWhitelist { get; set; }
         public string SnapshotBlacklist { get; set; }
+        public string SnapshotBucket { get; set; }
+        public string SnapshotBucketPrefix { get; set; }
         public string ResultsWhitelist { get; set; }
         public string ResultsBlacklist { get; set; }
+        public string ResultsBucketPrefix { get; set; }
         public Dependency Dependencies { get; set; }
         public bool AutoDeleteOnCompletion { get; set; }
         public TimeSpan CompletionTimeToLive { get; set; }
@@ -512,6 +521,7 @@ namespace QarnotSDK {
             Constraints = new List<KeyValHelper>();
             Tags = new List<String>();
             ResourceBuckets = new List<String>();
+            AdvancedResourceBuckets = new List<ApiAdvancedResourceBucket>();
             Errors = new List<QTaskError>();
             CompletedInstances = new List<QTaskCompletedInstance>();
             AutoDeleteOnCompletion = false;

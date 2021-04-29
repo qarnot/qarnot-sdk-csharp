@@ -404,7 +404,13 @@ namespace QarnotSDK {
         public string Name { get; set; }
         public string Profile { get; set; }
         public uint InstanceCount { get; set; }
+        public uint? RunningInstanceCount { get; set; }
+        public uint? RunningCoreCount { get; set; }
+        public TimeSpan? ExecutionTime { get; set; }
+        public TimeSpan? WallTime { get; set; }
+        public DateTime EndDate { get; set; }
         public List<string> ResourceBuckets { get; set; }
+        public List<ApiAdvancedResourceBucket> AdvancedResourceBuckets { get; set; }
         public string State { get; set; }
         public string PreviousState { get; set; }
         public DateTime StateTransitionTime { get; set; }
@@ -428,6 +434,7 @@ namespace QarnotSDK {
             Constraints = new List<KeyValHelper>();
             Tags = new List<String>();
             ResourceBuckets = new List<String>();
+            AdvancedResourceBuckets = new List<ApiAdvancedResourceBucket>();
             Errors = new List<QPoolError>();
             ElasticProperty = new QPoolElasticProperty();
             AutoDeleteOnCompletion = false;

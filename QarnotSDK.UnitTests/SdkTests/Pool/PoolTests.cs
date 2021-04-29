@@ -1,6 +1,7 @@
 namespace QarnotSDK.UnitTests
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
     using NUnit.Framework;
@@ -482,6 +483,197 @@ namespace QarnotSDK.UnitTests
             Assert.AreEqual(pollNodeStatusList[2].State, "Execution");
             Assert.AreEqual(pollNodeStatusList[2].Progress, 0);
             Assert.That(pollNodeStatusList[2].ExecutionTimeGHz, Is.EqualTo(0).Within(tolerance));
+        }
+    }
+
+    [TestFixture]
+    public class PoolTestsAdvancedResources
+    {
+        private const string StorageUrl = "http://storage";
+        private const string ApiUrl = "http://api";
+        private const string Token = "token";
+
+        private Connection Connect { get; set; }
+        private InterceptingFakeHttpHandler HttpHandler { get; set; }
+
+        private Connection ConnectLegacyBucket { get; set; }
+        private InterceptingFakeHttpHandler HttpHandlerLegacyBucket { get; set; }
+
+        [SetUp]
+        public void SetUp()
+        {
+            HttpHandler = new InterceptingFakeHttpHandler()
+            {
+                ResponseBody = PoolTestsData.PoolResponseWithAdvancedBucketsFullBody,
+            };
+            Connect = new Connection(ApiUrl, StorageUrl, Token, HttpHandler);
+
+            HttpHandlerLegacyBucket = new InterceptingFakeHttpHandler()
+            {
+                ResponseBody = PoolTestsData.PoolResponseWithLegacyBucketsFullBody,
+            };
+            ConnectLegacyBucket = new Connection(ApiUrl, StorageUrl, Token, HttpHandlerLegacyBucket);
+        }
+
+
+        [Test]
+        public void TestPoolPreSubmit_WithPrefixFiltering_FillsUpApiPool()
+        {
+            string prefix = "filter/prefix";
+            QBucket bucket = new QBucket(Connect, "the-bucket", create: false);
+            QPool pool = Connect.CreatePool("task-name", "task-profile", 1);
+            pool.Resources = new List<QAbstractStorage> { bucket.WithFiltering(new BucketFilteringPrefix(prefix)) };
+            pool.PreSubmit(default);
+
+            Assert.That(pool._poolApi.ResourceBuckets, Is.Null.Or.Empty);
+            Assert.AreEqual(1, pool._poolApi.AdvancedResourceBuckets.Count());
+
+            var apiResource = pool._poolApi.AdvancedResourceBuckets[0];
+
+            Assert.AreEqual("the-bucket", apiResource.BucketName);
+            Assert.IsNull(apiResource.ResourcesTransformation);
+            Assert.IsNotNull(apiResource.Filtering);
+            Assert.IsNotNull(apiResource.Filtering.PrefixFiltering);
+            Assert.AreEqual(prefix, apiResource.Filtering.PrefixFiltering.Prefix);
+        }
+
+
+        [Test]
+        public void TestPoolPreSubmit_WithResourcesTransformation_FillsUpApiPool()
+        {
+            string prefix = "filter/prefix";
+            QBucket bucket = new QBucket(Connect, "the-bucket", create: false);
+            QPool pool = Connect.CreatePool("task-name", "task-profile", 1);
+            pool.Resources = new List<QAbstractStorage> { bucket.WithResourcesTransformation(new ResourcesTransformationStripPrefix(prefix)) };
+            pool.PreSubmit(default);
+
+            Assert.That(pool._poolApi.ResourceBuckets, Is.Null.Or.Empty);
+            Assert.AreEqual(1, pool._poolApi.AdvancedResourceBuckets.Count());
+
+            var apiResource = pool._poolApi.AdvancedResourceBuckets[0];
+
+            Assert.AreEqual("the-bucket", apiResource.BucketName);
+            Assert.IsNull(apiResource.Filtering);
+            Assert.IsNotNull(apiResource.ResourcesTransformation);
+            Assert.IsNotNull(apiResource.ResourcesTransformation.StripPrefix);
+            Assert.AreEqual(prefix, apiResource.ResourcesTransformation.StripPrefix.Prefix);
+        }
+
+
+        // Check that chaining both With* calls is correct
+        [Test]
+        public void TestTaskPreSubmitAsync_WithPrefixFiltering_AndResourcesTransformation_FillsUpApiTask()
+        {
+            string prefix = "filter/prefix";
+            QBucket bucket = new QBucket(Connect, "the-bucket", create: false);
+            QPool pool = Connect.CreatePool("pool-name", "pool-profile", 1);
+            pool.Resources = new List<QAbstractStorage> {
+                bucket.WithFiltering(new BucketFilteringPrefix(prefix))
+                      .WithResourcesTransformation(new ResourcesTransformationStripPrefix(prefix))
+            };
+            pool.PreSubmit(default);
+
+            Assert.That(pool._poolApi.ResourceBuckets, Is.Null.Or.Empty);
+            Assert.AreEqual(1, pool._poolApi.AdvancedResourceBuckets.Count());
+
+            var apiResource = pool._poolApi.AdvancedResourceBuckets[0];
+
+            Assert.AreEqual("the-bucket", apiResource.BucketName);
+            Assert.IsNotNull(apiResource.Filtering);
+            Assert.IsNotNull(apiResource.Filtering.PrefixFiltering);
+            Assert.AreEqual(prefix, apiResource.Filtering.PrefixFiltering.Prefix);
+
+            Assert.IsNotNull(apiResource.ResourcesTransformation);
+            Assert.IsNotNull(apiResource.ResourcesTransformation.StripPrefix);
+            Assert.AreEqual(prefix, apiResource.ResourcesTransformation.StripPrefix.Prefix);
+        }
+
+
+        // NOTE: this test is there so that the SDK remains BC with older versions of rest-computing.
+        // When all rest-computing have migrated, this test and the behavior it tests can be
+        // removed.
+        [Test]
+        public void TestPoolPreSubmit_WithoutFilterOrTransformation_UsesLegacyResources()
+        {
+            string prefix = "filter/prefix";
+            QBucket bucket = new QBucket(Connect, "the-bucket", create: false);
+            QPool pool = Connect.CreatePool("task-name", "task-profile", 1);
+            pool.Resources = new List<QAbstractStorage> { bucket };
+            pool.PreSubmit(default);
+
+            Assert.That(pool._poolApi.AdvancedResourceBuckets, Is.Null.Or.Empty);
+
+            Assert.That(pool._poolApi.ResourceBuckets.Count, Is.EqualTo(1));
+            Assert.That(pool._poolApi.ResourceBuckets[0], Is.EqualTo("the-bucket"));
+        }
+
+
+        [Test]
+        public async Task TestBuildFromJson_FillsUpFilterAndTransformation_InApiProxyObject()
+        {
+            var pool = await Connect.RetrievePoolByUuidAsync("11111111-1111-1111-1111-111111111111");
+
+            Assert.That(pool._poolApi.ResourceBuckets, Is.Null.Or.Empty);
+            Assert.That(pool._poolApi.AdvancedResourceBuckets.Count, Is.EqualTo(2));
+
+            var firstBucket = pool._poolApi.AdvancedResourceBuckets[0];
+            var secondBucket = pool._poolApi.AdvancedResourceBuckets[1];
+
+            Assert.That(firstBucket.BucketName, Is.EqualTo("someBucket"));
+            Assert.That(firstBucket.Filtering, Is.Not.Null);
+            Assert.That(firstBucket.Filtering.PrefixFiltering, Is.Not.Null);
+            Assert.That(firstBucket.Filtering.PrefixFiltering.Prefix, Is.EqualTo("some/prefix/"));
+            Assert.That(firstBucket.ResourcesTransformation, Is.Not.Null);
+            Assert.That(firstBucket.ResourcesTransformation.StripPrefix, Is.Not.Null);
+            Assert.That(firstBucket.ResourcesTransformation.StripPrefix.Prefix, Is.EqualTo("transformed-prefix/"));
+
+            Assert.That(secondBucket.BucketName, Is.EqualTo("someOtherBucket"));
+            Assert.That(secondBucket.Filtering, Is.Null);
+            Assert.That(secondBucket.ResourcesTransformation, Is.Null);
+        }
+
+
+        [Test]
+        public async Task TestBuildFromJson_FillsUpFilterAndTransformation_InSDKObject()
+        {
+            var pool = await Connect.RetrievePoolByUuidAsync("11111111-1111-1111-1111-111111111111");
+
+            Assert.That(pool.Resources.Count(), Is.EqualTo(2));
+
+            var firstBucket = pool.Resources[0] as QBucket;
+            var secondBucket = pool.Resources[1] as QBucket;
+
+            Assert.That(firstBucket.Shortname, Is.EqualTo("someBucket"));
+            Assert.That(firstBucket.Filtering, Is.Not.Null);
+            Assert.That(firstBucket.Filtering, Is.AssignableFrom(typeof(BucketFilteringPrefix)));
+            Assert.That((firstBucket.Filtering as BucketFilteringPrefix).Prefix, Is.EqualTo("some/prefix/"));
+            Assert.That(firstBucket.ResourcesTransformation, Is.Not.Null);
+            Assert.That(firstBucket.ResourcesTransformation, Is.AssignableFrom(typeof(ResourcesTransformationStripPrefix)));
+            Assert.That((firstBucket.ResourcesTransformation as ResourcesTransformationStripPrefix).Prefix, Is.EqualTo("transformed-prefix/"));
+
+            Assert.That(secondBucket.Shortname, Is.EqualTo("someOtherBucket"));
+            Assert.That(secondBucket.Filtering, Is.Null);
+            Assert.That(secondBucket.ResourcesTransformation, Is.Null);
+        }
+
+
+        [Test]
+        public async Task TestPoolBuildFromJson_FillsUpFilterAndTransformation_InSDKObject_WithLegacyResources()
+        {
+            var pool = await ConnectLegacyBucket.RetrievePoolByUuidAsync("11111111-1111-1111-1111-111111111111");
+
+            Assert.That(pool.Resources.Count(), Is.EqualTo(2));
+
+            var firstBucket = pool.Resources[0] as QBucket;
+            var secondBucket = pool.Resources[1] as QBucket;
+
+            Assert.That(firstBucket.Shortname, Is.EqualTo("someBucket"));
+            Assert.That(firstBucket.Filtering, Is.Null);
+            Assert.That(firstBucket.ResourcesTransformation, Is.Null);
+
+            Assert.That(secondBucket.Shortname, Is.EqualTo("someOtherBucket"));
+            Assert.That(secondBucket.Filtering, Is.Null);
+            Assert.That(secondBucket.ResourcesTransformation, Is.Null);
         }
     }
 }
