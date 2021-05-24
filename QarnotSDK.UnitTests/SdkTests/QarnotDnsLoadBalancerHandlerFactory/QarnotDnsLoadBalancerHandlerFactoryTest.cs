@@ -5,15 +5,17 @@ namespace QarnotSDK.UnitTests
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
-    using NUnit.Framework;
-    using QarnotSDK;
+
     using Moq;
+    using NUnit.Framework;
+
+    using QarnotSDK;
 
     [TestFixture]
     public class QarnotDnsLoadBalancerHandlerFactoryTest
     {
         [Test]
-        public async Task CheckTheEnvVariableReturnValues()
+        public void CheckTheEnvVariableReturnValues()
         {
             Mock<IEnvironmentWrapper> envWrapper = new Mock<IEnvironmentWrapper>();
             envWrapper.Setup(foo => foo.GetEnvironmentVariable("QARNOT_SDK_CSHARP_DNS_LOAD_BALANCING_CACHE_TIME")).Returns("5");
@@ -27,7 +29,7 @@ namespace QarnotSDK.UnitTests
         }
 
         [Test]
-        public async Task DnsBalancingMessageHandlerReturnNull()
+        public void DnsBalancingMessageHandlerReturnNull()
         {
             Mock<IEnvironmentWrapper> envWrapper = new Mock<IEnvironmentWrapper>();
             envWrapper.Setup(foo => foo.GetEnvironmentVariable("QARNOT_SDK_CSHARP_DNS_LOAD_BALANCING_CACHE_TIME")).Returns("5");
@@ -56,7 +58,7 @@ namespace QarnotSDK.UnitTests
         }
 
         [Test]
-        public async Task DnsBalancingMessageHandlerReturnBalanceHandler()
+        public void DnsBalancingMessageHandlerReturnBalanceHandler()
         {
             Mock<IEnvironmentWrapper> envWrapper = new Mock<IEnvironmentWrapper>();
             envWrapper.Setup(foo => foo.GetEnvironmentVariable("QARNOT_SDK_CSHARP_DNS_LOAD_BALANCING_CACHE_TIME")).Returns("5");

@@ -428,6 +428,7 @@ namespace QarnotSDK {
         public PoolPreparationTask PreparationTask { get; set; }
         public bool AutoDeleteOnCompletion { get; set; }
         public TimeSpan CompletionTimeToLive { get; set; }
+        public bool? TaskDefaultWaitForPoolResourcesSynchronization { get; set; }
 
         internal PoolApi() {
             Constants = new List<KeyValHelper>();

@@ -881,6 +881,24 @@ namespace QarnotSDK.UnitTests
             task = connect.CreateTask("name", pool, new AdvancedRanges("9-99, 0-1"), "shortname");
             task = connect.CreateTask("name", job, 777, "shortname");
             task = connect.CreateTask("name", job, new AdvancedRanges("9-99, 0-1"), "shortname");
+
+            task = connect.CreateTask("name", pool, new AdvancedRanges("9-99, 0-1"), "shortname", waitForPoolResourcesSynchronization: true);
+            Assert.That(task.WaitForPoolResourcesSynchronization, Is.True);
+
+            task = connect.CreateTask("name", pool, new AdvancedRanges("9-99, 0-1"), "shortname", waitForPoolResourcesSynchronization: false);
+            Assert.That(task.WaitForPoolResourcesSynchronization, Is.False);
+
+            task = connect.CreateTask("name", pool, new AdvancedRanges("9-99, 0-1"), "shortname", waitForPoolResourcesSynchronization: null);
+            Assert.That(task.WaitForPoolResourcesSynchronization, Is.Null);
+
+            task = connect.CreateTask("name", pool, 3, "shortname", waitForPoolResourcesSynchronization: true);
+            Assert.That(task.WaitForPoolResourcesSynchronization, Is.True);
+
+            task = connect.CreateTask("name", pool, 3, "shortname", waitForPoolResourcesSynchronization: false);
+            Assert.That(task.WaitForPoolResourcesSynchronization, Is.False);
+
+            task = connect.CreateTask("name", pool, 3, "shortname", waitForPoolResourcesSynchronization: null);
+            Assert.That(task.WaitForPoolResourcesSynchronization, Is.Null);
         }
 
         [Test]
@@ -893,36 +911,41 @@ namespace QarnotSDK.UnitTests
         }
 
         [Test]
-        public void CreatePoolFromConnectionCheckReturnBody()
+        [TestCase(true)]
+        [TestCase(false)]
+        [TestCase(null)]
+        public void CreatePoolFromConnectionCheckReturnBody(bool? taskDefaultWaitForPoolResourcesSynchronization)
         {
             QPool pool = Api.CreatePool("name");
             Assert.AreEqual(pool.Name, "name");
-            pool = Api.CreatePool("name", profile: "profile", initialNodeCount: 5, shortname: "shortname");
+            pool = Api.CreatePool("name", profile: "profile", initialNodeCount: 5, shortname: "shortname",
+                                  taskDefaultWaitForPoolResourcesSynchronization: taskDefaultWaitForPoolResourcesSynchronization);
             Assert.AreEqual(pool.Shortname, "shortname");
             Assert.AreEqual(pool.Profile, "profile");
+            Assert.AreEqual(pool.TaskDefaultWaitForPoolResourcesSynchronization, taskDefaultWaitForPoolResourcesSynchronization);
         }
 
         [Test]
         public async Task S3ClientChangeRetryClientValue()
         {
-            var newConnection1 = new Connection(ComputeUrl, StorageUrl, Token, HttpHandler){
+            var newConnection1 = new Connection(ComputeUrl, StorageUrl, Token, HttpHandler) {
                 StorageAccessKey = "notEmpty@qarnot.com",
             };
-            var S3Client = await newConnection1.GetS3ClientAsync(new CancellationToken());
-            Assert.AreEqual(S3Client.Config.MaxErrorRetry, 3);
+            var s3Client = await newConnection1.GetS3ClientAsync(default(CancellationToken));
+            Assert.AreEqual(s3Client.Config.MaxErrorRetry, 3);
             var newConnection2 = new Connection(ComputeUrl, StorageUrl, Token, HttpHandler) {
                 StorageAccessKey = "notEmpty@qarnot.com",
-                MaxStorageRetry = 10
+                MaxStorageRetry = 10,
             };
-            S3Client = await newConnection2.GetS3ClientAsync(new CancellationToken());
-            Assert.AreEqual(S3Client.Config.MaxErrorRetry, 10);
+            s3Client = await newConnection2.GetS3ClientAsync(default(CancellationToken));
+            Assert.AreEqual(s3Client.Config.MaxErrorRetry, 10);
         }
 
         [Test]
         public void AddS3HttpClinetFactory()
         {
-            var connect = new Connection("token"){
-                S3HttpClientFactory = new UnsafeS3HttpClientFactory()
+            var connect = new Connection("token") {
+                S3HttpClientFactory = new UnsafeS3HttpClientFactory(),
             };
         }
 
@@ -941,6 +964,8 @@ namespace QarnotSDK.UnitTests
             connect = new Connection("token", httpClientHandler: default(HttpClientHandler), retryHandler: default(IRetryHandler), forceStoragePathStyle: true);
             connect = new Connection("token", httpClientHandler: default(HttpClientHandler), retryHandler: default(IRetryHandler), forceStoragePathStyle: true);
         }
+
+
         [Test]
         public void CheckConnectionConstructorsSetValues()
         {

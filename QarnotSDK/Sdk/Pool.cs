@@ -455,6 +455,14 @@ namespace QarnotSDK
             }
         }
 
+        /// <summary>
+        /// Default value of <see cref="QTask.WaitForPoolResourcesSynchronization" /> for pool's tasks
+        /// </summary>
+        public virtual bool? TaskDefaultWaitForPoolResourcesSynchronization {
+            get {
+                return _poolApi?.TaskDefaultWaitForPoolResourcesSynchronization;
+            }
+        }
         #endregion
 
         /// <summary>
@@ -465,11 +473,15 @@ namespace QarnotSDK
         /// <param name="profile">The pool profile. If not specified, it must be given when the pool is started.</param>
         /// <param name="initialNodeCount">The number of compute nodes this pool will have. If not specified, it must be given when the pool is started.</param>
         /// <param name="shortname">optional unique friendly shortname of the pool.</param>
-        public QPool(Connection connection, string name, string profile = null, uint initialNodeCount = 0, string shortname = default(string))
+        /// <param name="taskDefaultWaitForPoolResourcesSynchronization">Default value for task's <see
+        /// cref="QTask.WaitForPoolResourcesSynchronization" />, see also <see cref="TaskDefaultWaitForPoolResourcesSynchronization" /></param>
+        public QPool(Connection connection, string name, string profile = null, uint initialNodeCount = 0,
+                     string shortname = default(string), bool? taskDefaultWaitForPoolResourcesSynchronization=null)
             : base(connection, new PoolApi()) {
             _poolApi.Name = name;
             _poolApi.Profile = profile;
             _poolApi.InstanceCount = initialNodeCount;
+            _poolApi.TaskDefaultWaitForPoolResourcesSynchronization = taskDefaultWaitForPoolResourcesSynchronization;
             _resources = new List<QBucket>();
             _constants = new Dictionary<string, string>();
             _constraints = new Dictionary<string, string>();

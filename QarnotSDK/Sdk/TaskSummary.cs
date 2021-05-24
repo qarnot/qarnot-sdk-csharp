@@ -73,6 +73,23 @@ namespace QarnotSDK {
             }
         }
 
+        /// <summary>
+        /// Queue in-pool task execution behind pool resources update.
+        /// </summary>
+        /// <remarks>
+        /// For an in-pool task, if set to true, any task submitted after a pool resources update will be sure to see
+        /// the newer pool resources during its execution. The task will be queued until a pool slot with recent enough
+        /// resources is available.
+        /// Setting this to false will deactivate this behavior.
+        /// If left null, then the pool's TaskDefaultWaitForPoolResourcesSynchronization value will be used. If both are
+        /// null, then it will default to false.
+        /// </remarks>
+        /// <seealso cref="QPool.TaskDefaultWaitForPoolResourcesSynchronization" />
+        public virtual bool? WaitForPoolResourcesSynchronization {
+            get {
+                return _taskApi?.WaitForPoolResourcesSynchronization;
+            }
+        }
 
         internal QTaskSummary() { }
 

@@ -558,6 +558,26 @@ namespace QarnotSDK {
             }
         }
 
+
+        /// <summary>
+        /// Queue in-pool task execution behind pool resources update.
+        /// </summary>
+        /// <remarks>
+        /// For an in-pool task, if set to true, any task submitted after a pool resources update will be sure to see
+        /// the newer pool resources during its execution. The task will be queued until a pool slot with recent enough
+        /// resources is available.
+        /// Setting this to false will deactivate this behavior.
+        /// If left null, then the pool's TaskDefaultWaitForPoolResourcesSynchronization value will be used. If both are
+        /// null, then it will default to false.
+        /// </remarks>
+        /// <seealso cref="QPool.TaskDefaultWaitForPoolResourcesSynchronization" />
+        [InternalDataApiName(IsFilterable = true, IsSelectable = true)]
+        public virtual bool? WaitForPoolResourcesSynchronization {
+            get {
+                return _taskApi?.WaitForPoolResourcesSynchronization;
+            }
+        }
+
         /// <summary>
         /// Create a new task outside of a pool.
         /// </summary>
@@ -589,7 +609,7 @@ namespace QarnotSDK {
         }
 
         /// <summary>
-        /// Create a new task outside of a pool.
+        /// Create a new task outside of a pool with an advanced range representation.
         /// </summary>
         /// <param name="connection">The inner connection object.</param>
         /// <param name="name">The task name.</param>
@@ -609,19 +629,29 @@ namespace QarnotSDK {
         /// <param name="pool">The pool where this task will run.</param>
         /// <param name="instanceCount">How many times the task have to run. If not specified, it must be given when the task is submitted.</param>
         /// <param name="shortname">optional unique friendly shortname of the task.</param>
-        public QTask(Connection connection, string name, QPool pool, uint instanceCount = 0, string shortname = default(string)) : this(connection, name, (string)null, instanceCount, shortname) {
+        /// <param name="waitForPoolResourcesSynchronization">Whether task should wait for previous pool resources
+        /// update to be completed before executing. See <see cref="WaitForPoolResourcesSynchronization" /></param>
+        public QTask(Connection connection, string name, QPool pool, uint instanceCount = 0, string shortname = default(string), bool? waitForPoolResourcesSynchronization=null)
+            : this(connection, name, (string)null, instanceCount, shortname)
+        {
             _taskApi.PoolUuid = pool.Uuid.ToString();
+            _taskApi.WaitForPoolResourcesSynchronization = waitForPoolResourcesSynchronization;
         }
 
+
         /// <summary>
-        /// Create a new task outside of a pool.
+        /// Create a new task inside an existing pool, with an advanced range representation.
         /// </summary>
         /// <param name="connection">The inner connection object.</param>
         /// <param name="name">The task shortname.</param>
         /// <param name="pool">The pool where this task will run.</param>
         /// <param name="range">Which instance ids of the task have to run. If not specified, it must be given when the task is submitted.</param>
         /// <param name="shortname">optional unique friendly shortname of the task.</param>
-        public QTask(Connection connection, string name, QPool pool, AdvancedRanges range, string shortname = default(string)) : this(connection, name, pool, 0, shortname) {
+        /// <param name="waitForPoolResourcesSynchronization">Whether task should wait for previous pool resources
+        /// update to be completed before executing. See <see cref="WaitForPoolResourcesSynchronization" /></param>
+        public QTask(Connection connection, string name, QPool pool, AdvancedRanges range, string shortname = default(string), bool? waitForPoolResourcesSynchronization=null)
+            : this(connection, name, pool, 0, shortname, waitForPoolResourcesSynchronization)
+        {
             _advancedRange = range ?? new AdvancedRanges(null);
             _taskApi.AdvancedRanges = _advancedRange.ToString();
         }

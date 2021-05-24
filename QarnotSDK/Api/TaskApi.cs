@@ -515,6 +515,7 @@ namespace QarnotSDK {
         public Dependency Dependencies { get; set; }
         public bool AutoDeleteOnCompletion { get; set; }
         public TimeSpan CompletionTimeToLive { get; set; }
+        public bool? WaitForPoolResourcesSynchronization { get; set; }
 
         internal TaskApi() {
             Constants = new List<KeyValHelper>();

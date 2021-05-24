@@ -484,6 +484,54 @@ namespace QarnotSDK.UnitTests
             Assert.AreEqual(pollNodeStatusList[2].Progress, 0);
             Assert.That(pollNodeStatusList[2].ExecutionTimeGHz, Is.EqualTo(0).Within(tolerance));
         }
+
+        [Test]
+        [Category("PoolResourcesSync")]
+        public async Task TestPoolBuildFromJson_FillsUpTaskDefaultWaitForPoolSynchronization_WithNull_WhenAbsentFromResponse()
+        {
+            HttpHandler.ResponseBody = PoolTestsData.PoolResponseWithAdvancedBucketsFullBody;
+            var pool = await Connect.RetrievePoolByUuidAsync("11111111-1111-1111-1111-111111111111");
+
+            Assert.That(pool.TaskDefaultWaitForPoolResourcesSynchronization, Is.Null);
+        }
+
+        [Test]
+        [Category("PoolResourcesSync")]
+        [TestCase(true)]
+        [TestCase(false)]
+        [TestCase(null)]
+        public async Task TestPoolBuildFromJson_FillsUpTaskDefaultWaitForPoolSynchronization_WithValue_WhenPresentInResponse(bool? wait)
+        {
+            HttpHandler.ResponseBody = PoolTestsData.PoolResponse_WithTaskDefaultWaitForPoolResourcesSynchronization(wait);
+            var pool = await Connect.RetrievePoolByUuidAsync("11111111-1111-1111-1111-111111111111");
+
+            Assert.That(pool.TaskDefaultWaitForPoolResourcesSynchronization, Is.EqualTo(wait));
+        }
+
+
+        [Test]
+        [Category("PoolResourcesSync")]
+        public void TestPoolWithoutTaskDefaultWaitForPoolSynchronization_LeavesTaskApiFieldNull()
+        {
+            QPool pool = Connect.CreatePool("pool-name", "pool-profile", 1);
+            pool.PreSubmit(default);
+
+            Assert.That(pool._poolApi.TaskDefaultWaitForPoolResourcesSynchronization, Is.Null);
+        }
+
+
+        [Test]
+        [Category("PoolResourcesSync")]
+        [TestCase(true)]
+        [TestCase(false)]
+        [TestCase(null)]
+        public void TestPoolWithTaskDefaultWaitForPoolSynchronization_FillsTaskApiField(bool? wait)
+        {
+            QPool pool = Connect.CreatePool("pool-name", "pool-profile", 1, taskDefaultWaitForPoolResourcesSynchronization: wait);
+            pool.PreSubmit(default);
+
+            Assert.That(pool._poolApi.TaskDefaultWaitForPoolResourcesSynchronization, Is.EqualTo(wait));
+        }
     }
 
     [TestFixture]
@@ -526,7 +574,7 @@ namespace QarnotSDK.UnitTests
             pool.PreSubmit(default);
 
             Assert.That(pool._poolApi.ResourceBuckets, Is.Null.Or.Empty);
-            Assert.AreEqual(1, pool._poolApi.AdvancedResourceBuckets.Count());
+            Assert.AreEqual(1, pool._poolApi.AdvancedResourceBuckets.Count);
 
             var apiResource = pool._poolApi.AdvancedResourceBuckets[0];
 
@@ -548,7 +596,7 @@ namespace QarnotSDK.UnitTests
             pool.PreSubmit(default);
 
             Assert.That(pool._poolApi.ResourceBuckets, Is.Null.Or.Empty);
-            Assert.AreEqual(1, pool._poolApi.AdvancedResourceBuckets.Count());
+            Assert.AreEqual(1, pool._poolApi.AdvancedResourceBuckets.Count);
 
             var apiResource = pool._poolApi.AdvancedResourceBuckets[0];
 
@@ -569,12 +617,12 @@ namespace QarnotSDK.UnitTests
             QPool pool = Connect.CreatePool("pool-name", "pool-profile", 1);
             pool.Resources = new List<QAbstractStorage> {
                 bucket.WithFiltering(new BucketFilteringPrefix(prefix))
-                      .WithResourcesTransformation(new ResourcesTransformationStripPrefix(prefix))
+                      .WithResourcesTransformation(new ResourcesTransformationStripPrefix(prefix)),
             };
             pool.PreSubmit(default);
 
             Assert.That(pool._poolApi.ResourceBuckets, Is.Null.Or.Empty);
-            Assert.AreEqual(1, pool._poolApi.AdvancedResourceBuckets.Count());
+            Assert.AreEqual(1, pool._poolApi.AdvancedResourceBuckets.Count);
 
             var apiResource = pool._poolApi.AdvancedResourceBuckets[0];
 
@@ -595,7 +643,6 @@ namespace QarnotSDK.UnitTests
         [Test]
         public void TestPoolPreSubmit_WithoutFilterOrTransformation_UsesLegacyResources()
         {
-            string prefix = "filter/prefix";
             QBucket bucket = new QBucket(Connect, "the-bucket", create: false);
             QPool pool = Connect.CreatePool("task-name", "task-profile", 1);
             pool.Resources = new List<QAbstractStorage> { bucket };
@@ -638,7 +685,7 @@ namespace QarnotSDK.UnitTests
         {
             var pool = await Connect.RetrievePoolByUuidAsync("11111111-1111-1111-1111-111111111111");
 
-            Assert.That(pool.Resources.Count(), Is.EqualTo(2));
+            Assert.That(pool.Resources.Count, Is.EqualTo(2));
 
             var firstBucket = pool.Resources[0] as QBucket;
             var secondBucket = pool.Resources[1] as QBucket;
@@ -662,7 +709,7 @@ namespace QarnotSDK.UnitTests
         {
             var pool = await ConnectLegacyBucket.RetrievePoolByUuidAsync("11111111-1111-1111-1111-111111111111");
 
-            Assert.That(pool.Resources.Count(), Is.EqualTo(2));
+            Assert.That(pool.Resources.Count, Is.EqualTo(2));
 
             var firstBucket = pool.Resources[0] as QBucket;
             var secondBucket = pool.Resources[1] as QBucket;

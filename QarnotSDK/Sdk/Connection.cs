@@ -209,6 +209,7 @@ namespace QarnotSDK {
             return new QJob(this, name, pool, shortname, UseTaskDependencies);
         }
 
+
         /// <summary>
         /// Create a new Pool.
         /// A pool is a running set of nodes where you can execute tasks.
@@ -218,11 +219,16 @@ namespace QarnotSDK {
         /// <param name="profile">The profile of the pool. If not specified, it must be given when the pool is started.</param>
         /// <param name="initialNodeCount">The number of nodes you want in the pool. If not specified, it must be given when the pool is started.</param>
         /// <param name="shortname">optional unique friendly shortname of the pool.</param>
+        /// <param name="taskDefaultWaitForPoolResourcesSynchronization">Default value for task's <see
+        /// cref="QTask.WaitForPoolResourcesSynchronization" />, see also <see cref="QPool.TaskDefaultWaitForPoolResourcesSynchronization" /></param>
         /// <returns>A new pool.</returns>
-        public virtual QPool CreatePool(string name, string profile = null, uint initialNodeCount = 0, string shortname = default(string)) {
-            var pool = new QPool(this, name, profile, initialNodeCount, shortname);
+        public virtual QPool CreatePool(string name, string profile = null, uint initialNodeCount = 0,
+                                        string shortname = default(string), bool? taskDefaultWaitForPoolResourcesSynchronization=null)
+        {
+            var pool = new QPool(this, name, profile, initialNodeCount, shortname, taskDefaultWaitForPoolResourcesSynchronization);
             return pool;
         }
+
 
         /// <summary>
         /// Create a new Task that will run outside of any pool.
@@ -273,11 +279,14 @@ namespace QarnotSDK {
         /// <param name="pool">The pool where the task will run.</param>
         /// <param name="instanceCount">How many times the task have to run.</param>
         /// <param name="shortname">optional unique friendly shortname of the task.</param>
+        /// <param name="waitForPoolResourcesSynchronization">Whether task should wait for previous pool resources
+        /// update to be completed before executing. See <see cref="QTask.WaitForPoolResourcesSynchronization" /></param>
         /// <returns>A new task.</returns>
-        public virtual QTask CreateTask(string name, QPool pool, uint instanceCount, string shortname = default(string)) {
-            var task = new QTask(this, name, pool, instanceCount, shortname);
+        public virtual QTask CreateTask(string name, QPool pool, uint instanceCount, string shortname = default(string), bool? waitForPoolResourcesSynchronization=null) {
+            var task = new QTask(this, name, pool, instanceCount, shortname, waitForPoolResourcesSynchronization);
             return task;
         }
+
 
         /// <summary>
         /// Create a new Task inside an existing pool.
@@ -287,11 +296,14 @@ namespace QarnotSDK {
         /// <param name="pool">The pool where the task will run.</param>
         /// <param name="range">Which instance ids of the task have to run.</param>
         /// <param name="shortname">optional unique friendly shortname of the task.</param>
+        /// <param name="waitForPoolResourcesSynchronization">Whether task should wait for previous pool resources
+        /// update to be completed before executing. See <see cref="QTask.WaitForPoolResourcesSynchronization" /></param>
         /// <returns>A new task.</returns>
-        public  virtual QTask CreateTask(string name, QPool pool, AdvancedRanges range, string shortname = default(string)) {
-            var task = new QTask(this, name, pool, range, shortname);
+        public virtual QTask CreateTask(string name, QPool pool, AdvancedRanges range, string shortname = default(string), bool? waitForPoolResourcesSynchronization=null) {
+            var task = new QTask(this, name, pool, range, shortname, waitForPoolResourcesSynchronization);
             return task;
         }
+
 
         /// <summary>
         /// Create a new Task attached to a job.
