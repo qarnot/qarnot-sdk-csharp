@@ -37,6 +37,15 @@ namespace QarnotSDK {
         /// </summary>
         public virtual DateTime CreationDate { get { return _poolApi.CreationDate; } }
 
+        /// <summary>
+        /// Default value of <see cref="QTask.WaitForPoolResourcesSynchronisation" /> for pool's tasks
+        /// </summary>
+        public virtual bool? TaskDefaultWaitForPoolResourcesSynchronisation {
+            get {
+                return _poolApi?.TaskDefaultWaitForPoolResourcesSynchronisation;
+            }
+        }
+
         internal QPoolSummary() { }
 
         internal QPoolSummary(Connection qapi, PoolApi poolApi) : base(qapi, poolApi) { }

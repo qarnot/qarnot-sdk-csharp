@@ -102,9 +102,9 @@
     <!-- 	CA1054: URI parameters should not be strings	If a method takes a string representation of a URI, a corresponding overload should be provided that takes an instance of the URI class, which provides these services in a safe and secure manner. -->
     <!-- <Rule Id="CA1054" Action="Default" /> -->
     <!-- 	CA1055: URI return values should not be strings	This rule assumes that the method returns a URI. A string representation of a URI is prone to parsing and encoding errors, and can lead to security vulnerabilities. The System.Uri class provides these services in a safe and secure manner. -->
-    <!-- <Rule Id="CA1055" Action="Default" /> -->
+     <Rule Id="CA1055" Action="None" />
     <!-- 	CA1056: URI properties should not be strings	This rule assumes that the property represents a Uniform Resource Identifier (URI). A string representation of a URI is prone to parsing and encoding errors, and can lead to security vulnerabilities. The System.Uri class provides these services in a safe and secure manner. -->
-    <!-- <Rule Id="CA1056" Action="Default" /> -->
+     <Rule Id="CA1056" Action="None" />
     <!-- 	CA1057: String URI overloads call System.Uri overloads	A type declares method overloads that differ only by the replacement of a string parameter with a System.Uri parameter. The overload that takes the string parameter does not call the overload that takes the URI parameter. -->
     <!-- <Rule Id="CA1057" Action="Default" /> -->
     <!-- 	CA1058: Types should not extend certain base types	An externally visible type extends certain base types. Use one of the alternatives. -->
@@ -138,7 +138,7 @@
     <!-- 	CA1306: Set locale for data types	The locale determines culture-specific presentation elements for data, such as formatting that is used for numeric values, currency symbols, and sort order. When you create a DataTable or DataSet, you should explicitly set the locale. -->
     <!-- <Rule Id="CA1306" Action="Default" /> -->
     <!-- 	CA1307: Specify StringComparison	A string comparison operation uses a method overload that does not set a StringComparison parameter. -->
-    <!-- <Rule Id="CA1307" Action="Default" /> -->
+     <Rule Id="CA1307" Action="None" /> 
     <!-- 	CA1308: Normalize strings to uppercase	Strings should be normalized to uppercase. A small group of characters cannot make a round trip when they are converted to lowercase. -->
     <!-- <Rule Id="CA1308" Action="Default" /> -->
     <!-- 	CA1309: Use ordinal StringComparison	A string comparison operation that is nonlinguistic does not set the StringComparison parameter to either Ordinal or OrdinalIgnoreCase. By explicitly setting the parameter to either StringComparison.Ordinal or StringComparison.OrdinalIgnoreCase, your code often gains speed, becomes more correct, and becomes more reliable. -->
@@ -202,7 +202,7 @@
     <!-- 	CA1704: Identifiers should be spelled correctly	The name of an externally visible identifier contains one or more words that are not recognized by the Microsoft spelling checker library. -->
     <!-- <Rule Id="CA1704" Action="Default" /> -->
     <!-- 	CA1707: Identifiers should not contain underscores	By convention, identifier names do not contain the underscore (_) character. This rule checks namespaces, types, members, and parameters. -->
-    <!-- <Rule Id="CA1707" Action="Default" /> -->
+    <Rule Id="CA1707" Action="None" />  <!-- nice to have underscores in very long test methods -->
     <!-- 	CA1708: Identifiers should differ by more than case	Identifiers for namespaces, types, members, and parameters cannot differ only by case because languages that target the common language runtime are not required to be case-sensitive. -->
     <!-- <Rule Id="CA1708" Action="Default" /> -->
     <!-- 	CA1709: Identifiers should be cased correctly	By convention, parameter names use camel casing and namespace, type, and member names use Pascal casing. -->
@@ -294,7 +294,7 @@
     <!-- 	CA2006: Use SafeHandle to encapsulate native resources	Use of IntPtr in managed code might indicate a potential security and reliability problem. All uses of IntPtr must be reviewed to determine whether use of a SafeHandle, or similar technology, is required in its place. -->
     <!-- <Rule Id="CA2006" Action="Default" /> -->
     <!-- 	CA2007: Do not directly await a Task	An asynchronous method awaits a Task directly. When an asynchronous method awaits a Task directly, continuation occurs in the same thread that created the task. This behavior can be costly in terms of performance and can result in a deadlock on the UI thread. Consider calling Task.ConfigureAwait(Boolean) to signal your intention for continuation. -->
-    <Rule Id="CA2007" Action="None" />
+    <!--<Rule Id="CA2007" Action="None" />-->
     <!-- 	CA2100: Review SQL queries for security vulnerabilities	A method sets the System.Data.IDbCommand.CommandText property by using a string that is built from a string argument to the method. This rule assumes that the string argument contains user input. A SQL command string that is built from user input is vulnerable to SQL injection attacks. -->
     <!-- <Rule Id="CA2100" Action="Default" /> -->
     <!-- 	CA2101: Specify marshaling for P/Invoke string arguments	A platform invoke member allows partially trusted callers, has a string parameter, and does not explicitly marshal the string. This can cause a potential security vulnerability. -->
@@ -438,7 +438,7 @@
     <!-- 	CA2226: Operators should have symmetrical overloads	A type implements the equality or inequality operator and does not implement the opposite operator. -->
     <!-- <Rule Id="CA2226" Action="Default" /> -->
     <!-- 	CA2227: Collection properties should be read only	A writable collection property allows a user to replace the collection with a different collection. A read-only property stops the collection from being replaced but still allows the individual members to be set. -->
-    <!-- <Rule Id="CA2227" Action="Default" /> -->
+     <Rule Id="CA2227" Action="None" /> 
     <!-- 	CA2228: Do not ship unreleased resource formats	Resource files that were built by using prerelease versions of .NET might not be usable by supported versions of .NET. -->
     <!-- <Rule Id="CA2228" Action="Default" /> -->
     <!-- 	CA2229: Implement serialization constructors	To fix a violation of this rule, implement the serialization constructor. For a sealed class, make the constructor private; otherwise, make it protected. -->
@@ -1090,7 +1090,7 @@
     	<!-- EnableXmlDocumentationOutput -->
     <!-- <Rule Id="SA1652" Action="" /> -->
     	<!-- BracesForMultiLineStatementsMustNotShareLine	The opening or closing brace within a C# statement, element, or expression is not placed on its own line. -->
-    <!-- <Rule Id="SA1500" Action="" /> -->
+     <Rule Id="SA1500" Action="None" /> 
     	<!-- StatementMustNotBeOnSingleLine	A C# statement containing opening and closing braces is written completely on a single line. -->
     <!-- <Rule Id="SA1501" Action="" /> -->
     	<!-- ElementMustNotBeOnSingleLine	A C# element containing opening and closing braces is written completely on a single line. -->
@@ -1104,7 +1104,7 @@
     	<!-- ElementDocumentationHeadersMustNotBeFollowedByBlankLine	An element documentation header above a C# element is followed by a blank line. -->
     <!-- <Rule Id="SA1506" Action="" /> -->
     	<!-- CodeMustNotContainMultipleBlankLinesInARow	The C# code contains multiple blank lines in a row. -->
-    <!-- <Rule Id="SA1507" Action="" /> -->
+     <Rule Id="SA1507" Action="None" />
     	<!-- ClosingBracesMustNotBePrecededByBlankLine	A closing brace within a C# element, statement, or expression is preceded by a blank line. -->
     <!-- <Rule Id="SA1508" Action="" /> -->
     	<!-- OpeningBracesMustNotBePrecededByBlankLine	An opening brace within a C# element, statement, or expression is preceded by a blank line. -->
@@ -1122,7 +1122,7 @@
     	<!-- SingleLineCommentMustBePrecededByBlankLine	A single-line comment within C# code is not preceded by a blank line. -->
     <!-- <Rule Id="SA1515" Action="" /> -->
     	<!-- ElementsMustBeSeparatedByBlankLine	Adjacent C# elements are not separated by a blank line. -->
-    <!-- <Rule Id="SA1516" Action="" /> -->
+     <Rule Id="SA1516" Action="None" /> 
     	<!-- CodeMustNotContainBlankLinesAtStartOfFile	The code file has blank lines at the start. -->
     <!-- <Rule Id="SA1517" Action="" /> -->
     	<!-- UseLineEndingsCorrectlyAtEndOfFile	The line endings at the end of a file do not match the settings for the project. -->
@@ -1178,7 +1178,7 @@
     	<!-- FieldNamesMustBeginWithLowerCaseLetter	The name of a field in C# does not begin with a lower-case letter. -->
     <Rule Id="SA1306" Action="None" />
     	<!-- AccessibleFieldsMustBeginWithUpperCaseLetter	The name of a public or internal field in C# does not begin with an upper-case letter. -->
-    <!-- <Rule Id="SA1307" Action="" /> -->
+     <Rule Id="SA1307" Action="None" /> 
     	<!-- VariableNamesMustNotBePrefixed	A field name in C# is prefixed with m_ or s_. -->
     <!-- <Rule Id="SA1308" Action="" /> -->
     	<!-- FieldNamesMustNotBeginWithUnderscore	A field name in C# begins with an underscore. -->
@@ -1200,7 +1200,7 @@
     	<!-- ElementsMustAppearInTheCorrectOrder	An element within a C# code file is out of order in relation to the other elements in the code. -->
     <!-- <Rule Id="SA1201" Action="" /> -->
     	<!-- ElementsMustBeOrderedByAccess	An element within a C# code file is out of order within regard to access level, in relation to other elements in the code. -->
-    <!-- <Rule Id="SA1202" Action="" /> -->
+    <Rule Id="SA1202" Action="None" />  <!-- At least for test, private methods first make sense -->
     	<!-- ConstantsMustAppearBeforeFields	A constant field is placed beneath a non-constant field. -->
     <!-- <Rule Id="SA1203" Action="" /> -->
     	<!-- StaticElementsMustAppearBeforeInstanceElements	A static element is positioned beneath an instance element of the same type. -->
@@ -1266,7 +1266,7 @@
     	<!-- SplitParametersMustStartOnLineAfterDeclaration	The parameters to a C# method or indexer call or declaration span across multiple lines, but the first parameter does not start on the line after the opening bracket. -->
     <!-- <Rule Id="SA1116" Action="" /> -->
     	<!-- ParametersMustBeOnSameLineOrSeparateLines	The parameters to a C# method or indexer call or declaration are not all on the same line or each on a separate line. -->
-    <!-- <Rule Id="SA1117" Action="" /> -->
+    <Rule Id="SA1117" Action="None" />  <!-- Certainly not when that creates a 400 chars long line! -->
     	<!-- ParameterMustNotSpanMultipleLines	A parameter to a C# method or indexer, other than the first parameter, spans across multiple lines. -->
     <!-- <Rule Id="SA1118" Action="" /> -->
     	<!-- CommentsMustContainText	The C# comment does not contain any comment text. -->
@@ -1274,7 +1274,7 @@
     	<!-- UseBuiltInTypeAlias	The code uses one of the basic C# types, but does not use the built-in alias for the type. -->
     <!-- <Rule Id="SA1121" Action="" /> -->
     	<!-- UseStringEmptyForEmptyStrings	The C# code includes an empty string, written as "". -->
-    <!-- <Rule Id="SA1122" Action="" /> -->
+     <Rule Id="SA1122" Action="None" /> 
     	<!-- DoNotPlaceRegionsWithinElements	The C# code contains a region within the body of a code element. -->
     <!-- <Rule Id="SA1123" Action="" /> -->
     	<!-- DoNotUseRegions	The C# code contains a region. -->

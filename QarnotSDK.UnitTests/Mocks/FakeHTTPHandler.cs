@@ -1,7 +1,7 @@
 namespace QarnotSDK.UnitTests
 {
-    using System.Net;
     using System.Collections.Generic;
+    using System.Net;
     using System.Net.Http;
     using System.Text;
     using System.Threading;
@@ -9,13 +9,14 @@ namespace QarnotSDK.UnitTests
 
     public class FakeHTTPHandler : HttpClientHandler
     {
+        private int ReturnMessageListIndex = 0;
+
         public FakeHTTPHandler()
             : base()
         {
         }
 
         public string ReturnMessage { get; set; } = "{\"Your\":\"response\"}";
-
         public List<string> ReturnMessageList { get; set; } = null;
 
         /// <summary>
@@ -24,8 +25,6 @@ namespace QarnotSDK.UnitTests
         /// </summary>
         /// <value></value>
         public Dictionary<string, string> ReturnMessageDictionary { get; set; } = null;
-
-        private int ReturnMessageListIndex = 0;
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {

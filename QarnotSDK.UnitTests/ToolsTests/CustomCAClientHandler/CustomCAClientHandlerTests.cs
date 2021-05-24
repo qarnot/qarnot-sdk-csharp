@@ -141,9 +141,9 @@ namespace QarnotSDK.UnitTests
             Assert.IsTrue(handler.ServerCertificateCustomValidationCallback(null, certificateToCheck, x509Chain, SslPolicyErrors.None));
         }
 
-        private X509Certificate2 getOneValidCertificate()
+        private X509Certificate2 GetOneValidCertificate()
         {
-            foreach (StoreLocation storeLocation in (StoreLocation[]) Enum.GetValues(typeof(StoreLocation)))
+            foreach (StoreLocation storeLocation in (StoreLocation[])Enum.GetValues(typeof(StoreLocation)))
             {
                 using var store = new X509Store(StoreName.Root, storeLocation);
                 try
@@ -166,11 +166,11 @@ namespace QarnotSDK.UnitTests
         [Test]
         public void CustomCAClientHandlerAccepteValidRootCertificate()
         {
-            using var validCertificate = getOneValidCertificate();
+            using var validCertificate = GetOneValidCertificate();
 
             if (validCertificate == null)
             {
-                return ;
+                return;
             }
 
             var customCertificateList = new List<X509Certificate2> { validCertificate };
