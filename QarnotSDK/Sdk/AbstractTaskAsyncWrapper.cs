@@ -10,6 +10,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
+        [Obsolete("Abort is deprecated, please use AbortAsync instead.")]
         public virtual void Abort(CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 AbortAsync(cancellationToken).Wait();
@@ -26,6 +27,7 @@ namespace QarnotSDK {
         /// <param name="purgeResources">Boolean to trigger all resource storages deletion. Default is false.</param>
         /// <param name="purgeResults">Boolean to trigger result storage deletion. Default is false.</param>
         /// <returns></returns>
+        [Obsolete("Delete is deprecated, please use DeleteAsync instead.")]
         public abstract void Delete(CancellationToken cancellationToken,
             bool failIfDoesntExist = false, bool purgeResources=false, bool purgeResults=false);
 
@@ -36,6 +38,7 @@ namespace QarnotSDK {
         /// <param name="purgeResources">Boolean to trigger all resource storages deletion. Default is false.</param>
         /// <param name="purgeResults">Boolean to trigger result storage deletion. Default is false.</param>
         /// <returns></returns>
+        [Obsolete("Delete is deprecated, please use DeleteAsync instead.")]
         public virtual void Delete(bool failIfDoesntExist = false, bool purgeResources=false, bool purgeResults=false)
             => Delete(default(CancellationToken), failIfDoesntExist, purgeResources, purgeResults);
         #endregion
@@ -50,6 +53,7 @@ namespace QarnotSDK {
         /// Note: The update is additive only: files deleted from the bucket will NOT be deleted from the task's resources directory.
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        [Obsolete("UpdateResources is deprecated, please use UpdateResourcesAsync instead.")]
         public virtual void UpdateResources(CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 UpdateResourcesAsync(cancellationToken).Wait();
@@ -64,6 +68,7 @@ namespace QarnotSDK {
         /// task ResultsCount or by checking the result bucket.
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        [Obsolete("Snapshot is deprecated, please use SnapshotAsync instead.")]
         public virtual void Snapshot(CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 SnapshotAsync(cancellationToken).Wait();
@@ -77,6 +82,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="interval">Interval in seconds between two snapshots.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        [Obsolete("SnapshotPeriodic is deprecated, please use SnapshotPeriodicAsync instead.")]
         public virtual void SnapshotPeriodic(uint interval, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 SnapshotPeriodicAsync(interval, cancellationToken).Wait();
@@ -93,6 +99,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="destinationStream">The destination stream.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        [Obsolete("CopyStdoutTo is deprecated, please use CopyStdoutToAsync instead.")]
         public virtual void CopyStdoutTo(Stream destinationStream, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 CopyStdoutToAsync(destinationStream, cancellationToken).Wait();
@@ -107,6 +114,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="destinationStream">The destination stream.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        [Obsolete("CopyStderrTo is deprecated, please use CopyStderrToAsync instead.")]
         public virtual void CopyStderrTo(Stream destinationStream, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 CopyStderrToAsync(destinationStream, cancellationToken).Wait();
@@ -120,6 +128,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="destinationStream">The destination stream.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        [Obsolete("CopyFreshStdoutTo is deprecated, please use CopyFreshStdoutToAsync instead.")]
         public virtual void CopyFreshStdoutTo(Stream destinationStream, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 CopyFreshStdoutToAsync(destinationStream, cancellationToken).Wait();
@@ -133,6 +142,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="destinationStream">The destination stream.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        [Obsolete("CopyFreshStderrTo is deprecated, please use CopyFreshStderrToAsync instead.")]
         public virtual void CopyFreshStderrTo(Stream destinationStream, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 CopyFreshStderrToAsync(destinationStream, cancellationToken).Wait();
@@ -147,6 +157,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>The task standard output.</returns>
+        [Obsolete("Stdout is deprecated, please use StdoutAsync instead.")]
         public virtual string Stdout(CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 return StdoutAsync(cancellationToken).Result;
@@ -161,6 +172,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>The task standard error.</returns>
+        [Obsolete("Stderr is deprecated, please use StderrAsync instead.")]
         public virtual string Stderr(CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 return StderrAsync(cancellationToken).Result;
@@ -174,6 +186,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>The task fresh standard output.</returns>
+        [Obsolete("FreshStdout is deprecated, please use FreshStdoutAsync instead.")]
         public virtual string FreshStdout(CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 return FreshStdoutAsync(cancellationToken).Result;
@@ -187,6 +200,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>The task fresh standard error.</returns>
+        [Obsolete("FreshStderr is deprecated, please use FreshStderrAsync instead.")]
         public virtual string FreshStderr(CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 return FreshStderrAsync(cancellationToken).Result;

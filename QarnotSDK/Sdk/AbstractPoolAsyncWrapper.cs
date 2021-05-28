@@ -27,6 +27,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
+        [Obsolete("Close is deprecated, please use CloseAsync instead.")]
         public virtual void Close(CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 CloseAsync(cancellationToken).Wait();
@@ -42,6 +43,7 @@ namespace QarnotSDK {
         /// <param name="failIfDoesntExist">If set to false and the pool doesn't exist, no exception is thrown. Default is true.</param>
         /// <param name="purgeResources">Boolean to trigger all resource storages deletion. Default is false.</param>
         /// <returns></returns>
+        [Obsolete("Delete is deprecated, please use DeleteAsync instead.")]
         public abstract void Delete(CancellationToken cancellationToken, bool failIfDoesntExist = false, bool purgeResources=false);
 
         /// <summary>
@@ -50,12 +52,13 @@ namespace QarnotSDK {
         /// <param name="failIfDoesntExist">If set to false and the pool doesn't exist, no exception is thrown. Default is true.</param>
         /// <param name="purgeResources">Boolean to trigger all resource storages deletion. Default is false.</param>
         /// <returns></returns>
+        [Obsolete("Delete is deprecated, please use DeleteAsync instead.")]
         public virtual void Delete(bool failIfDoesntExist = false, bool purgeResources=false)
             => Delete(default(CancellationToken) ,failIfDoesntExist, purgeResources);
         #endregion
-        
-	/// <summary>
-	/// Request made on a running pool to re-sync the resource buckets to the compute nodes.
+
+        /// <summary>
+        /// Request made on a running pool to re-sync the resource buckets to the compute nodes.
         ///  1 - Upload new files on your resource bucket,
         ///  2 - Call this method,
         ///  3 - The new files will appear on all the compute nodes in the $DOCKER_WORKDIR folder
@@ -64,8 +67,9 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-	public virtual void UpdateResources(CancellationToken cancellationToken = default(CancellationToken))
-	{
+        [Obsolete("UpdateResources is deprecated, please use UpdateResourcesAsync instead.")]
+        public virtual void UpdateResources(CancellationToken cancellationToken = default(CancellationToken))
+        {
             try {
                 UpdateResourcesAsync(cancellationToken).Wait();
             } catch (AggregateException ex) {

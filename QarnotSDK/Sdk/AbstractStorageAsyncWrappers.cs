@@ -12,6 +12,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">A token to cancel the request.</param>
         /// <returns></returns>
+        [Obsolete("Create is deprecated, please use CreateAsync instead.")]
         public virtual void Create(CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 CreateAsync(cancellationToken).Wait();
@@ -25,6 +26,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
+        [Obsolete("Update is deprecated, please use UpdateAsync instead.")]
         public virtual void Update(CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 UpdateAsync(cancellationToken).Wait();
@@ -38,6 +40,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
+        [Obsolete("Delete is deprecated, please use DeleteAsync instead.")]
         public virtual void Delete(CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 DeleteAsync(cancellationToken).Wait();
@@ -47,11 +50,12 @@ namespace QarnotSDK {
         }
 
         /// <summary>
-        /// List the files and folders entries in the corresponding folder. 
+        /// List the files and folders entries in the corresponding folder.
         /// </summary>
         /// <param name="remoteFolder">The folder to list.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>A list of QFile</returns>
+        [Obsolete("ListEntries is deprecated, please use ListEntriesAsync instead.")]
         public virtual List<QAbstractStorageEntry> ListEntries(string remoteFolder, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 return ListEntriesAsync(remoteFolder, cancellationToken).Result;
@@ -65,6 +69,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>A list of storage entries</returns>
+        [Obsolete("ListFiles is deprecated, please use ListFilesAsync instead.")]
         public virtual List<QAbstractStorageEntry> ListFiles(CancellationToken cancellationToken = default)
         {
             return ListFiles(prefix: default, cancellationToken: cancellationToken);
@@ -76,6 +81,7 @@ namespace QarnotSDK {
         /// <param name="prefix">Prefix for file search.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>A list of storage entries</returns>
+        [Obsolete("ListFiles is deprecated, please use ListFilesAsync instead.")]
         public virtual List<QAbstractStorageEntry> ListFiles(
             string prefix,
             CancellationToken cancellationToken = default)
@@ -96,6 +102,7 @@ namespace QarnotSDK {
         /// <param name="remotePath">The entry to remove.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
+        [Obsolete("DeleteEntry is deprecated, please use DeleteEntryAsync instead.")]
         public virtual void DeleteEntry(string remotePath, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 DeleteEntryAsync(remotePath, cancellationToken).Wait();
@@ -112,6 +119,7 @@ namespace QarnotSDK {
         /// <param name="remoteFile">The destination file name in this storage.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
+        [Obsolete("UploadStream is deprecated, please use UploadStreamAsync instead.")]
         public virtual void UploadStream(Stream sourceStream, string remoteFile, CancellationToken cancellationToken = default(CancellationToken))
             => UploadStream(sourceStream, remoteFile, pathDirectorySeparator: Path.DirectorySeparatorChar, cancellationToken: cancellationToken);
 
@@ -123,6 +131,7 @@ namespace QarnotSDK {
         /// <param name="pathDirectorySeparator">PathDirectorySeprator char that will change the remote file path to match the folder hierarchy.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
+        [Obsolete("UploadStream is deprecated, please use UploadStreamAsync instead.")]
         public virtual void UploadStream(Stream sourceStream, string remoteFile, char pathDirectorySeparator, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 UploadStreamAsync(sourceStream, remoteFile, pathDirectorySeparator, cancellationToken).Wait();
@@ -137,6 +146,7 @@ namespace QarnotSDK {
         /// <param name="remoteFile">The source file name in this storage.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>A stream with the file's data.</returns>
+        [Obsolete("DownloadStream is deprecated, please use DownloadStreamAsync instead.")]
         public virtual Stream DownloadStream(string remoteFile, CancellationToken cancellationToken = default(CancellationToken))
             => DownloadStream(remoteFile, pathDirectorySeparator: Path.DirectorySeparatorChar, cancellationToken: cancellationToken);
 
@@ -147,6 +157,7 @@ namespace QarnotSDK {
         /// <param name="pathDirectorySeparator">Platform separator directory for provided path.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>A stream with the file's data.</returns>
+        [Obsolete("DownloadStream is deprecated, please use DownloadStreamAsync instead.")]
         public virtual Stream DownloadStream(string remoteFile,  char pathDirectorySeparator, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 return DownloadStreamAsync(remoteFile, pathDirectorySeparator, cancellationToken).Result;
@@ -162,6 +173,7 @@ namespace QarnotSDK {
         /// <param name="remoteFile">The destination file name in this storage.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
+        [Obsolete("UploadFile is deprecated, please use UploadFileAsync instead.")]
         public virtual void UploadFile(string localFile, string remoteFile = null, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 UploadFileAsync(localFile, remoteFile, cancellationToken).Wait();
@@ -177,6 +189,7 @@ namespace QarnotSDK {
         /// <param name="localFile">The destination local file name.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
+        [Obsolete("DownloadFile is deprecated, please use DownloadFileAsync instead.")]
         public virtual void DownloadFile(string remoteFile, string localFile, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 DownloadFileAsync(remoteFile, localFile, cancellationToken).Wait();
@@ -193,6 +206,7 @@ namespace QarnotSDK {
         /// <param name="encoding">The encoding to use to write the string. UTF8 by default.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
+        [Obsolete("UploadString is deprecated, please use UploadStringAsync instead.")]
         public virtual void UploadString(string content, string remoteFile, Encoding encoding = null, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 UploadStringAsync(content, remoteFile, encoding, cancellationToken).Wait();
@@ -208,6 +222,7 @@ namespace QarnotSDK {
         /// <param name="encoding">The encoding to use to read the string. UTF8 by default.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
+        [Obsolete("DownloadString is deprecated, please use DownloadStringAsync instead.")]
         public virtual string DownloadString(string remoteFile, Encoding encoding = null, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 return DownloadStringAsync(remoteFile, encoding, cancellationToken).Result;
@@ -223,6 +238,7 @@ namespace QarnotSDK {
         /// <param name="remoteFile">The destination file name in this storage.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
+        [Obsolete("UploadBytes is deprecated, please use UploadBytesAsync instead.")]
         public virtual void UploadBytes(byte[] data, string remoteFile, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 UploadBytesAsync(data, remoteFile, cancellationToken).Wait();
@@ -237,6 +253,7 @@ namespace QarnotSDK {
         /// <param name="localFolderPath">The source folder path.</param>
         /// <param name="remoteFolderPath">The destination folder path in this storage.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        [Obsolete("UploadFolder is deprecated, please use UploadFolderAsync instead.")]
         public virtual void UploadFolder(string localFolderPath, string remoteFolderPath = null, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 UploadFolderAsync(localFolderPath, remoteFolderPath, cancellationToken).Wait();
@@ -251,6 +268,7 @@ namespace QarnotSDK {
         /// <param name="remoteFolderPath">The source folder path in this storage.</param>
         /// <param name="localFolderPath">The destination folder path.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        [Obsolete("DownloadFolder is deprecated, please use DownloadFolderAsync instead.")]
         public virtual void DownloadFolder(string remoteFolderPath, string localFolderPath, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 DownloadFolderAsync(remoteFolderPath, localFolderPath, cancellationToken).Wait();
@@ -265,6 +283,7 @@ namespace QarnotSDK {
         /// <param name="localFolderPath">The local folder to overwrite.</param>
         /// <param name="dontDelete">If false, the files that have been deleted in this storage will also be removed in the local folder. To avoid mistakes, this parameter is set to true by default.</param>
         /// <param name="remoteFolderRelativePath">Optional, allows to sync only a sub-folder of this storage.</param>
+        [Obsolete("SyncRemoteToLocal is deprecated, please use SyncRemoteToLocalAsync instead.")]
         public virtual void SyncRemoteToLocal(string localFolderPath, bool dontDelete = true, string remoteFolderRelativePath = "") {
             try {
                 SyncRemoteToLocalAsync(localFolderPath, dontDelete, remoteFolderRelativePath).Wait();
@@ -280,6 +299,7 @@ namespace QarnotSDK {
         /// <param name="dontDelete">If false, the files that have been deleted in this storage will also be removed in the local folder. To avoid mistakes, this parameter is set to true by default.</param>
         /// <param name="remoteFolderRelativePath">Optional, allows to sync only a sub-folder of this storage.</param>
         /// <returns></returns>
+        [Obsolete("SyncRemoteToLocal is deprecated, please use SyncRemoteToLocalAsync instead.")]
         public virtual void SyncRemoteToLocal(string localFolderPath, CancellationToken cancellationToken, bool dontDelete = true, string remoteFolderRelativePath = "") {
             try {
                 SyncRemoteToLocalAsync(localFolderPath, cancellationToken, dontDelete, remoteFolderRelativePath).Wait();
@@ -295,6 +315,7 @@ namespace QarnotSDK {
         /// <param name="dontDelete">If false, the files that have been deleted in the local folder will also be removed from this storage. To avoid mistakes, this parameter is set to true by default.</param>
         /// <param name="remoteFolderRelativePath">Optional, allows to sync to a sub-folder of this storage.</param>
         /// <returns></returns>
+        [Obsolete("SyncLocalToRemote is deprecated, please use SyncLocalToRemoteAsync instead.")]
         public virtual void SyncLocalToRemote(string localFolderPath, bool dontDelete = true, string remoteFolderRelativePath = "") {
             try {
                 SyncLocalToRemoteAsync(localFolderPath, dontDelete, remoteFolderRelativePath).Wait();
@@ -310,6 +331,7 @@ namespace QarnotSDK {
         /// <param name="dontDelete">If false, the files that have been deleted in the local folder will also be removed from this storage. To avoid mistakes, this parameter is set to true by default.</param>
         /// <param name="remoteFolderRelativePath">Optional, allows to sync to a sub-folder of this storage.</param>
         /// <returns></returns>
+        [Obsolete("SyncLocalToRemote is deprecated, please use SyncLocalToRemoteAsync instead.")]
         public virtual void SyncLocalToRemote(string localFolderPath, CancellationToken cancellationToken, bool dontDelete = true, string remoteFolderRelativePath = "") {
             try {
                 SyncLocalToRemoteAsync(localFolderPath, cancellationToken, dontDelete, remoteFolderRelativePath).Wait();

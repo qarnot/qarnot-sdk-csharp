@@ -12,6 +12,7 @@ namespace QarnotSDK {
         /// Get The Full Task from this task summary.
         /// <param name="ct">Optional token to cancel the request.</param>
         /// </summary>
+        [Obsolete("GetFullQTask is deprecated, please use GetFullQTaskAsync instead.")]
         public virtual QTask GetFullQTask(CancellationToken ct = default(CancellationToken)) {
             try {
                 return GetFullQTaskAsync(ct).Result;
@@ -28,6 +29,7 @@ namespace QarnotSDK {
         /// <param name="purgeResources">Boolean to trigger all resource storages deletion. Default is false.</param>
         /// <param name="purgeResults">Boolean to trigger result storage deletion. Default is false.</param>
         /// <returns></returns>
+        [Obsolete("Delete is deprecated, please use DeleteAsync instead.")]
         public override void Delete(CancellationToken cancellationToken, bool failIfDoesntExist = false,
             bool purgeResources=false, bool purgeResults=false)
         {
