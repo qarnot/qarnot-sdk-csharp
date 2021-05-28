@@ -12,6 +12,7 @@ namespace QarnotSDK {
         /// Get The Full Pool from this task summary.
         /// <param name="ct">Optional token to cancel the request.</param>
         /// </summary>
+        [Obsolete("GetFullQPool is deprecated, please use GetFullQPoolAsync instead.")]
         public virtual QPool GetFullQPool(CancellationToken ct = default(CancellationToken)) {
             try {
                 return GetFullQPoolAsync(ct).Result;
@@ -27,6 +28,7 @@ namespace QarnotSDK {
         /// <param name="failIfDoesntExist">If set to false and the pool doesn't exist, no exception is thrown. Default is true.</param>
         /// <param name="purgeResources">Boolean to trigger all resource storages deletion. Default is false.</param>
         /// <returns></returns>
+        [Obsolete("Delete is deprecated, please use DeleteAsync instead.")]
         public override void Delete(CancellationToken cancellationToken, bool failIfDoesntExist = false,
             bool purgeResources=false)
         {
