@@ -81,13 +81,13 @@ namespace QarnotSDK {
         /// the newer pool resources during its execution. The task will be queued until a pool slot with recent enough
         /// resources is available.
         /// Setting this to false will deactivate this behavior.
-        /// If left null, then the pool's TaskDefaultWaitForPoolResourcesSynchronisation value will be used. If both are
+        /// If left null, then the pool's TaskDefaultWaitForPoolResourcesSynchronization value will be used. If both are
         /// null, then it will default to false.
         /// </remarks>
-        /// <seealso cref="QPool.TaskDefaultWaitForPoolResourcesSynchronisation" />
-        public virtual bool? WaitForPoolResourcesSynchronisation {
+        /// <seealso cref="QPool.TaskDefaultWaitForPoolResourcesSynchronization" />
+        public virtual bool? WaitForPoolResourcesSynchronization {
             get {
-                return _taskApi?.WaitForPoolResourcesSynchronisation;
+                return _taskApi?.WaitForPoolResourcesSynchronization;
             }
         }
 

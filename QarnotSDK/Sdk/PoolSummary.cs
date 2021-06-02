@@ -38,11 +38,11 @@ namespace QarnotSDK {
         public virtual DateTime CreationDate { get { return _poolApi.CreationDate; } }
 
         /// <summary>
-        /// Default value of <see cref="QTask.WaitForPoolResourcesSynchronisation" /> for pool's tasks
+        /// Default value of <see cref="QTask.WaitForPoolResourcesSynchronization" /> for pool's tasks
         /// </summary>
-        public virtual bool? TaskDefaultWaitForPoolResourcesSynchronisation {
+        public virtual bool? TaskDefaultWaitForPoolResourcesSynchronization {
             get {
-                return _poolApi?.TaskDefaultWaitForPoolResourcesSynchronisation;
+                return _poolApi?.TaskDefaultWaitForPoolResourcesSynchronization;
             }
         }
 

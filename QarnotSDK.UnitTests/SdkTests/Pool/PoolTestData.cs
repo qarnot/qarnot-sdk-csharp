@@ -782,7 +782,7 @@ namespace QarnotSDK.UnitTests
             ""wallTime"": ""00:02:12"",
             ""credits"": 0.01,"
                 +
-            $"\"taskDefaultWaitForPoolResourcesSynchronisation\": {(wait == null ? "null" : wait.Value ? "true" : "false")}"
+            $"\"taskDefaultWaitForPoolResourcesSynchronization\": {(wait == null ? "null" : wait.Value ? "true" : "false")}"
                 +
         "}";
     }

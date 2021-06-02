@@ -665,12 +665,12 @@ namespace QarnotSDK.UnitTests
 
         [Test]
         [Category("PoolResourcesSync")]
-        public async Task TestTaskBuildFromJson_FillsUpWaitForPoolSynchronisation_WithNull_WhenAbsentFromResponse()
+        public async Task TestTaskBuildFromJson_FillsUpWaitForPoolSynchronization_WithNull_WhenAbsentFromResponse()
         {
             HttpHandler.ResponseBody = TaskTestsData.TaskResponseWithAdvancedBucketsFullBody;
             var task = await Connect.RetrieveTaskByUuidAsync("11111111-1111-1111-1111-111111111111");
 
-            Assert.That(task.WaitForPoolResourcesSynchronisation, Is.Null);
+            Assert.That(task.WaitForPoolResourcesSynchronization, Is.Null);
         }
 
         [Test]
@@ -678,12 +678,12 @@ namespace QarnotSDK.UnitTests
         [TestCase(true)]
         [TestCase(false)]
         [TestCase(null)]
-        public async Task TestTaskBuildFromJson_FillsUpWaitForPoolSynchronisation_WithValue_WhenPresentInResponse(bool? wait)
+        public async Task TestTaskBuildFromJson_FillsUpWaitForPoolSynchronization_WithValue_WhenPresentInResponse(bool? wait)
         {
             HttpHandler.ResponseBody = TaskTestsData.TaskResponse_WithWaitForPoolResourcesSynchronization(wait);
             var task = await Connect.RetrieveTaskByUuidAsync("11111111-1111-1111-1111-111111111111");
 
-            Assert.That(task.WaitForPoolResourcesSynchronisation, Is.EqualTo(wait));
+            Assert.That(task.WaitForPoolResourcesSynchronization, Is.EqualTo(wait));
         }
 
 
@@ -691,11 +691,11 @@ namespace QarnotSDK.UnitTests
         [Category("PoolResourcesSync")]
         public async Task TestTaskWithoutWaitForPoolSynchronization_LeavesTaskApiFieldNull()
         {
-            QPool pool = Connect.CreatePool("pool-name", "pool-profile", 1, taskDefaultWaitForPoolResourcesSynchronisation: true);
+            QPool pool = Connect.CreatePool("pool-name", "pool-profile", 1, taskDefaultWaitForPoolResourcesSynchronization: true);
             QTask task = Connect.CreateTask("task-name", pool, 1);
             await task.PreSubmitAsync(default);
 
-            Assert.That(task._taskApi.WaitForPoolResourcesSynchronisation, Is.Null);
+            Assert.That(task._taskApi.WaitForPoolResourcesSynchronization, Is.Null);
         }
 
 
@@ -706,11 +706,11 @@ namespace QarnotSDK.UnitTests
         [TestCase(null)]
         public async Task TestTaskWithWaitForPoolSynchronization_FillsTaskApiField(bool? wait)
         {
-            QPool pool = Connect.CreatePool("pool-name", "pool-profile", 1, taskDefaultWaitForPoolResourcesSynchronisation: true);
-            QTask task = Connect.CreateTask("task-name", pool, 1, waitForPoolResourcesSynchronisation: wait);
+            QPool pool = Connect.CreatePool("pool-name", "pool-profile", 1, taskDefaultWaitForPoolResourcesSynchronization: true);
+            QTask task = Connect.CreateTask("task-name", pool, 1, waitForPoolResourcesSynchronization: wait);
             await task.PreSubmitAsync(default);
 
-            Assert.That(task._taskApi.WaitForPoolResourcesSynchronisation, Is.EqualTo(wait));
+            Assert.That(task._taskApi.WaitForPoolResourcesSynchronization, Is.EqualTo(wait));
         }
     }
 

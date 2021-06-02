@@ -882,23 +882,23 @@ namespace QarnotSDK.UnitTests
             task = connect.CreateTask("name", job, 777, "shortname");
             task = connect.CreateTask("name", job, new AdvancedRanges("9-99, 0-1"), "shortname");
 
-            task = connect.CreateTask("name", pool, new AdvancedRanges("9-99, 0-1"), "shortname", waitForPoolResourcesSynchronisation: true);
-            Assert.That(task.WaitForPoolResourcesSynchronisation, Is.True);
+            task = connect.CreateTask("name", pool, new AdvancedRanges("9-99, 0-1"), "shortname", waitForPoolResourcesSynchronization: true);
+            Assert.That(task.WaitForPoolResourcesSynchronization, Is.True);
 
-            task = connect.CreateTask("name", pool, new AdvancedRanges("9-99, 0-1"), "shortname", waitForPoolResourcesSynchronisation: false);
-            Assert.That(task.WaitForPoolResourcesSynchronisation, Is.False);
+            task = connect.CreateTask("name", pool, new AdvancedRanges("9-99, 0-1"), "shortname", waitForPoolResourcesSynchronization: false);
+            Assert.That(task.WaitForPoolResourcesSynchronization, Is.False);
 
-            task = connect.CreateTask("name", pool, new AdvancedRanges("9-99, 0-1"), "shortname", waitForPoolResourcesSynchronisation: null);
-            Assert.That(task.WaitForPoolResourcesSynchronisation, Is.Null);
+            task = connect.CreateTask("name", pool, new AdvancedRanges("9-99, 0-1"), "shortname", waitForPoolResourcesSynchronization: null);
+            Assert.That(task.WaitForPoolResourcesSynchronization, Is.Null);
 
-            task = connect.CreateTask("name", pool, 3, "shortname", waitForPoolResourcesSynchronisation: true);
-            Assert.That(task.WaitForPoolResourcesSynchronisation, Is.True);
+            task = connect.CreateTask("name", pool, 3, "shortname", waitForPoolResourcesSynchronization: true);
+            Assert.That(task.WaitForPoolResourcesSynchronization, Is.True);
 
-            task = connect.CreateTask("name", pool, 3, "shortname", waitForPoolResourcesSynchronisation: false);
-            Assert.That(task.WaitForPoolResourcesSynchronisation, Is.False);
+            task = connect.CreateTask("name", pool, 3, "shortname", waitForPoolResourcesSynchronization: false);
+            Assert.That(task.WaitForPoolResourcesSynchronization, Is.False);
 
-            task = connect.CreateTask("name", pool, 3, "shortname", waitForPoolResourcesSynchronisation: null);
-            Assert.That(task.WaitForPoolResourcesSynchronisation, Is.Null);
+            task = connect.CreateTask("name", pool, 3, "shortname", waitForPoolResourcesSynchronization: null);
+            Assert.That(task.WaitForPoolResourcesSynchronization, Is.Null);
         }
 
         [Test]
@@ -914,15 +914,15 @@ namespace QarnotSDK.UnitTests
         [TestCase(true)]
         [TestCase(false)]
         [TestCase(null)]
-        public void CreatePoolFromConnectionCheckReturnBody(bool? taskDefaultWaitForPoolResourcesSynchronisation)
+        public void CreatePoolFromConnectionCheckReturnBody(bool? taskDefaultWaitForPoolResourcesSynchronization)
         {
             QPool pool = Api.CreatePool("name");
             Assert.AreEqual(pool.Name, "name");
             pool = Api.CreatePool("name", profile: "profile", initialNodeCount: 5, shortname: "shortname",
-                                  taskDefaultWaitForPoolResourcesSynchronisation: taskDefaultWaitForPoolResourcesSynchronisation);
+                                  taskDefaultWaitForPoolResourcesSynchronization: taskDefaultWaitForPoolResourcesSynchronization);
             Assert.AreEqual(pool.Shortname, "shortname");
             Assert.AreEqual(pool.Profile, "profile");
-            Assert.AreEqual(pool.TaskDefaultWaitForPoolResourcesSynchronisation, taskDefaultWaitForPoolResourcesSynchronisation);
+            Assert.AreEqual(pool.TaskDefaultWaitForPoolResourcesSynchronization, taskDefaultWaitForPoolResourcesSynchronization);
         }
 
         [Test]
