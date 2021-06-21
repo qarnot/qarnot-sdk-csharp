@@ -458,7 +458,7 @@ namespace QarnotSDK.UnitTests
             poolApi.Constraints.Add(new KeyValHelper("key2", "value2"));
             await pool.InitializeAsync(Connect, poolApi);
 
-            pool.UpdateResources();
+            await pool.UpdateResourcesAsync();
             TestRequestAssert("PATCH", "pools/" + PoolTestsData.PoolResponseUuid);
         }
 
