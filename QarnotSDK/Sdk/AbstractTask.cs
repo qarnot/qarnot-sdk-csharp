@@ -120,7 +120,7 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="whitelist">Specify a custom whitelist for this snapshot.</param>
         /// <param name="blacklist">Specify a custom blacklist for this snapshot.</param>
-        /// <param name="bucketName">Specify the name of a custom bucket this snapshot.</param>
+        /// <param name="bucket">Specify the name of a custom bucket this snapshot.</param>
         /// <param name="bucketPrefix">Specify a custom prefix for this snapshot.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
@@ -155,7 +155,7 @@ namespace QarnotSDK {
         /// <param name="interval">Interval in seconds between two snapshots.</param>
         /// <param name="whitelist">Specify a custom whitelist for this periodic snapshot.</param>
         /// <param name="blacklist">Specify a custom blacklist for this periodic snapshot.</param>
-        /// <param name="bucketName">Specify the name of a custom bucket for this periodic snapshot.</param>
+        /// <param name="bucket">Specify the name of a custom bucket for this periodic snapshot.</param>
         /// <param name="bucketPrefix">Specify a custom prefix for this periodic snapshot.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>

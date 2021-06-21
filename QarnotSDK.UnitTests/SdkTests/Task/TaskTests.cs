@@ -37,7 +37,7 @@ namespace QarnotSDK.UnitTests
             };
             Connect = new Connection(ApiUrl, StorageUrl, Token, HttpHandler)
             {
-                StorageAccessKey = "fake@mail.com"
+                StorageAccessKey = "fake@mail.com",
             };
             ReadonlyConnect = new Connection(ApiUrl, StorageUrl, Token, HttpHandler)
             {

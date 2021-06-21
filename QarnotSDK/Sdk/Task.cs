@@ -1058,7 +1058,7 @@ namespace QarnotSDK {
             }
         }
 
-        public virtual async Task TriggerPeriodicSnapshotAsync(uint interval, string whitelist = null, string blacklist = null, QBucket bucket = null, string bucketPrefix = null, CancellationToken cancellationToken = default(CancellationToken))
+        public override async Task TriggerPeriodicSnapshotAsync(uint interval, string whitelist = null, string blacklist = null, QBucket bucket = null, string bucketPrefix = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             await base.TriggerPeriodicSnapshotAsync(interval, whitelist, blacklist, bucket, bucketPrefix, cancellationToken);
 

@@ -10,7 +10,7 @@ namespace QarnotSDK.UnitTests
     public class NoRetryHandlerTests
     {
         [Test]
-        public void NoRetryHandlerSendAsyncNotFailPass()
+        public async Task NoRetryHandlerSendAsyncNotFailPass()
         {
             string url = "https://localhost/";
             string token = "token";
@@ -20,7 +20,7 @@ namespace QarnotSDK.UnitTests
             using var retryHandler = new NoRetryHandler();
             var connect = new Connection(url, token, handler, retryHandler);
             var job0 = connect.CreateJob("job", pool: null, UseTaskDependencies: false);
-            job0.Submit();
+            await job0.SubmitAsync();
         }
 
         [Test]
@@ -34,7 +34,7 @@ namespace QarnotSDK.UnitTests
             using var retryHandler = new NoRetryHandler();
             var connect = new Connection(url, token, handler, retryHandler);
             var job0 = connect.CreateJob("job", pool: null, UseTaskDependencies: false);
-            Exception ex = Assert.Throws<QarnotApiException>(() => job0.Submit());
+            Exception ex = Assert.ThrowsAsync<QarnotApiException>(async () => await job0.SubmitAsync());
             Assert.IsNotNull(ex);
         }
     }
@@ -64,7 +64,7 @@ namespace QarnotSDK.UnitTests
 
             DateTime min_time = now.AddMilliseconds((double)(milliSecondWaitTime * j));
             DateTime max_time = now.AddMilliseconds((double)((milliSecondWaitTime * j) + 1000));
-            job0.Submit();
+            await job0.SubmitAsync();
             if (DateTime.Now < min_time)
             {
                 throw new Exception($"wait job is to short... start: {now}, actual:{DateTime.Now} < {min_time}");
@@ -91,7 +91,7 @@ namespace QarnotSDK.UnitTests
             using var retryHandler = new ExponentialRetryHandler(nbrOfTry, milliSecondWaitTime);
             var connect = new Connection(url, token, handler, retryHandler);
             var job0 = connect.CreateJob("job", pool: null, UseTaskDependencies: false);
-            Exception ex = Assert.Throws<System.ArgumentOutOfRangeException>(() => job0.Submit());
+            Exception ex = Assert.ThrowsAsync<System.ArgumentOutOfRangeException>(async () => await job0.SubmitAsync());
             Assert.IsNotNull(ex);
         }
     }
@@ -115,7 +115,7 @@ namespace QarnotSDK.UnitTests
             DateTime now = DateTime.Now;
             DateTime min_time = now.AddMilliseconds((double)(milliSecondWaitTime * nbrOfFail));
             DateTime max_time = now.AddMilliseconds((double)((milliSecondWaitTime * nbrOfFail) + 1000));
-            job0.Submit();
+            await job0.SubmitAsync();
             if (DateTime.Now < min_time)
             {
                 throw new Exception($"wait job is to short... start: {now}, actual:{DateTime.Now} < {min_time}");
@@ -163,7 +163,7 @@ namespace QarnotSDK.UnitTests
             using var retryHandler = new LinearRetryHandler(nbrOfTry, milliSecondWaitTime);
             var connect = new Connection(url, token, handler, retryHandler);
             var job0 = connect.CreateJob("job", pool: null, UseTaskDependencies: false);
-            Exception ex = Assert.Throws<System.ArgumentOutOfRangeException>(() => job0.Submit());
+            Exception ex = Assert.ThrowsAsync<System.ArgumentOutOfRangeException>(async () => await job0.SubmitAsync());
             Assert.IsNotNull(ex);
         }
     }
