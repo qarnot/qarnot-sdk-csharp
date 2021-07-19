@@ -429,6 +429,33 @@ namespace QarnotSDK.UnitTests
         }
 
         [Test]
+        public async Task RetrieveJobsByTagsAsyncShouldGetOnCorrectEndpoint()
+        {
+            HttpHandler.ResponseBody = ConnectionTestsData.GetJobsByTagsBody;
+
+            List<string> taglist = new List<string> { { "tag1" }, { "tag2" }, };
+            List<QJob> jobs = await Api.RetrieveJobsByTagsAsync(taglist);
+
+            Assert.True(HttpHandler.ParsedRequests.Any(req =>
+                req.Method.Contains("GET", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ComputeUrl}/jobs", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains("?tag=tag1,tag2", StringComparison.InvariantCultureIgnoreCase)));
+        }
+
+        [Test]
+        public async Task RetrieveJobsByTagsAsyncCheckTheReturnBodyUuidNameProfile()
+        {
+            HttpHandler.ResponseBody = ConnectionTestsData.GetJobsByTagsBody;
+
+            List<string> taglist = new List<string> { { "tag1" }, { "tag2" }, };
+            List<QJob> jobs = await Api.RetrieveJobsByTagsAsync(taglist);
+
+            Assert.AreEqual(jobs.Count, 2);
+            Assert.AreEqual(jobs[0].Name, ConnectionTestsData.GetDefaultBodyName);
+            Assert.AreEqual(jobs[0].Tags[0], "tag1");
+        }
+
+        [Test]
         public async Task RetrievePoolsByTagsAsyncShouldGetOnCorrectEndpoint()
         {
             HttpHandler.ResponseBody = ConnectionTestsData.GetPoolsByTagsBody;

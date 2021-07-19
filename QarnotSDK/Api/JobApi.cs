@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace QarnotSDK
 {
@@ -19,10 +20,12 @@ namespace QarnotSDK
         public Nullable<TimeSpan> MaxWallTime { get; set; }
         public bool AutoDeleteOnCompletion { get; set; }
         public TimeSpan CompletionTimeToLive { get; set; }
+        public List<String> Tags { get; set; }
 
 
         internal JobApi()
         {
+            Tags = new List<String>();
             UseDependencies = false;
             AutoDeleteOnCompletion = false;
         }
