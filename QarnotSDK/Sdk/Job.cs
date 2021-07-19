@@ -1,7 +1,9 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Threading;
-using System;
 
 
 namespace QarnotSDK {
@@ -165,7 +167,28 @@ namespace QarnotSDK {
         }
 
         /// <summary>
-        /// Boolean to indicate if the job use dependency behaviour
+        /// The custom job tag list.
+        /// </summary>
+        [InternalDataApiName(Name = "Tags")]
+        public virtual List<string> Tags
+        {
+            get
+            {
+                return _jobApi.Tags;
+            }
+        }
+
+        /// <summary>
+        /// Set the a list of tags for the job.
+        /// </summary>
+        /// <param name="tags">Job tags.</param>
+        public virtual void SetTags(params String[] tags)
+        {
+            _jobApi.Tags = tags.Distinct().ToList();
+        }
+
+        /// <summary>
+        /// Boolean to indicate if the job use dependency behaviour.
         /// Need to be true to allow the use of dependencies for tasks in this job.
         /// </summary>
         [InternalDataApiName(Name="UseDependencies")]

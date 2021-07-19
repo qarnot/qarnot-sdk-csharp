@@ -661,6 +661,33 @@ namespace QarnotSDK {
         }
 
         /// <summary>
+        /// Retrieve the jobs list filtered by tags.
+        /// </summary>
+        /// <param name="tags">list of tags for job filtering.</param>
+        /// <param name="summary">Optional token to choose between full jobs and jobs summaries.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>A list of jobs.</returns>
+        public virtual async Task<List<QJob>> RetrieveJobsByTagsAsync(List<string> tags, bool summary = true, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            if (tags == null || tags.Count == 0)
+                return await RetrieveJobsAsync(cancellationToken);
+
+            var uri = "jobs/?tag=" + string.Join(",", tags.Select(tag => HttpUtility.UrlEncode(tag)));
+            using (var response = await _client.GetAsync(uri, cancellationToken))
+            {
+                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
+                var qapiJobList = await response.Content.ReadAsAsync<List<JobApi>>(cancellationToken);
+                var ret = new List<QJob>();
+                foreach (var item in qapiJobList)
+                {
+                    ret.Add(new QJob(this, item));
+                }
+
+                return ret;
+            }
+        }
+
+        /// <summary>
         /// Retrieve a page of the jobs list.
         /// </summary>
         /// <param name="pageDetails">The pagination details, with the result number by page, the filters and the token of the page to reach.</param>
