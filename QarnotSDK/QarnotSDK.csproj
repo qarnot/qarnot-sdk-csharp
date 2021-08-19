@@ -2,7 +2,7 @@
   <PropertyGroup>
     <RootNamespace>QarnotSDK</RootNamespace>
     <AssemblyName>QarnotSDK</AssemblyName>
-    <Version>5.1.0</Version>
+    <Version>5.1.1</Version>
     <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
     <LangVersion>7.3</LangVersion>
     <OutputType>Library</OutputType>
@@ -33,7 +33,7 @@
   <ItemGroup>
     <PackageReference Include="AWSSDK.Core" Version="3.5.3.2" />
     <PackageReference Include="AWSSDK.S3" Version="3.5.9.0" />
-    <PackageReference Include="QarnotDnsSrvTools" Version="1.0.0" />
+    <PackageReference Include="QarnotDnsSrvTools" Version="1.0.1" />
     <Reference Include="System.Web" />
   </ItemGroup>
   <!-- NET45 Deps -->
