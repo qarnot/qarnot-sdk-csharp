@@ -54,6 +54,8 @@ namespace QarnotSDK.UnitTests
             ""maxPool"": 9,
             ""poolCount"": 10,
             ""maxRunningPool"": 11,
+            ""RunningInstanceCount"": 13,
+            ""RunningCoreCount"": 14,
             ""runningPoolCount"": 12
         }";
 

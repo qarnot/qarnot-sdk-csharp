@@ -359,6 +359,8 @@ namespace QarnotSDK.UnitTests
             Assert.AreEqual(userInfo.PoolCount, 10);
             Assert.AreEqual(userInfo.MaxRunningPool, 11);
             Assert.AreEqual(userInfo.RunningPoolCount, 12);
+            Assert.AreEqual(userInfo.RunningInstanceCount, 13);
+            Assert.AreEqual(userInfo.RunningCoreCount, 14);
         }
 
         [Test]
