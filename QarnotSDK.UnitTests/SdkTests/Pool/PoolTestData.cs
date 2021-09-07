@@ -30,7 +30,10 @@ namespace QarnotSDK.UnitTests
             ""runningCoreCount"": 16,
             ""executionTime"": ""00:00:25.1000003"",
             ""wallTime"": ""00:02:12"",
-            ""credits"": 0.01
+            ""credits"": 0.01,
+            ""poolUsage"": 0.91,
+            ""totalSlotCapacity"": 5,
+            ""queuedOrRunningTaskInstancesCount"": 71
         }";
 
         public const string PoolsListBodies = @"[{
@@ -295,7 +298,10 @@ namespace QarnotSDK.UnitTests
             ""runningCoreCount"": 16,
             ""executionTime"": ""00:00:25.1000003"",
             ""wallTime"": ""00:02:12"",
-            ""credits"": 0.01
+            ""credits"": 0.01,
+            ""poolUsage"": 0.91,
+            ""totalSlotCapacity"": 5,
+            ""queuedOrRunningTaskInstancesCount"": 71
         }";
 
 

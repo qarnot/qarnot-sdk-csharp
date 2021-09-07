@@ -54,6 +54,8 @@ namespace QarnotSDK.UnitTests
             ""maxPool"": 9,
             ""poolCount"": 10,
             ""maxRunningPool"": 11,
+            ""RunningInstanceCount"": 13,
+            ""RunningCoreCount"": 14,
             ""runningPoolCount"": 12
         }";
 
@@ -70,6 +72,13 @@ namespace QarnotSDK.UnitTests
             ""name"": ""Second_default_name"",
         }]";
 
+        public const string GetJobsPaginateBody = @"{
+        ""token"":null,
+        ""nextToken"":""ABABABABABA0BAB"",
+        ""isTruncated"":false,
+        ""data"":" + GetJobsBody + @"
+        }";
+
         public const string GetJobsDetailBody = @"[{
             ""uuid"": ""f78fdff8-7081-46e1-bb2f-d9cd4e185ece"",
             ""name"": ""default_name"",
@@ -78,12 +87,15 @@ namespace QarnotSDK.UnitTests
             ""name"": ""Second_default_name"",
         }]";
 
-        public const string GetJobsByTagsBody = @"[{
+        public const string GetPaginateJobsByTagsBody = @"{
+        ""nextToken"":""TestToken"",
+        ""isTruncated"":false,
+        ""data"":[{
             ""name"": ""default_name"",
             ""tags"":[""tag1""],
         },{
             ""name"": ""Second_default_name"",
-        }]";
+        }]}";
 
         public const string SubmitTasksBody = @"[{""uuid"": ""f78fdff8-7081-46e1-bb2f-d9cd4e185ece""},{""uuid"": ""f78fdff8-7081-46e1-bb2f-d9cd4e185ecf""},]";
 
@@ -108,6 +120,20 @@ namespace QarnotSDK.UnitTests
             ""name"": ""Second_default_name"",
             ""profile"": ""docker-bash2"",
         }]";
+
+        public const string GetTasksPaginateBody = @"{
+        ""token"":null,
+        ""nextToken"":""ABABABABABA0BAB"",
+        ""isTruncated"":false,
+        ""data"":" + GetTasksBody + @"
+        }";
+
+        public const string GetTasksByTagsPaginateBody = @"{
+        ""token"":null,
+        ""nextToken"":""ABABABABABA0BAB"",
+        ""isTruncated"":false,
+        ""data"":" + GetTasksByTagsBody + @"
+        }";
 
         public const string GetTasksSearchBody = @"[{
             ""uuid"": ""f78fdff8-7081-46e1-bb2f-d9cd4e185ece"",
@@ -140,6 +166,13 @@ namespace QarnotSDK.UnitTests
             ""name"": ""Second_default_name"",
             ""profile"": ""docker-bash2"",
         }]";
+
+        public const string GetTasksSummaryPaginateBody = @"{
+        ""token"":null,
+        ""nextToken"":""ABABABABABA0BAB"",
+        ""isTruncated"":false,
+        ""data"":" + GetTasksSummaryBody + @"
+        }";
 
         public const string GetProfileConstants = @"{
             ""name"": ""MyName"",
@@ -189,6 +222,34 @@ namespace QarnotSDK.UnitTests
             ""name"": ""Second_default_name"",
             ""profile"": ""docker-bash2"",
         }]";
+
+        public const string GetPoolsPaginateBody = @"{
+            ""token"":null,
+            ""nextToken"":""ABABABABABA0BAB"",
+            ""isTruncated"":false,
+            ""data"":" + GetPoolsBody + @"
+        }";
+
+        public const string GetPoolsSummaryPaginateBody = @"{
+            ""token"":null,
+            ""nextToken"":""ABABABABABA0BAB"",
+            ""isTruncated"":false,
+            ""data"":" + GetPoolsSummaryBody + @"
+        }";
+
+        public const string GetPoolsSummaryByTagsPaginateBody = @"{
+            ""token"":null,
+            ""nextToken"":""ABABABABABA0BAB"",
+            ""isTruncated"":false,
+            ""data"":" + GetPoolsSummaryByTagsBody + @"
+        }";
+
+        public const string GetPoolsByTagsPaginateBody = @"{
+            ""token"":null,
+            ""nextToken"":""ABABABABABA0BAB"",
+            ""isTruncated"":false,
+            ""data"":" + GetPoolsByTagsBody + @"
+        }";
 
         public const string GetPoolBody = @"{
             ""elasticProperty"": {

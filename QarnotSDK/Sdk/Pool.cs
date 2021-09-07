@@ -187,6 +187,31 @@ namespace QarnotSDK
         /// </summary>
         [InternalDataApiName(Name="CreationDate")]
         public virtual DateTime CreationDate { get { return _poolApi.CreationDate; } }
+
+        /// <summary>
+        /// The count of task instances running or enqueued on this pool.
+        /// Available only after the submission.
+        /// </summary>
+        [InternalDataApiName(Name="queuedOrRunningTaskInstancesCount")]
+        public virtual int QueuedOrRunningTaskInstancesCount { get { return _poolApi.QueuedOrRunningTaskInstancesCount; } }
+
+        /// <summary>
+        /// The slot capacity of this Pool.
+        /// Representing the slots count for a static pool
+        /// or the maximum slot count for an elastic pool.
+        /// Available only after the submission.
+        /// </summary>
+        [InternalDataApiName(Name="totalSlotCapacity")]
+        public virtual int TotalSlotCapacity { get { return _poolApi.TotalSlotCapacity; } }
+
+        /// <summary>
+        /// The ratio of dispatched task instances on the slot capacity indicating
+        /// how much a pool is currently being used.
+        /// Available only after the submission.
+        /// </summary>
+        [InternalDataApiName(Name="poolUsage")]
+        public virtual double PoolUsage { get { return _poolApi.PoolUsage; } }
+
         /// <summary>
         /// How many nodes this pool has.
         /// </summary>

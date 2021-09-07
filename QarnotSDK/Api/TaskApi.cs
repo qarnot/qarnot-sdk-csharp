@@ -258,6 +258,11 @@ namespace QarnotSDK {
         /// Inbound ports forwarding information.
         /// </summary>
         public List<QTaskStatusActiveForwards> ActiveForwards { get; set; }
+        /// <summary>
+        /// Number of execution attempt of an instance, (manly in case of preemption).
+        /// </summary>
+        public uint ExecutionAttemptCount { get; set; }
+
 
         /// <summary>
         /// Vpn connection list.
@@ -465,6 +470,11 @@ namespace QarnotSDK {
         /// Completed instance average frequency (in Ghz)
         /// </summary>
         public float AverageGhz { get; set; }
+
+        /// <summary>
+        /// Number of execution attempt of an instance, (manly in case of preemption).
+        /// </summary>
+        public int ExecutionAttemptCount { get; set; }
 
         internal QTaskCompletedInstance() {
         }

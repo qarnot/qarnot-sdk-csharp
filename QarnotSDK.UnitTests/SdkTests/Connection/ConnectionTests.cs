@@ -46,6 +46,31 @@ namespace QarnotSDK.UnitTests
         }
 
         [Test]
+        public async Task RetrievePoolSummaryByShortnameAsyncShouldGetOnCorrectEndpoint()
+        {
+            string poolShortname = Guid.NewGuid().ToString();
+
+            HttpHandler.ResponseBody = ConnectionTestsData.GetPoolBody;
+            QPoolSummary poolSummary = await Api.RetrievePoolSummaryByShortnameAsync(poolShortname);
+
+            Assert.True(HttpHandler.ParsedRequests.Any(req =>
+                req.Method.Contains("GET", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ComputeUrl}/pools/{poolShortname}", StringComparison.InvariantCultureIgnoreCase)));
+        }
+
+        [Test]
+        public async Task RetrievePoolSummaryByShortnameAsyncCheckTheReturnBodyUuidNameProfile()
+        {
+            string poolShortname = Guid.NewGuid().ToString();
+
+            HttpHandler.ResponseBody = ConnectionTestsData.GetPoolBody;
+            QPoolSummary poolSummary = await Api.RetrievePoolSummaryByShortnameAsync(poolShortname);
+            Assert.AreEqual(poolSummary.Uuid.ToString(), ConnectionTestsData.GetDefaultBodyUuid);
+            Assert.AreEqual(poolSummary.Name, ConnectionTestsData.GetDefaultBodyName);
+            Assert.AreEqual(poolSummary.Profile, ConnectionTestsData.GetDefaultBodyProfile);
+        }
+
+        [Test]
         public async Task RetrievePoolSummaryByUuidAsyncShouldGetOnCorrectEndpoint()
         {
             string poolId = Guid.NewGuid().ToString();
@@ -65,6 +90,32 @@ namespace QarnotSDK.UnitTests
 
             HttpHandler.ResponseBody = ConnectionTestsData.GetPoolBody;
             QPoolSummary poolSummary = await Api.RetrievePoolSummaryByUuidAsync(poolId);
+            Assert.AreEqual(poolSummary.Uuid.ToString(), ConnectionTestsData.GetDefaultBodyUuid);
+            Assert.AreEqual(poolSummary.Name, ConnectionTestsData.GetDefaultBodyName);
+            Assert.AreEqual(poolSummary.Profile, ConnectionTestsData.GetDefaultBodyProfile);
+        }
+
+        [Test]
+        public async Task RetrievePoolByShortnameAsyncShouldGetOnCorrectEndpoint()
+        {
+            string poolShortname = Guid.NewGuid().ToString();
+
+            HttpHandler.ResponseBody = ConnectionTestsData.GetPoolBody;
+            QPoolSummary poolSummary = await Api.RetrievePoolSummaryByShortnameAsync(poolShortname);
+
+            Assert.True(HttpHandler.ParsedRequests.Any(req =>
+                req.Method.Contains("GET", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ComputeUrl}/pools/{poolShortname}", StringComparison.InvariantCultureIgnoreCase)));
+        }
+
+        [Test]
+        public async Task RetrievePoolByShortnameAsyncCheckTheReturnBodyUuidNameProfile()
+        {
+            string poolShortname = Guid.NewGuid().ToString();
+
+            HttpHandler.ResponseBody = ConnectionTestsData.GetPoolBody;
+            QPoolSummary poolSummary = await Api.RetrievePoolSummaryByShortnameAsync(poolShortname);
+
             Assert.AreEqual(poolSummary.Uuid.ToString(), ConnectionTestsData.GetDefaultBodyUuid);
             Assert.AreEqual(poolSummary.Name, ConnectionTestsData.GetDefaultBodyName);
             Assert.AreEqual(poolSummary.Profile, ConnectionTestsData.GetDefaultBodyProfile);
@@ -99,20 +150,20 @@ namespace QarnotSDK.UnitTests
         [Test]
         public async Task RetrievePoolSummaryByNameAsyncShouldGetOnCorrectEndpoint()
         {
-            HttpHandler.ResponseBody = ConnectionTestsData.GetPoolsBody;
+            HttpHandler.ResponseBody = ConnectionTestsData.GetPoolsPaginateBody;
 
             string name = "mypoolname";
             await Api.RetrievePoolSummaryByNameAsync(name);
 
             Assert.True(HttpHandler.ParsedRequests.Any(req =>
-                req.Method.Contains("GET", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Method.Contains("POST", StringComparison.InvariantCultureIgnoreCase) &&
                 req.Uri.Contains($"{ComputeUrl}/pools/summaries", StringComparison.InvariantCultureIgnoreCase)));
         }
 
         [Test]
         public async Task RetrievePoolSummaryByNameAsyncCheckTheReturnBodyUuidNameProfile()
         {
-            HttpHandler.ResponseBody = ConnectionTestsData.GetPoolsBody;
+            HttpHandler.ResponseBody = ConnectionTestsData.GetPoolsPaginateBody;
 
             string name = ConnectionTestsData.GetDefaultBodyName;
             QPoolSummary poolSummary = await Api.RetrievePoolSummaryByNameAsync(name);
@@ -123,22 +174,48 @@ namespace QarnotSDK.UnitTests
         }
 
         [Test]
-        public async Task RetrievePoolByNameAsyncShouldGetOnCorrectEndpoint()
+        public async Task RetrievePoolsByNameAsyncShouldGetOnCorrectEndpoint()
         {
             HttpHandler.ResponseBody = ConnectionTestsData.GetPoolsBody;
+
+            string name = ConnectionTestsData.GetDefaultBodyName;
+            await Api.RetrievePoolsByNameAsync(name);
+
+            Assert.True(HttpHandler.ParsedRequests.Any(req =>
+                req.Method.Contains("POST", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ComputeUrl}/pools/search", StringComparison.InvariantCultureIgnoreCase)));
+        }
+
+        [Test]
+        public async Task RetrievePoolsByNameAsyncCheckTheReturnBodyUuidNameProfile()
+        {
+            HttpHandler.ResponseBody = ConnectionTestsData.GetPoolsBody;
+
+            string name = ConnectionTestsData.GetDefaultBodyName;
+            QPool pool = (await Api.RetrievePoolsByNameAsync(name))[0];
+
+            Assert.AreEqual(pool.Uuid.ToString(), ConnectionTestsData.GetDefaultBodyUuid);
+            Assert.AreEqual(pool.Name, ConnectionTestsData.GetDefaultBodyName);
+            Assert.AreEqual(pool.Profile, ConnectionTestsData.GetDefaultBodyProfile);
+        }
+
+        [Test]
+        public async Task RetrievePoolByNameAsyncShouldGetOnCorrectEndpoint()
+        {
+            HttpHandler.ResponseBody = ConnectionTestsData.GetPoolsPaginateBody;
 
             string name = ConnectionTestsData.GetDefaultBodyName;
             await Api.RetrievePoolByNameAsync(name);
 
             Assert.True(HttpHandler.ParsedRequests.Any(req =>
-                req.Method.Contains("GET", StringComparison.InvariantCultureIgnoreCase) &&
-                req.Uri.Contains($"{ComputeUrl}/pools", StringComparison.InvariantCultureIgnoreCase)));
+                req.Method.Contains("POST", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ComputeUrl}/pools/paginate", StringComparison.InvariantCultureIgnoreCase)));
         }
 
         [Test]
         public async Task RetrievePoolByNameAsyncCheckTheReturnBodyUuidNameProfile()
         {
-            HttpHandler.ResponseBody = ConnectionTestsData.GetPoolsBody;
+            HttpHandler.ResponseBody = ConnectionTestsData.GetPoolsPaginateBody;
 
             string name = ConnectionTestsData.GetDefaultBodyName;
             QPool pool = await Api.RetrievePoolByNameAsync(name);
@@ -146,6 +223,30 @@ namespace QarnotSDK.UnitTests
             Assert.AreEqual(pool.Uuid.ToString(), ConnectionTestsData.GetDefaultBodyUuid);
             Assert.AreEqual(pool.Name, ConnectionTestsData.GetDefaultBodyName);
             Assert.AreEqual(pool.Profile, ConnectionTestsData.GetDefaultBodyProfile);
+        }
+
+        [Test]
+        public async Task RetrieveJobByShortnameAsyncShouldGetOnCorrectEndpoint()
+        {
+            HttpHandler.ResponseBody = ConnectionTestsData.GetJobBody;
+
+            string jobShortname = Guid.NewGuid().ToString();
+            QJob job = await Api.RetrieveJobByShortnameAsync(jobShortname);
+
+            Assert.True(HttpHandler.ParsedRequests.Any(req =>
+                req.Method.Contains("GET", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ComputeUrl}/jobs/{jobShortname}", StringComparison.InvariantCultureIgnoreCase)));
+        }
+
+        [Test]
+        public async Task RetrieveJobByShortnameAsyncCheckTheReturnBodyUuidName()
+        {
+            HttpHandler.ResponseBody = ConnectionTestsData.GetJobBody;
+
+            QJob job = await Api.RetrieveJobByShortnameAsync(ConnectionTestsData.GetDefaultBodyUuid);
+
+            Assert.AreEqual(job.Uuid.ToString(), ConnectionTestsData.GetDefaultBodyUuid);
+            Assert.AreEqual(job.Name, ConnectionTestsData.GetDefaultBodyName);
         }
 
         [Test]
@@ -173,6 +274,32 @@ namespace QarnotSDK.UnitTests
         }
 
         [Test]
+        public async Task RetrieveTaskSummaryByShortnameAsyncShouldGetOnCorrectEndpoint()
+        {
+            HttpHandler.ResponseBody = ConnectionTestsData.GetTaskSummaryBody;
+
+            string taskShortname = Guid.NewGuid().ToString();
+            QTaskSummary taskSummary = await Api.RetrieveTaskSummaryByShortnameAsync(taskShortname);
+
+            Assert.True(HttpHandler.ParsedRequests.Any(req =>
+                req.Method.Contains("GET", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ComputeUrl}/tasks/{taskShortname}", StringComparison.InvariantCultureIgnoreCase)));
+        }
+
+        [Test]
+        public async Task RetrieveTaskSummaryByShortnameAsyncCheckTheReturnBodyUuidNameProfile()
+        {
+            HttpHandler.ResponseBody = ConnectionTestsData.GetTaskSummaryBody;
+
+            string taskShortname = Guid.NewGuid().ToString();
+            QTaskSummary taskSummary = await Api.RetrieveTaskSummaryByShortnameAsync(taskShortname);
+
+            Assert.AreEqual(taskSummary.Uuid.ToString(), ConnectionTestsData.GetDefaultBodyUuid);
+            Assert.AreEqual(taskSummary.Name, ConnectionTestsData.GetDefaultBodyName);
+            Assert.AreEqual(taskSummary.Profile, ConnectionTestsData.GetDefaultBodyProfile);
+        }
+
+        [Test]
         public async Task RetrieveTaskSummaryByUuidAsyncShouldGetOnCorrectEndpoint()
         {
             HttpHandler.ResponseBody = ConnectionTestsData.GetTaskSummaryBody;
@@ -196,6 +323,32 @@ namespace QarnotSDK.UnitTests
             Assert.AreEqual(taskSummary.Uuid.ToString(), ConnectionTestsData.GetDefaultBodyUuid);
             Assert.AreEqual(taskSummary.Name, ConnectionTestsData.GetDefaultBodyName);
             Assert.AreEqual(taskSummary.Profile, ConnectionTestsData.GetDefaultBodyProfile);
+        }
+
+        [Test]
+        public async Task RetrieveTaskByShortnameAsyncShouldGetOnCorrectEndpoint()
+        {
+            HttpHandler.ResponseBody = ConnectionTestsData.GetTaskBody;
+
+            string taskShortname = Guid.NewGuid().ToString();
+            QTask task = await Api.RetrieveTaskByShortnameAsync(taskShortname);
+
+            Assert.True(HttpHandler.ParsedRequests.Any(req =>
+                req.Method.Contains("GET", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ComputeUrl}/tasks/{taskShortname}", StringComparison.InvariantCultureIgnoreCase)));
+        }
+
+        [Test]
+        public async Task RetrieveTaskByShortnameAsyncCheckTheReturnBodyUuidNameProfile()
+        {
+            HttpHandler.ResponseBody = ConnectionTestsData.GetTaskBody;
+
+            string taskShortname = ConnectionTestsData.GetDefaultBodyUuid;
+            QTask task = await Api.RetrieveTaskByShortnameAsync(taskShortname);
+
+            Assert.AreEqual(task.Uuid.ToString(), ConnectionTestsData.GetDefaultBodyUuid);
+            Assert.AreEqual(task.Name, ConnectionTestsData.GetDefaultBodyName);
+            Assert.AreEqual(task.Profile, ConnectionTestsData.GetDefaultBodyProfile);
         }
 
         [Test]
@@ -227,20 +380,20 @@ namespace QarnotSDK.UnitTests
         [Test]
         public async Task RetrieveTaskSummaryByNameAsyncShouldGetOnCorrectEndpoint()
         {
-            HttpHandler.ResponseBody = ConnectionTestsData.GetTasksSummaryBody;
+            HttpHandler.ResponseBody = ConnectionTestsData.GetTasksSummaryPaginateBody;
 
             string taskName = "mytaskname";
             QTaskSummary taskSummary = await Api.RetrieveTaskSummaryByNameAsync(taskName);
 
             Assert.True(HttpHandler.ParsedRequests.Any(req =>
-                req.Method.Contains("GET", StringComparison.InvariantCultureIgnoreCase) &&
-                req.Uri.Contains($"{ComputeUrl}/tasks/summaries", StringComparison.InvariantCultureIgnoreCase)));
+                req.Method.Contains("POST", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ComputeUrl}/tasks/summaries/paginate", StringComparison.InvariantCultureIgnoreCase)));
         }
 
         [Test]
         public async Task RetrieveTaskSummaryByNameAsyncCheckTheReturnBodyUuidNameProfile()
         {
-            HttpHandler.ResponseBody = ConnectionTestsData.GetTasksSummaryBody;
+            HttpHandler.ResponseBody = ConnectionTestsData.GetTasksSummaryPaginateBody;
 
             string taskName = ConnectionTestsData.GetDefaultBodyName;
             QTaskSummary taskSummary = await Api.RetrieveTaskSummaryByNameAsync(taskName);
@@ -251,22 +404,49 @@ namespace QarnotSDK.UnitTests
         }
 
         [Test]
-        public async Task RetrieveTaskByNameAsyncShouldGetOnCorrectEndpoint()
+        public async Task RetrieveTasksByNameAsyncShouldGetOnCorrectEndpoint()
         {
             HttpHandler.ResponseBody = ConnectionTestsData.GetTasksBody;
+
+            string taskName = "mytaskname";
+            QTask task = (await Api.RetrieveTasksByNameAsync(taskName))[0];
+
+            Assert.True(HttpHandler.ParsedRequests.Any(req =>
+                req.Method.Contains("POST", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ComputeUrl}/tasks/search", StringComparison.InvariantCultureIgnoreCase)));
+        }
+
+        [Test]
+        public async Task RetrieveTasksByNameAsyncCheckTheReturnBodyUuidNameProfile()
+        {
+            HttpHandler.ResponseBody = ConnectionTestsData.GetTasksBody;
+
+            string taskName = ConnectionTestsData.GetDefaultBodyName;
+            List<QTask> taskList = await Api.RetrieveTasksByNameAsync(taskName);
+            QTask task = taskList[0];
+
+            Assert.AreEqual(task.Uuid.ToString(), ConnectionTestsData.GetDefaultBodyUuid);
+            Assert.AreEqual(task.Name, ConnectionTestsData.GetDefaultBodyName);
+            Assert.AreEqual(task.Profile, ConnectionTestsData.GetDefaultBodyProfile);
+        }
+
+        [Test]
+        public async Task RetrieveTaskByNameAsyncShouldGetOnCorrectEndpoint()
+        {
+            HttpHandler.ResponseBody = ConnectionTestsData.GetTasksPaginateBody;
 
             string taskName = "mytaskname";
             QTask task = await Api.RetrieveTaskByNameAsync(taskName);
 
             Assert.True(HttpHandler.ParsedRequests.Any(req =>
-                req.Method.Contains("GET", StringComparison.InvariantCultureIgnoreCase) &&
-                req.Uri.Contains($"{ComputeUrl}/tasks", StringComparison.InvariantCultureIgnoreCase)));
+                req.Method.Contains("POST", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ComputeUrl}/tasks/paginate", StringComparison.InvariantCultureIgnoreCase)));
         }
 
         [Test]
         public async Task RetrieveTaskByNameAsyncCheckTheReturnBodyUuidNameProfile()
         {
-            HttpHandler.ResponseBody = ConnectionTestsData.GetTasksBody;
+            HttpHandler.ResponseBody = ConnectionTestsData.GetTasksPaginateBody;
 
             string taskName = ConnectionTestsData.GetDefaultBodyName;
             QTask task = await Api.RetrieveTaskByNameAsync(taskName);
@@ -359,24 +539,26 @@ namespace QarnotSDK.UnitTests
             Assert.AreEqual(userInfo.PoolCount, 10);
             Assert.AreEqual(userInfo.MaxRunningPool, 11);
             Assert.AreEqual(userInfo.RunningPoolCount, 12);
+            Assert.AreEqual(userInfo.RunningInstanceCount, 13);
+            Assert.AreEqual(userInfo.RunningCoreCount, 14);
         }
 
         [Test]
         public async Task RetrieveJobsAsyncShouldGetOnCorrectEndpoint()
         {
-            HttpHandler.ResponseBody = ConnectionTestsData.GetJobsBody;
+            HttpHandler.ResponseBody = ConnectionTestsData.GetJobsPaginateBody;
 
             List<QJob> jobs = await Api.RetrieveJobsAsync();
 
             Assert.True(HttpHandler.ParsedRequests.Any(req =>
-                req.Method.Contains("GET", StringComparison.InvariantCultureIgnoreCase) &&
-                req.Uri.Contains($"{ComputeUrl}/jobs", StringComparison.InvariantCultureIgnoreCase)));
+                req.Method.Contains("POST", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ComputeUrl}/jobs/paginate", StringComparison.InvariantCultureIgnoreCase)));
         }
 
         [Test]
         public async Task RetrieveJobsAsynCheckTheReturnBodyUuidName()
         {
-            HttpHandler.ResponseBody = ConnectionTestsData.GetJobsBody;
+            HttpHandler.ResponseBody = ConnectionTestsData.GetJobsPaginateBody;
 
             List<QJob> jobs = await Api.RetrieveJobsAsync();
             Assert.AreEqual(jobs[0].Uuid.ToString(), ConnectionTestsData.GetDefaultBodyUuid);
@@ -431,24 +613,23 @@ namespace QarnotSDK.UnitTests
         [Test]
         public async Task RetrieveJobsByTagsAsyncShouldGetOnCorrectEndpoint()
         {
-            HttpHandler.ResponseBody = ConnectionTestsData.GetJobsByTagsBody;
+            HttpHandler.ResponseBody = ConnectionTestsData.GetPaginateJobsByTagsBody;
 
             List<string> taglist = new List<string> { { "tag1" }, { "tag2" }, };
-            List<QJob> jobs = await Api.RetrieveJobsByTagsAsync(taglist);
+            var jobs = await Api.RetrieveJobsByTagsAsync(taglist);
 
             Assert.True(HttpHandler.ParsedRequests.Any(req =>
-                req.Method.Contains("GET", StringComparison.InvariantCultureIgnoreCase) &&
-                req.Uri.Contains($"{ComputeUrl}/jobs", StringComparison.InvariantCultureIgnoreCase) &&
-                req.Uri.Contains("?tag=tag1,tag2", StringComparison.InvariantCultureIgnoreCase)));
+                req.Method.Contains("POST", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ComputeUrl}/jobs/paginate", StringComparison.InvariantCultureIgnoreCase)));
         }
 
         [Test]
         public async Task RetrieveJobsByTagsAsyncCheckTheReturnBodyUuidNameProfile()
         {
-            HttpHandler.ResponseBody = ConnectionTestsData.GetJobsByTagsBody;
+            HttpHandler.ResponseBody = ConnectionTestsData.GetPaginateJobsByTagsBody;
 
             List<string> taglist = new List<string> { { "tag1" }, { "tag2" }, };
-            List<QJob> jobs = await Api.RetrieveJobsByTagsAsync(taglist);
+            var jobs = (await Api.RetrieveJobsByTagsAsync(taglist)).ToList();
 
             Assert.AreEqual(jobs.Count, 2);
             Assert.AreEqual(jobs[0].Name, ConnectionTestsData.GetDefaultBodyName);
@@ -458,21 +639,20 @@ namespace QarnotSDK.UnitTests
         [Test]
         public async Task RetrievePoolsByTagsAsyncShouldGetOnCorrectEndpoint()
         {
-            HttpHandler.ResponseBody = ConnectionTestsData.GetPoolsByTagsBody;
+            HttpHandler.ResponseBody = ConnectionTestsData.GetPoolsByTagsPaginateBody;
 
             List<string> taglist = new List<string> { { "tag1" }, { "tag2" }, };
             List<QPool> pools = await Api.RetrievePoolsByTagsAsync(taglist);
 
             Assert.True(HttpHandler.ParsedRequests.Any(req =>
-                req.Method.Contains("GET", StringComparison.InvariantCultureIgnoreCase) &&
-                req.Uri.Contains($"{ComputeUrl}/pools", StringComparison.InvariantCultureIgnoreCase) &&
-                req.Uri.Contains("?tag=tag1,tag2", StringComparison.InvariantCultureIgnoreCase)));
+                req.Method.Contains("POST", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ComputeUrl}/pools/paginate", StringComparison.InvariantCultureIgnoreCase)));
         }
 
         [Test]
         public async Task RetrievePoolsByTagsAsyncCheckTheReturnBodyUuidNameProfile()
         {
-            HttpHandler.ResponseBody = ConnectionTestsData.GetPoolsByTagsBody;
+            HttpHandler.ResponseBody = ConnectionTestsData.GetPoolsByTagsPaginateBody;
 
             List<string> taglist = new List<string> { { "tag1" }, { "tag2" }, };
             List<QPool> pools = await Api.RetrievePoolsByTagsAsync(taglist);
@@ -486,7 +666,7 @@ namespace QarnotSDK.UnitTests
         [Test]
         public async Task RetrievePoolsAsyncSearchShouldGetOnCorrectEndpoint()
         {
-            HttpHandler.ResponseBody = ConnectionTestsData.GetJobsBody;
+            HttpHandler.ResponseBody = ConnectionTestsData.GetPoolsBody;
 
             var level = new QDataDetail<QPool>()
             {
@@ -530,19 +710,19 @@ namespace QarnotSDK.UnitTests
         [Test]
         public async Task RetrievePoolSummariesAsyncShouldGetOnCorrectEndpoint()
         {
-            HttpHandler.ResponseBody = ConnectionTestsData.GetPoolsSummaryBody;
+            HttpHandler.ResponseBody = ConnectionTestsData.GetPoolsSummaryPaginateBody;
 
             List<QPoolSummary> poolSummaries = await Api.RetrievePoolSummariesAsync();
 
             Assert.True(HttpHandler.ParsedRequests.Any(req =>
-                req.Method.Contains("GET", StringComparison.InvariantCultureIgnoreCase) &&
-                req.Uri.Contains($"{ComputeUrl}/pools/summaries", StringComparison.InvariantCultureIgnoreCase)));
+                req.Method.Contains("POST", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ComputeUrl}/pools/summaries/paginate", StringComparison.InvariantCultureIgnoreCase)));
         }
 
         [Test]
         public async Task RetrievePoolSummariesAsyncCheckTheReturnBodyUuidNameProfile()
         {
-            HttpHandler.ResponseBody = ConnectionTestsData.GetPoolsSummaryBody;
+            HttpHandler.ResponseBody = ConnectionTestsData.GetPoolsSummaryPaginateBody;
 
             List<QPoolSummary> poolSummaries = await Api.RetrievePoolSummariesAsync();
 
@@ -554,19 +734,19 @@ namespace QarnotSDK.UnitTests
         [Test]
         public async Task RetrievePoolsAsyncShouldGetOnCorrectEndpoint()
         {
-            HttpHandler.ResponseBody = ConnectionTestsData.GetTasksSummaryBody;
+            HttpHandler.ResponseBody = ConnectionTestsData.GetPoolsSummaryPaginateBody;
 
             List<QPool> pools = await Api.RetrievePoolsAsync();
 
             Assert.True(HttpHandler.ParsedRequests.Any(req =>
-                req.Method.Contains("GET", StringComparison.InvariantCultureIgnoreCase) &&
-                req.Uri.Contains($"{ComputeUrl}/pools", StringComparison.InvariantCultureIgnoreCase)));
+                req.Method.Contains("POST", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ComputeUrl}/pools/paginate", StringComparison.InvariantCultureIgnoreCase)));
         }
 
         [Test]
         public async Task RetrievePoolsAsyncCheckTheReturnBodyUuidNameProfile()
         {
-            HttpHandler.ResponseBody = ConnectionTestsData.GetTasksSummaryBody;
+            HttpHandler.ResponseBody = ConnectionTestsData.GetPoolsSummaryPaginateBody;
 
             List<QPool> pools = await Api.RetrievePoolsAsync();
             Assert.AreEqual(pools[0].Uuid.ToString(), ConnectionTestsData.GetDefaultBodyUuid);
@@ -604,21 +784,20 @@ namespace QarnotSDK.UnitTests
         [Test]
         public async Task RetrieveTasksByTagsAsyncShouldGetOnCorrectEndpoint()
         {
-            HttpHandler.ResponseBody = ConnectionTestsData.GetPoolsByTagsBody;
+            HttpHandler.ResponseBody = ConnectionTestsData.GetPoolsByTagsPaginateBody;
 
             List<string> taglist = new List<string> { { "tag1" }, { "tag2" }, };
             List<QTask> tasks = await Api.RetrieveTasksByTagsAsync(taglist);
 
             Assert.True(HttpHandler.ParsedRequests.Any(req =>
-                req.Method.Contains("GET", StringComparison.InvariantCultureIgnoreCase) &&
-                req.Uri.Contains($"{ComputeUrl}/tasks", StringComparison.InvariantCultureIgnoreCase) &&
-                req.Uri.Contains("?tag=tag1,tag2", StringComparison.InvariantCultureIgnoreCase)));
+                req.Method.Contains("POST", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ComputeUrl}/tasks/paginate", StringComparison.InvariantCultureIgnoreCase)));
         }
 
         [Test]
         public async Task RetrieveTasksByTagsAsyncCheckTheReturnBodyUuidNameProfile()
         {
-            HttpHandler.ResponseBody = ConnectionTestsData.GetTasksByTagsBody;
+            HttpHandler.ResponseBody = ConnectionTestsData.GetTasksByTagsPaginateBody;
 
             List<string> taglist = new List<string> { { "tag1" }, { "tag2" }, };
             List<QTask> tasks = await Api.RetrieveTasksByTagsAsync(taglist);
@@ -675,19 +854,19 @@ namespace QarnotSDK.UnitTests
         [Test]
         public async Task RetrieveTaskSummariesAsyncShouldGetOnCorrectEndpoint()
         {
-            HttpHandler.ResponseBody = ConnectionTestsData.GetTasksSummaryBody;
+            HttpHandler.ResponseBody = ConnectionTestsData.GetTasksSummaryPaginateBody;
 
             List<QTaskSummary> taskSummaries = await Api.RetrieveTaskSummariesAsync();
 
             Assert.True(HttpHandler.ParsedRequests.Any(req =>
-                req.Method.Contains("GET", StringComparison.InvariantCultureIgnoreCase) &&
-                req.Uri.Contains($"{ComputeUrl}/tasks/summaries", StringComparison.InvariantCultureIgnoreCase)));
+                req.Method.Contains("POST", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ComputeUrl}/tasks/summaries/paginate", StringComparison.InvariantCultureIgnoreCase)));
         }
 
         [Test]
         public async Task RetrieveTaskSummariesAsyncCheckTheReturnBodyUuidNameProfile()
         {
-            HttpHandler.ResponseBody = ConnectionTestsData.GetTasksSummaryBody;
+            HttpHandler.ResponseBody = ConnectionTestsData.GetTasksSummaryPaginateBody;
 
             List<QTaskSummary> taskSummaries = await Api.RetrieveTaskSummariesAsync();
 
@@ -699,19 +878,19 @@ namespace QarnotSDK.UnitTests
         [Test]
         public async Task RetrieveTasksAsyncShouldGetOnCorrectEndpoint()
         {
-            HttpHandler.ResponseBody = ConnectionTestsData.GetTasksBody;
+            HttpHandler.ResponseBody = ConnectionTestsData.GetTasksPaginateBody;
 
             List<QTask> tasks = await Api.RetrieveTasksAsync();
 
             Assert.True(HttpHandler.ParsedRequests.Any(req =>
-                req.Method.Contains("GET", StringComparison.InvariantCultureIgnoreCase) &&
-                req.Uri.Contains($"{ComputeUrl}/tasks", StringComparison.InvariantCultureIgnoreCase)));
+                req.Method.Contains("POST", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ComputeUrl}/tasks/paginate", StringComparison.InvariantCultureIgnoreCase)));
         }
 
         [Test]
         public async Task RetrieveTasksAsyncCheckTheReturnBodyUuidNameProfile()
         {
-            HttpHandler.ResponseBody = ConnectionTestsData.GetTasksBody;
+            HttpHandler.ResponseBody = ConnectionTestsData.GetTasksPaginateBody;
 
             List<QTask> tasks = await Api.RetrieveTasksAsync();
             Assert.AreEqual(tasks[0].Uuid.ToString(), ConnectionTestsData.GetDefaultBodyUuid);

@@ -441,7 +441,7 @@ namespace QarnotSDK {
         /// <param name="name">Name of the task to find.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>The task object for that name or null if it hasn't been found.</returns>
-        [Obsolete("RetrieveTaskByName is deprecated, please use RetrieveTaskByNameAsync instead.")]
+        [Obsolete("RetrieveTaskByName is deprecated, please use RetrieveTaskByShortnameAsync or RetrieveTasksByNameAsync instead.")]
         public virtual QTask RetrieveTaskByName(string name, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 return RetrieveTaskByNameAsync(name, cancellationToken).Result;
@@ -456,7 +456,7 @@ namespace QarnotSDK {
         /// <param name="name">Name of the task to find.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>The task summary object for that name or null if it hasn't been found.</returns>
-        [Obsolete("RetrieveTaskSummaryByName is deprecated, please use RetrieveTaskSummaryByNameAsync instead.")]
+        [Obsolete("RetrieveTaskSummaryByName is deprecated, please use RetrieveTaskSummaryByShortnameAsync instead.")]
         public virtual QTaskSummary RetrieveTaskSummaryByName(string name, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 return RetrieveTaskSummaryByNameAsync(name, cancellationToken).Result;
@@ -516,7 +516,7 @@ namespace QarnotSDK {
         /// <param name="name">Name of the pool to find.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>The pool object for that name or null if it hasn't been found.</returns>
-        [Obsolete("RetrievePoolByName is deprecated, please use RetrievePoolByNameAsync instead.")]
+        [Obsolete("RetrievePoolByName is deprecated, please use RetrievePoolByShortnameAsync or RetrievePoolsByNameAsync instead.")]
         public virtual QPool RetrievePoolByName(string name, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 return RetrievePoolByNameAsync(name, cancellationToken).Result;
@@ -531,7 +531,7 @@ namespace QarnotSDK {
         /// <param name="name">Name of the pool to find.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>The pool summary object for that name or null if it hasn't been found.</returns>
-        [Obsolete("RetrievePoolSummaryByName is deprecated, please use RetrievePoolSummaryByNameAsync instead.")]
+        [Obsolete("RetrievePoolSummaryByName is deprecated, please use RetrievePoolSummaryByShortnameAsync instead.")]
         public virtual QPoolSummary RetrievePoolSummaryByName(string name, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
                 return RetrievePoolSummaryByNameAsync(name, cancellationToken).Result;

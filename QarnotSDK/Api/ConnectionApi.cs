@@ -80,6 +80,16 @@ namespace QarnotSDK {
         /// </summary>
         public int RunningPoolCount;
 
+        /// <summary>
+        /// Number of Instances currently submitted or running.
+        /// </summary>
+        public int RunningInstanceCount { get; set; }
+        /// <summary>
+        /// Number of cores currently submitted or running.
+        /// </summary>
+        public int RunningCoreCount { get; set; }
+
+
         internal UserInformation() {
         }
     }
