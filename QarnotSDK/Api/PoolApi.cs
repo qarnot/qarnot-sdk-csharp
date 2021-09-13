@@ -429,6 +429,9 @@ namespace QarnotSDK {
         public bool AutoDeleteOnCompletion { get; set; }
         public TimeSpan CompletionTimeToLive { get; set; }
         public bool? TaskDefaultWaitForPoolResourcesSynchronization { get; set; }
+        public int QueuedOrRunningTaskInstancesCount { get; set; }
+        public int TotalSlotCapacity { get; set; }
+        public double PoolUsage { get; set; }
 
         internal PoolApi() {
             Constants = new List<KeyValHelper>();

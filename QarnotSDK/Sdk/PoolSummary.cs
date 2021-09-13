@@ -38,6 +38,12 @@ namespace QarnotSDK {
         public virtual DateTime CreationDate { get { return _poolApi.CreationDate; } }
 
         /// <summary>
+        /// The count of task instances running or enqueued on this pool.
+        /// Available only after the submission.
+        /// </summary>
+        public virtual int QueuedOrRunningTaskInstancesCount { get { return _poolApi.QueuedOrRunningTaskInstancesCount; } }
+
+        /// <summary>
         /// Default value of <see cref="QTask.WaitForPoolResourcesSynchronization" /> for pool's tasks
         /// </summary>
         public virtual bool? TaskDefaultWaitForPoolResourcesSynchronization {
