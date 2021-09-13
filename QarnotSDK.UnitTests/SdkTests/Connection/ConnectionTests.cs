@@ -433,24 +433,23 @@ namespace QarnotSDK.UnitTests
         [Test]
         public async Task RetrieveJobsByTagsAsyncShouldGetOnCorrectEndpoint()
         {
-            HttpHandler.ResponseBody = ConnectionTestsData.GetJobsByTagsBody;
+            HttpHandler.ResponseBody = ConnectionTestsData.GetPaginateJobsByTagsBody;
 
             List<string> taglist = new List<string> { { "tag1" }, { "tag2" }, };
-            List<QJob> jobs = await Api.RetrieveJobsByTagsAsync(taglist);
+            var jobs = await Api.RetrieveJobsByTagsAsync(taglist);
 
             Assert.True(HttpHandler.ParsedRequests.Any(req =>
-                req.Method.Contains("GET", StringComparison.InvariantCultureIgnoreCase) &&
-                req.Uri.Contains($"{ComputeUrl}/jobs", StringComparison.InvariantCultureIgnoreCase) &&
-                req.Uri.Contains("?tag=tag1,tag2", StringComparison.InvariantCultureIgnoreCase)));
+                req.Method.Contains("POST", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ComputeUrl}/jobs/paginate", StringComparison.InvariantCultureIgnoreCase)));
         }
 
         [Test]
         public async Task RetrieveJobsByTagsAsyncCheckTheReturnBodyUuidNameProfile()
         {
-            HttpHandler.ResponseBody = ConnectionTestsData.GetJobsByTagsBody;
+            HttpHandler.ResponseBody = ConnectionTestsData.GetPaginateJobsByTagsBody;
 
             List<string> taglist = new List<string> { { "tag1" }, { "tag2" }, };
-            List<QJob> jobs = await Api.RetrieveJobsByTagsAsync(taglist);
+            var jobs = (await Api.RetrieveJobsByTagsAsync(taglist)).ToList();
 
             Assert.AreEqual(jobs.Count, 2);
             Assert.AreEqual(jobs[0].Name, ConnectionTestsData.GetDefaultBodyName);

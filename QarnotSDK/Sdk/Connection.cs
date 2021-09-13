@@ -664,27 +664,33 @@ namespace QarnotSDK {
         /// Retrieve the jobs list filtered by tags.
         /// </summary>
         /// <param name="tags">list of tags for job filtering.</param>
-        /// <param name="summary">Optional token to choose between full jobs and jobs summaries.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
-        /// <returns>A list of jobs.</returns>
-        public virtual async Task<List<QJob>> RetrieveJobsByTagsAsync(List<string> tags, bool summary = true, CancellationToken cancellationToken = default(CancellationToken))
+        /// <returns>An enumeration of jobs.</returns>
+        public virtual async Task<IEnumerable<QJob>> RetrieveJobsByTagsAsync(List<string> tags, CancellationToken cancellationToken = default)
         {
             if (tags == null || tags.Count == 0)
-                return await RetrieveJobsAsync(cancellationToken);
-
-            var uri = "jobs/?tag=" + string.Join(",", tags.Select(tag => HttpUtility.UrlEncode(tag)));
-            using (var response = await _client.GetAsync(uri, cancellationToken))
             {
-                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
-                var qapiJobList = await response.Content.ReadAsAsync<List<JobApi>>(cancellationToken);
-                var ret = new List<QJob>();
-                foreach (var item in qapiJobList)
-                {
-                    ret.Add(new QJob(this, item));
-                }
-
-                return ret;
+                return await RetrieveJobsAsync(cancellationToken);
             }
+
+            var returnData = new List<QJob>();
+            PaginatedResponse<QJob> paginatedResponse;
+            var pageDetails = new PaginatedRequest<QJob>()
+            {
+                Filter = QFilter<QJob>
+                    .Or(tags
+                        .Select(tag => QFilter<QJob>.Contains(t => t.Tags, tag))
+                        .ToArray()),
+            };
+
+            do
+            {
+                paginatedResponse = await RetrievePaginatedJobAsync(pageDetails, cancellationToken);
+                pageDetails.Token = paginatedResponse.NextToken;
+                returnData.AddRange(paginatedResponse.Data);
+            } while (paginatedResponse.IsTruncated);
+
+            return returnData;
         }
 
         /// <summary>

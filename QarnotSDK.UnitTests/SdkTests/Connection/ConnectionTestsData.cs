@@ -80,12 +80,15 @@ namespace QarnotSDK.UnitTests
             ""name"": ""Second_default_name"",
         }]";
 
-        public const string GetJobsByTagsBody = @"[{
+        public const string GetPaginateJobsByTagsBody = @"{
+        ""nextToken"":""TestToken"",
+        ""isTruncated"":false,
+        ""data"":[{
             ""name"": ""default_name"",
             ""tags"":[""tag1""],
         },{
             ""name"": ""Second_default_name"",
-        }]";
+        }]}";
 
         public const string SubmitTasksBody = @"[{""uuid"": ""f78fdff8-7081-46e1-bb2f-d9cd4e185ece""},{""uuid"": ""f78fdff8-7081-46e1-bb2f-d9cd4e185ecf""},]";
 
