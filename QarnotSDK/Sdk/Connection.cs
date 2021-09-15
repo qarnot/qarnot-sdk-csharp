@@ -360,17 +360,18 @@ namespace QarnotSDK {
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>A list of tasks.</returns>
         public virtual async Task<List<QTask>> RetrieveTasksAsync(CancellationToken cancellationToken = default(CancellationToken)) {
-            using(var response = await _client.GetAsync("tasks", cancellationToken))
-            {
-                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
+            var returnData = new List<QTask>();
+            PaginatedResponse<QTask> paginatedResponse;
+            var pageDetails = new PaginatedRequest<QTask>();
 
-                var qapiTaskList = await response.Content.ReadAsAsync<List<TaskApi>>(cancellationToken);
-                var ret = new List<QTask>();
-                foreach (var item in qapiTaskList) {
-                    ret.Add(await QTask.CreateAsync(this, item));
-                }
-                return ret;
-            }
+            do
+            {
+                paginatedResponse = await RetrievePaginatedTaskAsync(pageDetails, cancellationToken);
+                pageDetails.Token = paginatedResponse.NextToken;
+                returnData.AddRange(paginatedResponse.Data);
+            } while (paginatedResponse.IsTruncated);
+
+            return returnData;
         }
 
         /// <summary>
@@ -379,17 +380,18 @@ namespace QarnotSDK {
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>A list of tasks.</returns>
         public virtual async Task<List<QTaskSummary>> RetrieveTaskSummariesAsync(CancellationToken cancellationToken = default(CancellationToken)) {
-            using (var response = await _client.GetAsync("tasks/summaries", cancellationToken))
-            {
-                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
+            var returnData = new List<QTaskSummary>();
+            PaginatedResponse<QTaskSummary> paginatedResponse;
+            var pageDetails = new PaginatedRequest<QTaskSummary>();
 
-                var qapiTaskList = await response.Content.ReadAsAsync<List<TaskApi>>(cancellationToken);
-                var ret = new List<QTaskSummary>();
-                foreach (var item in qapiTaskList) {
-                    ret.Add(await QTaskSummary.CreateAsync(this, item));
-                }
-                return ret;
-            }
+            do
+            {
+                paginatedResponse = await RetrievePaginatedTaskSummariesAsync(pageDetails, cancellationToken);
+                pageDetails.Token = paginatedResponse.NextToken;
+                returnData.AddRange(paginatedResponse.Data);
+            } while (paginatedResponse.IsTruncated);
+
+            return returnData;
         }
 
         /// <summary>
@@ -418,22 +420,31 @@ namespace QarnotSDK {
         /// <param name="tags">list of tags for task filtering.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>A list of tasks.</returns>
-        public virtual async Task<List<QTask>> RetrieveTasksByTagsAsync(List<string> tags, CancellationToken cancellationToken = default(CancellationToken)) {
-            if(tags == null || tags.Count == 0)
-                return await RetrieveTasksAsync(cancellationToken);
-
-            var uri = "tasks/?tag=" + string.Join(",", tags.Select(tag => HttpUtility.UrlEncode(tag)));
-            using (var response = await _client.GetAsync(uri, cancellationToken))
+        public virtual async Task<List<QTask>> RetrieveTasksByTagsAsync(List<string> tags, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            if (tags == null || tags.Count == 0)
             {
-                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
-
-                var qapiTaskList = await response.Content.ReadAsAsync<List<TaskApi>>(cancellationToken);
-                var ret = new List<QTask>();
-                foreach (var item in qapiTaskList) {
-                    ret.Add(await QTask.CreateAsync(this, item));
-                }
-                return ret;
+                return await RetrieveTasksAsync(cancellationToken);
             }
+
+            var returnData = new List<QTask>();
+            PaginatedResponse<QTask> paginatedResponse;
+            var pageDetails = new PaginatedRequest<QTask>()
+            {
+                Filter = QFilter<QTask>
+                    .Or(tags
+                        .Select(tag => QFilter<QTask>.Contains(t => t.Tags, tag))
+                        .ToArray()),
+            };
+
+            do
+            {
+                paginatedResponse = await RetrievePaginatedTaskAsync(pageDetails, cancellationToken);
+                pageDetails.Token = paginatedResponse.NextToken;
+                returnData.AddRange(paginatedResponse.Data);
+            } while (paginatedResponse.IsTruncated);
+
+            return returnData;
         }
 
         /// <summary>
@@ -509,16 +520,18 @@ namespace QarnotSDK {
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>A list of pools.</returns>
         public virtual async Task<List<QPool>> RetrievePoolsAsync(CancellationToken cancellationToken = default(CancellationToken)) {
-            using (var response = await _client.GetAsync("pools", cancellationToken))
+            var returnData = new List<QPool>();
+            PaginatedResponse<QPool> paginatedResponse;
+            var pageDetails = new PaginatedRequest<QPool>();
+
+            do
             {
-                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
-                var list = await response.Content.ReadAsAsync<List<PoolApi>>(cancellationToken);
-                var ret = new List<QPool>();
-                foreach (var item in list) {
-                    ret.Add(await QPool.CreateAsync(this, item));
-                }
-                return ret;
-            }
+                paginatedResponse = await RetrievePaginatedPoolAsync(pageDetails, cancellationToken);
+                pageDetails.Token = paginatedResponse.NextToken;
+                returnData.AddRange(paginatedResponse.Data);
+            } while (paginatedResponse.IsTruncated);
+
+            return returnData;
         }
 
         /// <summary>
@@ -527,16 +540,18 @@ namespace QarnotSDK {
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>A list of pools.</returns>
         public virtual async Task<List<QPoolSummary>> RetrievePoolSummariesAsync(CancellationToken cancellationToken = default(CancellationToken)) {
-            using (var response = await _client.GetAsync("pools/summaries", cancellationToken))
+            var returnData = new List<QPoolSummary>();
+            PaginatedResponse<QPoolSummary> paginatedResponse;
+            var pageDetails = new PaginatedRequest<QPoolSummary>();
+
+            do
             {
-                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
-                var list = await response.Content.ReadAsAsync<List<PoolApi>>(cancellationToken);
-                var ret = new List<QPoolSummary>();
-                foreach (var item in list) {
-                    ret.Add(await QPoolSummary.CreateAsync(this, item));
-                }
-                return ret;
-            }
+                paginatedResponse = await RetrievePaginatedPoolSummariesAsync(pageDetails, cancellationToken);
+                pageDetails.Token = paginatedResponse.NextToken;
+                returnData.AddRange(paginatedResponse.Data);
+            } while (paginatedResponse.IsTruncated);
+
+            return returnData;
         }
 
         /// <summary>
@@ -550,7 +565,6 @@ namespace QarnotSDK {
             using (var response = await _client.PostAsJsonAsync<PaginatedRequestApi<QPool>>("pools/paginate", pageDetails._pageRequestApi, cancellationToken))
             {
                 await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
-
                 var qapiPoolPages = await response.Content.ReadAsAsync<PaginatedResponseAPI<PoolApi>>(cancellationToken);
                 return await PaginatedResponse<QPool>.CreateAsync(this, qapiPoolPages, QPool.CreateAsync);
             }
@@ -567,7 +581,6 @@ namespace QarnotSDK {
             using (var response = await _client.PostAsJsonAsync<PaginatedRequestApi<QPoolSummary>>("pools/summaries/paginate", pageDetails._pageRequestApi, cancellationToken))
             {
                 await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
-
                 var qapiPoolSummariesPages = await response.Content.ReadAsAsync<PaginatedResponseAPI<PoolApi>>(cancellationToken);
                 return await PaginatedResponse<QPoolSummary>.CreateAsync(this, qapiPoolSummariesPages, QPoolSummary.CreateAsync);
             }
@@ -601,22 +614,29 @@ namespace QarnotSDK {
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>A list of pools.</returns>
         public virtual async Task<List<QPool>> RetrievePoolsByTagsAsync(List<string> tags, bool summary = true, CancellationToken cancellationToken = default(CancellationToken)) {
-            if(tags == null || tags.Count == 0)
-                return RetrievePoolsAsync(summary, cancellationToken).Result;
-            var baseUri = summary ? "pools/summaries?tag=" : "pools/?tag=";
-
-            var uri = baseUri + string.Join(",", tags.Select(tag => HttpUtility.UrlEncode(tag)));
-            using (var response = await _client.GetAsync(uri, cancellationToken))
+            if (tags == null || tags.Count == 0)
             {
-                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
-
-                var qapiPoolList = await response.Content.ReadAsAsync<List<PoolApi>>(cancellationToken);
-                var ret = new List<QPool>();
-                foreach (var item in qapiPoolList) {
-                    ret.Add(await QPool.CreateAsync(this, item));
-                }
-                return ret;
+                return await RetrievePoolsAsync(cancellationToken);
             }
+
+            var returnData = new List<QPool>();
+            PaginatedResponse<QPool> paginatedResponse;
+            var pageDetails = new PaginatedRequest<QPool>()
+            {
+                Filter = QFilter<QPool>
+                    .Or(tags
+                        .Select(tag => QFilter<QPool>.Contains(t => t.Tags, tag))
+                        .ToArray()),
+            };
+
+            do
+            {
+                paginatedResponse = await RetrievePaginatedPoolAsync(pageDetails, cancellationToken);
+                pageDetails.Token = paginatedResponse.NextToken;
+                returnData.AddRange(paginatedResponse.Data);
+            } while (paginatedResponse.IsTruncated);
+
+            return returnData;
         }
 
         /// <summary>
@@ -647,17 +667,18 @@ namespace QarnotSDK {
         /// <returns>A list of jobs.</returns>
         public virtual async Task<List<QJob>> RetrieveJobsAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-            using (var response = await _client.GetAsync("jobs", cancellationToken))
+            var returnData = new List<QJob>();
+            PaginatedResponse<QJob> paginatedResponse;
+            var pageDetails = new PaginatedRequest<QJob>();
+
+            do
             {
-                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
-                var list = await response.Content.ReadAsAsync<List<JobApi>>(cancellationToken);
-                var ret = new List<QJob>();
-                foreach (var item in list)
-                {
-                    ret.Add(new QJob(this, item));
-                }
-                return ret;
-            }
+                paginatedResponse = await RetrievePaginatedJobAsync(pageDetails, cancellationToken);
+                pageDetails.Token = paginatedResponse.NextToken;
+                returnData.AddRange(paginatedResponse.Data);
+            } while (paginatedResponse.IsTruncated);
+
+            return returnData;
         }
 
         /// <summary>
