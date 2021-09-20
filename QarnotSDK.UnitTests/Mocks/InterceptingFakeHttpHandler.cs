@@ -67,8 +67,6 @@ namespace QarnotSDK.UnitTests
 
         private async Task<ParsedRequest> ParseRequest(HttpRequestMessage request)
         {
-            Console.WriteLine(request.Method.ToString());
-            Console.WriteLine(request.RequestUri.ToString());
             var parsedRequest = new ParsedRequest()
             {
                 Method = request.Method.ToString(),
