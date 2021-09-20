@@ -923,6 +923,7 @@ namespace QarnotSDK {
         /// <param name="name">Name of the task to find.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>The task object for that name or null if it hasn't been found.</returns>
+        [Obsolete("RetrieveTaskByNameAsync is deprecated, please use RetrieveTaskByShortnameAsync or RetrieveTasksByNameAsync instead.")]
         public virtual async Task<QTask> RetrieveTaskByNameAsync(string name, CancellationToken cancellationToken = default(CancellationToken)) {
             var ret = await RetrieveTasksAsync(cancellationToken);
             return ret.Find(x => x.Name == name);
@@ -934,9 +935,66 @@ namespace QarnotSDK {
         /// <param name="name">Name of the task to find.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>The task object for that name or null if it hasn't been found.</returns>
+        [Obsolete("RetrieveTaskSummaryByNameAsync is deprecated, please use RetrieveTaskSummaryByShortnameAsync instead.")]
         public virtual async Task<QTaskSummary> RetrieveTaskSummaryByNameAsync(string name, CancellationToken cancellationToken = default(CancellationToken)) {
             var ret = await RetrieveTaskSummariesAsync(cancellationToken);
             return ret.Find(x => x.Name == name);
+        }
+
+        /// <summary>
+        /// Retrieve a task list by there name.
+        /// </summary>
+        /// <param name="name">Name of the tasks to find.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>The task list for that name.</returns>
+        public virtual async Task<List<QTask>> RetrieveTasksByNameAsync(string name, CancellationToken cancellationToken = default(CancellationToken)) {
+            var nameFilter = new QDataDetail<QTask>()
+            {
+                Filter = QFilter<QTask>.Eq<string>(t => t.Name, name)
+            };
+
+            var ret = await RetrieveTasksAsync(nameFilter, cancellationToken);
+            return ret;
+        }
+
+        /// <summary>
+        /// Retrieve a task by its shortname.
+        /// </summary>
+        /// <param name="shortname">shortname of the task to find, if the task shortname has not bean set, the shortname is equivalent to the uuid.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>The task object for that shortname or null if it hasn't been found.</returns>
+        public virtual async Task<QTask> RetrieveTaskByShortnameAsync(string shortname, CancellationToken cancellationToken = default(CancellationToken)) {
+            if (string.IsNullOrWhiteSpace(shortname))
+            {
+                throw new ArgumentException("shortname can not be null or empty.");
+            }
+
+            using (var response = await _client.GetAsync($"tasks/{shortname}", cancellationToken))
+            {
+                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
+                var apiTask = await response.Content.ReadAsAsync<TaskApi>(cancellationToken);
+                return await QTask.CreateAsync(this, apiTask);
+            }
+        }
+
+        /// <summary>
+        /// Retrieve a task summary by its shortname.
+        /// </summary>
+        /// <param name="shortname">Shortname of the task summary to find, if the task shortname has not bean set, the shortname is equivalent to the uuid.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>The task summary object for that shortname or null if it hasn't been found.</returns>
+        public virtual async Task<QTaskSummary> RetrieveTaskSummaryByShortnameAsync(string shortname, CancellationToken cancellationToken = default(CancellationToken)) {
+            if (string.IsNullOrWhiteSpace(shortname))
+            {
+                throw new ArgumentException("shortname can not be null or empty.");
+            }
+
+            using (var response = await _client.GetAsync($"tasks/{shortname}", cancellationToken))//TODO:Add the url path for summary when api is ready
+            {
+                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
+                var apiTask = await response.Content.ReadAsAsync<TaskApi>(cancellationToken);
+                return await QTaskSummary.CreateAsync(this, apiTask);
+            }
         }
 
         /// <summary>
@@ -969,6 +1027,25 @@ namespace QarnotSDK {
             }
         }
 
+        /// <summary>
+        /// Retrieve a job by its shortname.
+        /// </summary>
+        /// <param name="shortname">shortname of the job to find, or it's uuid if no shortname has bin set.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>The job object for that shortname or null if it hasn't been found.</returns>
+        public virtual async Task<QJob> RetrieveJobByShortnameAsync(string shortname, CancellationToken cancellationToken = default(CancellationToken)) {
+            if (string.IsNullOrWhiteSpace(shortname))
+            {
+                throw new ArgumentException("shortname can not be null or empty.");
+            }
+
+            using (var response = await _client.GetAsync($"jobs/{shortname}", cancellationToken))
+            {
+                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
+                var apiJob = await response.Content.ReadAsAsync<JobApi>(cancellationToken);
+                return new QJob (this, apiJob);
+            }
+        }
 
         /// <summary>
         /// Retrieve a job by its uuid or shortname.
@@ -991,6 +1068,7 @@ namespace QarnotSDK {
         /// <param name="name">Name of the pool to find.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>The pool object for that name or null if it hasn't been found.</returns>
+        [Obsolete("RetrievePoolByNameAsync is deprecated, please use RetrievePoolByShortnameAsync or RetrievePoolsByNameAsync instead.")]
         public virtual async Task<QPool> RetrievePoolByNameAsync(string name, CancellationToken cancellationToken = default(CancellationToken)) {
             var ret = await RetrievePoolsAsync(cancellationToken);
             return ret.Find(x => x.Name == name);
@@ -1003,11 +1081,67 @@ namespace QarnotSDK {
         /// <param name="name">Name of the pool to find.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>The pool object for that name or null if it hasn't been found.</returns>
+        [Obsolete("RetrievePoolSummaryByNameAsync is deprecated, please use RetrievePoolSummaryByShortnameAsync instead.")]
         public virtual async Task<QPoolSummary> RetrievePoolSummaryByNameAsync(string name, CancellationToken cancellationToken = default(CancellationToken)) {
             var ret = await RetrievePoolSummariesAsync(cancellationToken);
             return ret.Find(x => x.Name == name);
         }
 
+        /// <summary>
+        /// Retrieve a pool list by its name.
+        /// </summary>
+        /// <param name="name">Name of the pools to find.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>The pool list for that name.</returns>
+        public virtual async Task<List<QPool>> RetrievePoolsByNameAsync(string name, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            var nameFilter = new QDataDetail<QPool>()
+            {
+                Filter = QFilter<QPool>.Eq<string>(t => t.Name, name)
+            };
+
+            var ret = await RetrievePoolsAsync(nameFilter, cancellationToken);
+            return ret;
+        }
+        /// <summary>
+        /// Retrieve a pool by its shortname.
+        /// </summary>
+        /// <param name="shortname">shortname of the pool to find. (if shortname is not set, the shortname is equivalant to the uuid).</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>The pool object for that shortname or null if it hasn't been found.</returns>
+        public virtual async Task<QPool> RetrievePoolByShortnameAsync(string shortname, CancellationToken cancellationToken = default(CancellationToken)) {
+            if (string.IsNullOrWhiteSpace(shortname))
+            {
+                throw new ArgumentException("shortname can not be null or empty.");
+            }
+
+            using (var response = await _client.GetAsync($"pools/{shortname}", cancellationToken))
+            {
+                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
+                var apiPool = await response.Content.ReadAsAsync<PoolApi>(cancellationToken);
+                return await QPool.CreateAsync(this, apiPool);
+            }
+        }
+
+        /// <summary>
+        /// Retrieve a pool summary by its shortname.
+        /// </summary>
+        /// <param name="shortname">shortname of the pool summary to find. (if shortname is not set, the shortname is equivalant to the uuid).</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>The pool summary object for that shortname or null if it hasn't been found.</returns>
+        public virtual async Task<QPoolSummary> RetrievePoolSummaryByShortnameAsync(string shortname, CancellationToken cancellationToken = default(CancellationToken)) {
+            if (string.IsNullOrWhiteSpace(shortname))
+            {
+                throw new ArgumentException("shortname can not be null or empty.");
+            }
+
+            using (var response = await _client.GetAsync($"pools/{shortname}", cancellationToken))//TODO:Add the url path for summary when api is ready
+            {
+                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
+                var apiPool = await response.Content.ReadAsAsync<PoolApi>(cancellationToken);
+                return await QPoolSummary.CreateAsync(this, apiPool);
+            }
+        }
         /// <summary>
         /// Retrieve a pool by its uuid or shortname.
         /// </summary>
