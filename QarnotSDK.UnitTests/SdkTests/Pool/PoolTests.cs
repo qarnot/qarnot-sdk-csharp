@@ -381,6 +381,18 @@ namespace QarnotSDK.UnitTests
         }
 
         [Test]
+        public async Task CheckPoolUsageTestValues()
+        {
+            HttpHandler.ResponseBody = PoolTestsData.PoolResponseFullBody;
+            string uuid = Guid.NewGuid().ToString();
+            QPool pool = new QPool(Connect, uuid);
+            await pool.UpdateStatusAsync();
+            Assert.AreEqual(pool.PoolUsage, 0.91);
+            Assert.AreEqual(pool.TotalSlotCapacity, 5);
+            Assert.AreEqual(pool.QueuedOrRunningTaskInstancesCount, 71);
+        }
+
+        [Test]
         public void SetTagsFailWhenNullArgument()
         {
             var pool = new QPool(Connect, Guid.NewGuid());
