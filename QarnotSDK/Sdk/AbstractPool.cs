@@ -1,7 +1,8 @@
-using System.Threading.Tasks;
-using System.Threading;
 using System;
+using System.IO;
 using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace QarnotSDK {
 
@@ -114,5 +115,145 @@ namespace QarnotSDK {
                 await Utils.LookForErrorAndThrowAsync(_api._client, response, cancellationToken);
             }
         }
+
+        #region stdin/stdout
+        /// <summary>
+        /// Copies the full standard output to the given stream.
+        /// Note: the standard output will rotate if it's too large.
+        /// </summary>
+        /// <param name="destinationStream">The destination stream.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns></returns>
+        public virtual async Task CopyStdoutToAsync(Stream destinationStream, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            using (var response = await _api._client.GetAsync(_uri + "/stdout", cancellationToken))
+            {
+                await Utils.LookForErrorAndThrowAsync(_api._client, response, cancellationToken);
+                await response.Content.CopyToAsync(destinationStream);
+            }
+        }
+
+        /// <summary>
+        /// Copies the full standard error to the given stream.
+        /// Note: the standard error will rotate if it's too large.
+        /// </summary>
+        /// <param name="destinationStream">The destination stream.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns></returns>
+        public virtual async Task CopyStderrToAsync(Stream destinationStream, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            using (var response = await _api._client.GetAsync(_uri + "/stderr", cancellationToken))
+            {
+                await Utils.LookForErrorAndThrowAsync(_api._client, response, cancellationToken);
+                await response.Content.CopyToAsync(destinationStream);
+            }
+        }
+
+        /// <summary>
+        /// Copies the fresh new standard output since the last call to the given stream.
+        /// </summary>
+        /// <param name="destinationStream">The destination stream.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns></returns>
+        public virtual async Task CopyFreshStdoutToAsync(Stream destinationStream, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            if (_api.IsReadOnly) throw new Exception("Can't retrieve fresh standard output, this connection is configured in read-only mode");
+            using (var response = await _api._client.PostAsync(_uri + "/stdout", null, cancellationToken))
+            {
+                await Utils.LookForErrorAndThrowAsync(_api._client, response, cancellationToken);
+                await response.Content.CopyToAsync(destinationStream);
+            }
+        }
+
+        /// <summary>
+        /// Copies the fresh new standard error since the last call to the given stream.
+        /// </summary>
+        /// <param name="destinationStream">The destination stream.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns></returns>
+        public virtual async Task CopyFreshStderrToAsync(Stream destinationStream, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            if (_api.IsReadOnly) throw new Exception("Can't retrieve fresh standard error, this connection is configured in read-only mode");
+            using (var response = await _api._client.PostAsync(_uri + "/stderr", null, cancellationToken))
+            {
+                await Utils.LookForErrorAndThrowAsync(_api._client, response, cancellationToken);
+                await response.Content.CopyToAsync(destinationStream);
+            }
+        }
+
+        /// <summary>
+        /// Returns the full standard output.
+        /// Note: the standard output will rotate if it's too large.
+        /// </summary>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>The pool standard output.</returns>
+        public virtual async Task<string> StdoutAsync(CancellationToken cancellationToken = default(CancellationToken))
+        {
+            using (MemoryStream ms = new MemoryStream())
+            {
+                await CopyStdoutToAsync(ms, cancellationToken);
+                ms.Position = 0;
+                using (var reader = new StreamReader(ms))
+                {
+                    return await reader.ReadToEndAsync();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Return the full standard error.
+        /// Note: the standard error will rotate if it's too large.
+        /// </summary>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>The pool standard error.</returns>
+        public virtual async Task<string> StderrAsync(CancellationToken cancellationToken = default(CancellationToken))
+        {
+            using (MemoryStream ms = new MemoryStream())
+            {
+                await CopyStderrToAsync(ms, cancellationToken);
+                ms.Position = 0;
+                using (var reader = new StreamReader(ms))
+                {
+                    return await reader.ReadToEndAsync();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns the fresh new standard output since the last call.
+        /// </summary>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>The pool fresh standard output.</returns>
+        public virtual async Task<string> FreshStdoutAsync(CancellationToken cancellationToken = default(CancellationToken))
+        {
+            using (MemoryStream ms = new MemoryStream())
+            {
+                await CopyFreshStdoutToAsync(ms, cancellationToken);
+                ms.Position = 0;
+                using (var reader = new StreamReader(ms))
+                {
+                    return await reader.ReadToEndAsync();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns the fresh new standard error since the last call.
+        /// </summary>
+        /// /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>The pool fresh standard error.</returns>
+        public virtual async Task<string> FreshStderrAsync(CancellationToken cancellationToken = default(CancellationToken))
+        {
+            using (MemoryStream ms = new MemoryStream())
+            {
+                await CopyFreshStderrToAsync(ms, cancellationToken);
+                ms.Position = 0;
+                using (var reader = new StreamReader(ms))
+                {
+                    return await reader.ReadToEndAsync();
+                }
+            }
+        }
+        #endregion
     }
 }

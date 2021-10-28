@@ -375,6 +375,19 @@ namespace QarnotSDK {
                 if (_advancedRange == null) return _taskApi.InstanceCount;
                 else return _advancedRange.Count;
             }
+
+        }
+        /// <summary>
+        /// How many times this task can be retrieved if it is stopped while running.
+        /// </summary>
+        [InternalDataApiName(Name = "MaxRetriesPerInstance", IsFilterable = false)]
+        public virtual uint MaxRetriesPerInstance {
+            get {
+                return _taskApi.MaxRetriesPerInstance;
+            }
+            set {
+                _taskApi.MaxRetriesPerInstance = value;
+            }
         }
 
         /// <summary>
@@ -1058,6 +1071,18 @@ namespace QarnotSDK {
             }
         }
 
+        /// <summary>
+        /// Call a periodic snapshot every interval seconds.
+        /// You can select some additional options, like a bucket or a whitelist.
+        /// </summary>
+        /// <param name="interval">The interval in second between 2 snapshots.</param>
+        /// <param name="whitelist">A globing string representing the whitelist filenames.</param>
+        /// <param name="blacklist">A globing string representing the blacklist filenames.</param>
+        /// <param name="bucket">A specific bucket to retrieve the snapshot files.</param>
+        /// <param name="bucketPrefix">A bucket prefix folder to the snapshot bucket,
+        /// bucketPrefix prevent key collisions when using snapshots with many tasks.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns></returns>
         public override async Task TriggerPeriodicSnapshotAsync(uint interval, string whitelist = null, string blacklist = null, QBucket bucket = null, string bucketPrefix = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             await base.TriggerPeriodicSnapshotAsync(interval, whitelist, blacklist, bucket, bucketPrefix, cancellationToken);

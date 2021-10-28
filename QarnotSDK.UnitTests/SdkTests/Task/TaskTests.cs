@@ -769,6 +769,24 @@ namespace QarnotSDK.UnitTests
         }
 
         [Test]
+        public async Task GetMaxRetriesPerInstanceIsExposedInTask()
+        {
+            TaskApi taskApi = new TaskApi();
+            taskApi.MaxRetriesPerInstance = 10;
+            QTask task = await QTask.CreateAsync(null, taskApi);
+            Assert.AreEqual(task.MaxRetriesPerInstance, 10);
+        }
+
+        [Test]
+        public async Task SetMaxRetriesPerInstanceIsExposedInTask()
+        {
+            TaskApi taskApi = new TaskApi();
+            QTask task = await QTask.CreateAsync(null, taskApi);
+            task.MaxRetriesPerInstance = 10;
+            Assert.AreEqual(task.MaxRetriesPerInstance, 10);
+        }
+
+        [Test]
         public void TestAllTheTaskConstructorsEntries()
         {
             QJob job;

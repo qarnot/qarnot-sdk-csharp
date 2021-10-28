@@ -35,6 +35,7 @@ namespace QarnotSDK {
             new List<HttpStatusCode>
             {
                 HttpStatusCode.RequestTimeout,      // 408
+                (HttpStatusCode)429,                // TooManyRequests
                 HttpStatusCode.BadGateway,          // 502
                 HttpStatusCode.ServiceUnavailable,  // 503
                 HttpStatusCode.GatewayTimeout,      // 504
