@@ -317,6 +317,19 @@ namespace QarnotSDK
             }
         }
 
+        /// <summary>
+        /// The pool labels.
+        /// </summary>
+        [InternalDataApiName(Name="Labels", IsFilterable=false)]
+        public virtual Dictionary<string, string> Labels {
+            get {
+                if (_poolApi.Labels == null) {
+                    _poolApi.Labels = new Dictionary<string, string>();
+                }
+                return _poolApi.Labels;
+            }
+        }
+
         #region Elastic properties
         /// <summary>
         /// Allow the automatic resize of the pool
@@ -608,6 +621,22 @@ namespace QarnotSDK
             }
             // Add or update the constraint
             if (value != null) _constraints[name] = value;
+        }
+
+        /// <summary>
+        /// Set a label. If the label already exists, it is replaced (or removed if value is null).
+        /// </summary>
+        /// <param name="name">Label name.</param>
+        /// <param name="value">Label value. If null, the label is deleted.</param>
+        public virtual void SetLabel(string name, string value) {
+        // First, check if the constraints already exists
+	    if (Labels.ContainsKey(name) && value == null) {
+                // Delete a constraint
+                Labels.Remove(name);
+                return;
+            }
+            // Add or update the constraint
+            if (value != null) Labels[name] = value;
         }
 
         /// <summary>

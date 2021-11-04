@@ -288,6 +288,20 @@ namespace QarnotSDK {
         }
 
         /// <summary>
+        /// The task labels.
+        /// </summary>
+        /// <returns>return all Labels</returns>
+        [InternalDataApiName(Name="Labels")]
+        public virtual Dictionary<string, string> Labels {
+            get {
+                if (_taskApi.Labels == null) {
+                    _taskApi.Labels = new Dictionary<string, string>();
+                }
+                return _taskApi.Labels;
+            }
+        }
+
+        /// <summary>
         /// The Task Dependencies
 	/// Guid list of tasks to wait before running
         /// The task need to be in a job with depencendies activated
@@ -819,6 +833,21 @@ namespace QarnotSDK {
             }
         }
 
+        /// <summary>
+        /// Set a label. If the label already exists, it is replaced (or removed if value is null).
+        /// </summary>
+        /// <param name="name">Label name.</param>
+        /// <param name="value">Label value. If null, the label is deleted.</param>
+        public virtual void SetLabel(string name, string value) {
+            if (value == null)
+            {
+                Labels.Remove(name);
+            }
+            else
+            {
+                Labels[name] = value;
+            }
+        }
 
         /// <summary>
         /// Run this task.

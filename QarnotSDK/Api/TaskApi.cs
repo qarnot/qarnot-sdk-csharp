@@ -510,6 +510,7 @@ namespace QarnotSDK {
         public DateTime CreationDate { get; set; }
         public List<KeyValHelper> Constants { get; set; }
         public List<KeyValHelper> Constraints { get; set; }
+        public Dictionary<string, string> Labels { get; set; }
         public List<String> Tags { get; set; }
         public Guid Uuid { get; set; }
         public string Shortname { get; set; }
@@ -531,6 +532,7 @@ namespace QarnotSDK {
         internal TaskApi() {
             Constants = new List<KeyValHelper>();
             Constraints = new List<KeyValHelper>();
+            Labels = new Dictionary<string, string>();
             Tags = new List<String>();
             ResourceBuckets = new List<String>();
             AdvancedResourceBuckets = new List<ApiAdvancedResourceBucket>();
