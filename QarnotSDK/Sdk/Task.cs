@@ -375,6 +375,19 @@ namespace QarnotSDK {
                 if (_advancedRange == null) return _taskApi.InstanceCount;
                 else return _advancedRange.Count;
             }
+
+        }
+        /// <summary>
+        /// How many times this task can be retrieved if it is stopped while running.
+        /// </summary>
+        [InternalDataApiName(Name = "MaxRetriesPerInstance", IsFilterable = false)]
+        public virtual uint MaxRetriesPerInstance {
+            get {
+                return _taskApi.MaxRetriesPerInstance;
+            }
+            set {
+                _taskApi.MaxRetriesPerInstance = value;
+            }
         }
 
         /// <summary>
