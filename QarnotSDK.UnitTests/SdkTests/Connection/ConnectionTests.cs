@@ -544,6 +544,64 @@ namespace QarnotSDK.UnitTests
         }
 
         [Test]
+        public async Task RetrieveUserHardwareConstraintsAsyncShouldGetOnCorrectEndpoint()
+        {
+            HttpHandler.ResponseBody = ConnectionTestsData.GetUserHardwareConstraints;
+
+            OffsetPageResponse<HardwareConstraint> hardwareConstraints = await Api.RetrieveUserHardwareConstraintsPageAsync(new());
+
+            var hardwareConstraintsRequests = HttpHandler.ParsedRequests.Where(req =>
+                req.Method.Contains("GET", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ComputeUrl}/hardware-constraints", StringComparison.InvariantCultureIgnoreCase));
+            Assert.True(hardwareConstraintsRequests.Any());
+
+            var requestsCountBefore = hardwareConstraintsRequests.Count();
+
+            var constraints = await Api.RetrieveUserHardwareConstraintsAsync();
+
+            hardwareConstraintsRequests = HttpHandler.ParsedRequests.Where(req =>
+                req.Method.Contains("GET", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ComputeUrl}/hardware-constraints", StringComparison.InvariantCultureIgnoreCase));
+
+            Assert.Greater(hardwareConstraintsRequests.Count(), requestsCountBefore);
+        }
+
+        [Test]
+        public async Task RetrieveUserHardwareConstraintsAsyncCheckReturnBodyInfos()
+        {
+            HttpHandler.ResponseBody = ConnectionTestsData.GetUserHardwareConstraints;
+
+            OffsetPageResponse<HardwareConstraint> paginatedHardwareConstraints = await Api.RetrieveUserHardwareConstraintsPageAsync(new());
+
+            Assert.AreEqual(8, paginatedHardwareConstraints.Total);
+            var hardwareConstraints = paginatedHardwareConstraints.Data;
+            Assert.IsInstanceOf<List<HardwareConstraint>>(hardwareConstraints);
+            Assert.IsInstanceOf<MinimumCoreHardware>(hardwareConstraints[0]);
+            Assert.AreEqual((hardwareConstraints[0] as MinimumCoreHardware).Discriminator, "MinimumCoreHardwareConstraint");
+            Assert.AreEqual((hardwareConstraints[0] as MinimumCoreHardware).CoreCount, 16);
+            Assert.IsInstanceOf<MaximumCoreHardware>(hardwareConstraints[1]);
+            Assert.AreEqual((hardwareConstraints[1] as MaximumCoreHardware).Discriminator, "MaximumCoreHardwareConstraint");
+            Assert.AreEqual((hardwareConstraints[1] as MaximumCoreHardware).CoreCount, 32);
+            Assert.IsInstanceOf<MinimumRamCoreRatioHardware>(hardwareConstraints[2]);
+            Assert.AreEqual((hardwareConstraints[2] as MinimumRamCoreRatioHardware).Discriminator, "MinimumRamCoreRatioHardwareConstraint");
+            Assert.AreEqual((hardwareConstraints[2] as MinimumRamCoreRatioHardware).MinimumMemoryGBCoreRatio, 0.4);
+            Assert.IsInstanceOf<MaximumRamCoreRatioHardware>(hardwareConstraints[3]);
+            Assert.AreEqual((hardwareConstraints[3] as MaximumRamCoreRatioHardware).Discriminator, "MaximumRamCoreRatioHardwareConstraint");
+            Assert.AreEqual((hardwareConstraints[3] as MaximumRamCoreRatioHardware).MaximumMemoryGBCoreRatio, 0.7);
+            Assert.IsInstanceOf<SpecificHardware>(hardwareConstraints[4]);
+            Assert.AreEqual((hardwareConstraints[4] as SpecificHardware).Discriminator, "SpecificHardwareConstraint");
+            Assert.AreEqual((hardwareConstraints[4] as SpecificHardware).SpecificationKey, "R7-2700X");
+            Assert.IsInstanceOf<MinimumRamHardware>(hardwareConstraints[5]);
+            Assert.AreEqual((hardwareConstraints[5] as MinimumRamHardware).Discriminator, "MinimumRamHardwareConstraint");
+            Assert.AreEqual((hardwareConstraints[5] as MinimumRamHardware).MinimumMemoryMB, 4000);
+            Assert.IsInstanceOf<MaximumRamHardware>(hardwareConstraints[6]);
+            Assert.AreEqual((hardwareConstraints[6] as MaximumRamHardware).Discriminator, "MaximumRamHardwareConstraint");
+            Assert.AreEqual((hardwareConstraints[6] as MaximumRamHardware).MaximumMemoryMB, 32000);
+            Assert.IsInstanceOf<GpuHardware>(hardwareConstraints[7]);
+            Assert.AreEqual((hardwareConstraints[7] as GpuHardware).Discriminator, "GpuHardwareConstraint");
+        }
+
+        [Test]
         public async Task RetrieveJobsAsyncShouldGetOnCorrectEndpoint()
         {
             HttpHandler.ResponseBody = ConnectionTestsData.GetJobsPaginateBody;

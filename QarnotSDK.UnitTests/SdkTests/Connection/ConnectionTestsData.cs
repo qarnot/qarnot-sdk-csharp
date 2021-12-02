@@ -59,6 +59,63 @@ namespace QarnotSDK.UnitTests
             ""runningPoolCount"": 12
         }";
 
+        public const string GetUserHardwareConstraints = @"{
+            ""data"":
+            [
+                {
+                    ""discriminator"": ""MinimumCoreHardwareConstraint"",
+                    ""coreCount"": 16
+                },
+                {
+                    ""discriminator"": ""MaximumCoreHardwareConstraint"",
+                    ""coreCount"": 32
+                },
+                {
+                    ""discriminator"": ""MinimumRamCoreRatioHardwareConstraint"",
+                    ""minimumMemoryGBCoreRatio"": 0.4
+                },
+                {
+                    ""discriminator"": ""MaximumRamCoreRatioHardwareConstraint"",
+                    ""maximumMemoryGBCoreRatio"": 0.7
+                },
+                {
+                    ""discriminator"": ""SpecificHardwareConstraint"",
+                    ""specificationKey"": ""R7-2700X""
+                },
+                {
+                    ""discriminator"": ""MinimumRamHardwareConstraint"",
+                    ""minimumMemoryMB"": 4000
+                },
+                {
+                    ""discriminator"": ""MaximumRamHardwareConstraint"",
+                    ""maximumMemoryMB"": 32000
+                },
+                {
+                    ""discriminator"": ""GpuHardwareConstraint""
+                },
+            ],
+            ""offset"": 0,
+            ""limit"": 50,
+            ""total"": 8
+        }";
+
+        public const string GetLimitedUserHardwareConstraints = @"{
+            ""data"":
+            [
+                {
+                    ""discriminator"": ""MinimumCoreHardwareConstraint"",
+                    ""coreCount"": 16
+                },
+                {
+                    ""discriminator"": ""MaximumCoreHardwareConstraint"",
+                    ""coreCount"": 32
+                }
+            ],
+            ""offset"": 0,
+            ""limit"": 2,
+            ""total"": 8
+        }";
+
         public const string GetJobBody = @"{
             ""uuid"": ""f78fdff8-7081-46e1-bb2f-d9cd4e185ece"",
             ""name"": ""default_name"",

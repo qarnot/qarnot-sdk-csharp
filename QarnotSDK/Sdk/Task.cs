@@ -288,6 +288,20 @@ namespace QarnotSDK {
         }
 
         /// <summary>
+        /// The task labels.
+        /// </summary>
+        /// <returns>return all Labels</returns>
+        [InternalDataApiName(Name="Labels")]
+        public virtual Dictionary<string, string> Labels {
+            get {
+                if (_taskApi.Labels == null) {
+                    _taskApi.Labels = new Dictionary<string, string>();
+                }
+                return _taskApi.Labels;
+            }
+        }
+
+        /// <summary>
         /// The Task Dependencies
 	/// Guid list of tasks to wait before running
         /// The task need to be in a job with depencendies activated
@@ -571,6 +585,22 @@ namespace QarnotSDK {
             }
         }
 
+        /// <summary>
+        /// The task hardware constraints list.
+        /// </summary>
+        [InternalDataApiName(Name="HardwareConstraints")]
+        public virtual HardwareConstraints HardwareConstraints
+        {
+            get
+            {
+                return _taskApi.HardwareConstraints;
+            }
+            set
+            {
+                _taskApi.HardwareConstraints = value;
+            }
+        }
+
 
         /// <summary>
         /// Queue in-pool task execution behind pool resources update.
@@ -819,6 +849,21 @@ namespace QarnotSDK {
             }
         }
 
+        /// <summary>
+        /// Set a label. If the label already exists, it is replaced (or removed if value is null).
+        /// </summary>
+        /// <param name="name">Label name.</param>
+        /// <param name="value">Label value. If null, the label is deleted.</param>
+        public virtual void SetLabel(string name, string value) {
+            if (value == null)
+            {
+                Labels.Remove(name);
+            }
+            else
+            {
+                Labels[name] = value;
+            }
+        }
 
         /// <summary>
         /// Run this task.
@@ -977,14 +1022,14 @@ namespace QarnotSDK {
                             Filtering = resQBucket.Filtering is BucketFilteringPrefix prefixFiltering ?
                                 new ApiBucketFiltering {
                                     PrefixFiltering = new ApiBucketFilteringPrefix {
-                                        Prefix = prefixFiltering.Prefix
+                                        Prefix = _api._shouldSanitizeBucketPaths ? Utils.GetSanitizedBucketPath(prefixFiltering.Prefix, _api._showBucketWarnings) : prefixFiltering.Prefix
                                     }
                                 }
                                 : null,
                             ResourcesTransformation = resQBucket.ResourcesTransformation is ResourcesTransformationStripPrefix stripPrefixTransformation ?
                                 new ApiResourcesTransformation {
                                     StripPrefix = new ApiResourcesTransformationStripPrefix {
-                                        Prefix = stripPrefixTransformation.Prefix
+                                        Prefix = _api._shouldSanitizeBucketPaths ? Utils.GetSanitizedBucketPath(stripPrefixTransformation.Prefix, _api._showBucketWarnings) : stripPrefixTransformation.Prefix
                                     }
                                 }
                                 : null,
@@ -1006,7 +1051,7 @@ namespace QarnotSDK {
             using (var response = await _api._client.PostAsJsonAsync<TaskApi>("tasks", _taskApi, cancellationToken))
             {
                 await Utils.LookForErrorAndThrowAsync(_api._client, response);
-                var result = await response.Content.ReadAsAsync<TaskApi>(cancellationToken);
+                var result = await response.Content.ReadAsAsync<TaskApi>(Utils.GetCustomResponseFormatter(), cancellationToken);
                 await PostSubmitAsync(result, cancellationToken);
             }
         }
@@ -1102,7 +1147,7 @@ namespace QarnotSDK {
             {
                 await Utils.LookForErrorAndThrowAsync(_api._client, response);
 
-                var result = await response.Content.ReadAsAsync<TaskApi>();
+                var result = await response.Content.ReadAsAsync<TaskApi>(Utils.GetCustomResponseFormatter(), cancellationToken);
                 await SyncFromApiObjectAsync(result);
 
                 if (updateQBucketsInfo) {

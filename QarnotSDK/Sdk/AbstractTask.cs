@@ -125,6 +125,10 @@ namespace QarnotSDK {
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
         public virtual async Task TriggerSnapshotAsync(string whitelist = null, string blacklist = null, QBucket bucket = null, string bucketPrefix = null, CancellationToken cancellationToken = default(CancellationToken)) {
+            if (_api._shouldSanitizeBucketPaths)
+            {
+                bucketPrefix = Utils.GetSanitizedBucketPath(bucketPrefix, _api._showBucketWarnings, false);
+            }
             var s = new UniqueSnapshot()
             {
                 Whitelist = whitelist,
@@ -160,6 +164,10 @@ namespace QarnotSDK {
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
         public virtual async Task TriggerPeriodicSnapshotAsync(uint interval, string whitelist = null, string blacklist = null, QBucket bucket = null, string bucketPrefix = null, CancellationToken cancellationToken = default(CancellationToken)) {
+            if (_api._shouldSanitizeBucketPaths)
+            {
+                bucketPrefix = Utils.GetSanitizedBucketPath(bucketPrefix, _api._showBucketWarnings, false);
+            }
             var s = new PeriodicSnapshot()
             {
                 Interval = Convert.ToInt32(interval),

@@ -231,6 +231,10 @@ namespace QarnotSDK {
                 throw new IOException("No such file " + localFile);
 
             var remoteName = String.IsNullOrEmpty(remoteFile) ? Path.GetFileName(localFile) : remoteFile;
+            if (Connection._shouldSanitizeBucketPaths)
+            {
+                remoteName = Utils.GetSanitizedBucketPath(remoteName, Connection._showBucketWarnings);
+            }
             using (var fileStream = new FileStream(localFile, FileMode.Open, FileAccess.Read)) {
                 await UploadStreamAsync(fileStream, remoteName, cancellationToken);
             }
@@ -245,6 +249,10 @@ namespace QarnotSDK {
         /// <returns></returns>
         public virtual async Task DownloadFileAsync(string remoteFile, string localFile, CancellationToken cancellationToken = default(CancellationToken)) {
             try {
+                if (Connection._shouldSanitizeBucketPaths)
+                {
+                    remoteFile = Utils.GetSanitizedBucketPath(remoteFile, Connection._showBucketWarnings);
+                }
                 using (var fileStream = new FileStream(localFile, FileMode.Create, FileAccess.Write, FileShare.ReadWrite)) {
                     using (var httpStream = await DownloadStreamAsync(remoteFile, cancellationToken)) {
                         await httpStream.CopyToAsync(fileStream);
@@ -268,6 +276,10 @@ namespace QarnotSDK {
         /// <returns></returns>
         public virtual async Task UploadStringAsync(string content, string remoteFile, Encoding encoding = null, CancellationToken cancellationToken = default(CancellationToken)) {
             if (encoding == null) encoding = Encoding.UTF8;
+            if (Connection._shouldSanitizeBucketPaths)
+            {
+                remoteFile = Utils.GetSanitizedBucketPath(remoteFile, Connection._showBucketWarnings);
+            }
             using (var stream = new MemoryStream(encoding.GetBytes(content))) {
                 await UploadStreamAsync(stream, remoteFile, cancellationToken);
             }
@@ -282,6 +294,10 @@ namespace QarnotSDK {
         /// <returns></returns>
         public virtual async Task<string> DownloadStringAsync(string remoteFile, Encoding encoding = null, CancellationToken cancellationToken = default(CancellationToken)) {
             if (encoding == null) encoding = Encoding.UTF8;
+            if (Connection._shouldSanitizeBucketPaths)
+            {
+                remoteFile = Utils.GetSanitizedBucketPath(remoteFile, Connection._showBucketWarnings);
+            }
             using (var stream = new StreamReader(await DownloadStreamAsync(remoteFile, cancellationToken), encoding)) {
                 return await stream.ReadToEndAsync();
             }
@@ -296,6 +312,10 @@ namespace QarnotSDK {
         /// <returns></returns>
         public virtual async Task UploadBytesAsync(byte[] data, string remoteFile, CancellationToken cancellationToken = default(CancellationToken)) {
             using (var stream = new MemoryStream(data)) {
+            if (Connection._shouldSanitizeBucketPaths)
+            {
+                remoteFile = Utils.GetSanitizedBucketPath(remoteFile, Connection._showBucketWarnings);
+            }
                 await UploadStreamAsync(stream, remoteFile, cancellationToken);
             }
         }
@@ -310,16 +330,9 @@ namespace QarnotSDK {
         /// <returns></returns>
         public virtual async Task SyncRemoteToLocalAsync(string localFolderPath, CancellationToken cancellationToken, bool dontDelete = true, string remoteFolderRelativePath = "") {
             Directory.CreateDirectory(localFolderPath);
-
-            if (remoteFolderRelativePath == default)
+            if (Connection._shouldSanitizeBucketPaths)
             {
-                remoteFolderRelativePath = string.Empty;
-            }
-
-            remoteFolderRelativePath = remoteFolderRelativePath.Trim();
-            while(remoteFolderRelativePath.StartsWith("/", ignoreCase: true, CultureInfo.InvariantCulture))
-            {
-                remoteFolderRelativePath = remoteFolderRelativePath.Substring(1, remoteFolderRelativePath.Length -1);
+                remoteFolderRelativePath = Utils.GetSanitizedBucketPath(remoteFolderRelativePath, Connection._showBucketWarnings);
             }
 
             List<QAbstractStorageEntry> existingFiles;
@@ -403,6 +416,10 @@ namespace QarnotSDK {
         /// <param name="remoteFolderRelativePath">Optional, allows to sync to a sub-folder of this storage.</param>
         /// <returns></returns>
         public virtual async Task SyncLocalToRemoteAsync(string localFolderPath, CancellationToken cancellationToken, bool dontDelete = true, string remoteFolderRelativePath = "") {
+            if (Connection._shouldSanitizeBucketPaths)
+            {
+                remoteFolderRelativePath = Utils.GetSanitizedBucketPath(remoteFolderRelativePath, Connection._showBucketWarnings);
+            }
             List<QAbstractStorageEntry> existingFiles;
             try {
                 existingFiles = await ListEntriesAsync(remoteFolderRelativePath, cancellationToken);
@@ -486,6 +503,10 @@ namespace QarnotSDK {
                 throw new IOException("No such folder " + localFolderPath);
 
             var remoteName = String.IsNullOrEmpty(remoteFolderPath) ? Path.GetFileName(localFolderPath) : remoteFolderPath;
+            if (Connection._shouldSanitizeBucketPaths)
+            {
+                remoteName = Utils.GetSanitizedBucketPath(remoteName, Connection._showBucketWarnings);
+            }
             await SyncLocalToRemoteAsync(localFolderPath, cancellationToken, true, remoteName);
         }
 

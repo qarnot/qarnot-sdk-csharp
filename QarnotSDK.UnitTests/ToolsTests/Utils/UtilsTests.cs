@@ -93,5 +93,12 @@ namespace QarnotSDK.UnitTests
             { "test", "test", "test", "test", "test", "test", "test", "test" };
             Assert.False(test4.IsNullOrEmpty());
         }
+
+        [TestCase("/some//Invalid///Path/", "some/Invalid/Path/")]
+        [TestCase(@"\some\\Invalid\\\Path\", @"some\Invalid\Path\")]
+        public void GetSanitizeBucketPathRemoveExtraSlashes(string originalPath, string expectedSanitizedPath)
+        {
+            Assert.AreEqual(expectedSanitizedPath, Utils.GetSanitizedBucketPath(originalPath), "the path should be sanitized (leading and multiple consecutive separators should be removed)");
+        }
     }
 }

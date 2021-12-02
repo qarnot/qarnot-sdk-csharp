@@ -12,7 +12,9 @@ namespace QarnotSDK {
     /// <summary>
     /// Abstract base class for bucket filtering
     /// </summary>
-    public abstract class ABucketFiltering {}
+    public abstract class ABucketFiltering {
+        internal abstract ABucketFiltering SanitizePaths(bool showWarnings);
+    }
 
 
     /// <summary>
@@ -28,13 +30,20 @@ namespace QarnotSDK {
             Prefix = prefix;
         }
 
+        internal override ABucketFiltering SanitizePaths(bool showWarnings = true)
+        {
+            Prefix = Utils.GetSanitizedBucketPath(Prefix, showWarnings);
+            return this;
+        }
     }
 
 
     /// <summary>
     /// Abstract base class for resources transformation
     /// </summary>
-    public abstract class AResourcesTransformation {}
+    public abstract class AResourcesTransformation {
+        internal abstract AResourcesTransformation SanitizePaths(bool showWarnings = true);
+    }
 
 
     /// <summary>
@@ -48,6 +57,12 @@ namespace QarnotSDK {
         /// <param name="prefix">The prefix to strip</param>
         public ResourcesTransformationStripPrefix(string prefix) {
             Prefix = prefix;
+        }
+
+        internal override AResourcesTransformation SanitizePaths(bool showWarnings = true)
+        {
+            Prefix = Utils.GetSanitizedBucketPath(Prefix, showWarnings);
+            return this;
         }
     }
 
@@ -321,9 +336,17 @@ namespace QarnotSDK {
              _api = qapi;
             Shortname = advancedBucket.BucketName;
             if (advancedBucket.Filtering?.PrefixFiltering != null) {
+                if (_api._shouldSanitizeBucketPaths)
+                {
+                    advancedBucket.Filtering.PrefixFiltering.Prefix = Utils.GetSanitizedBucketPath(advancedBucket.Filtering.PrefixFiltering.Prefix, _api._showBucketWarnings);
+                }
                 Filtering = new BucketFilteringPrefix(advancedBucket.Filtering.PrefixFiltering.Prefix);
             }
             if (advancedBucket.ResourcesTransformation?.StripPrefix != null) {
+                if (_api._shouldSanitizeBucketPaths)
+                {
+                    advancedBucket.ResourcesTransformation.StripPrefix.Prefix = Utils.GetSanitizedBucketPath(advancedBucket.ResourcesTransformation.StripPrefix.Prefix, _api._showBucketWarnings);
+                }
                 ResourcesTransformation = new ResourcesTransformationStripPrefix(advancedBucket.ResourcesTransformation.StripPrefix.Prefix);
             }
 
@@ -458,6 +481,10 @@ namespace QarnotSDK {
         {
             if (_api.IsReadOnly) throw new Exception("Can't upload to buckets, this connection is configured in read-only mode");
             string remoteS3FileKey = pathDirectorySeparator == default(char) ? remoteFile : remoteFile.Replace(pathDirectorySeparator, S3DirectorySeparator);
+            if (_api._shouldSanitizeBucketPaths)
+            {
+                remoteS3FileKey = Utils.GetSanitizedBucketPath(remoteS3FileKey, _api._showBucketWarnings);
+            }
             if (_api.StorageUploadPartSize <= 0) {
                 using (var s3Client = await _api.GetS3ClientAsync(cancellationToken)) {
                     var s3Request = new Amazon.S3.Model.PutObjectRequest {
@@ -503,6 +530,10 @@ namespace QarnotSDK {
         public override async Task<Stream> DownloadStreamAsync(string remoteFile, char pathDirectorySeparator, CancellationToken cancellationToken = default(CancellationToken)) {
             using (var s3Client = await _api.GetS3ClientAsync(cancellationToken)) {
                 string remoteS3FileKey = pathDirectorySeparator == default(char) ? remoteFile : remoteFile.Replace(pathDirectorySeparator, S3DirectorySeparator);
+                if (_api._shouldSanitizeBucketPaths)
+                {
+                    remoteS3FileKey= Utils.GetSanitizedBucketPath(remoteS3FileKey, _api._showBucketWarnings);
+                }
                 var s3Request = new Amazon.S3.Model.GetObjectRequest {
                     BucketName = Shortname,
                     Key = remoteS3FileKey,
@@ -523,7 +554,11 @@ namespace QarnotSDK {
             if (_api.IsReadOnly) throw new Exception("Can't delete entries from buckets, this connection is configured in read-only mode");
 
             using (var s3Client = await _api.GetS3ClientAsync(cancellationToken)) {
-                if (remotePath.EndsWith("/")) {
+                if (_api._shouldSanitizeBucketPaths)
+                {
+                    remotePath = Utils.GetSanitizedBucketPath(remotePath, _api._showBucketWarnings);
+                }
+                if (remotePath.EndsWith("/") || string.IsNullOrWhiteSpace(remotePath)) {
                     // It's a 'folder', we have to delete all the sub keys first
                     var s3ListRequest = new Amazon.S3.Model.ListObjectsRequest {
                         BucketName = Shortname,
@@ -564,8 +599,10 @@ namespace QarnotSDK {
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>A list of QAbstractStorageEntry</returns>
         public override async Task<List<QAbstractStorageEntry>> ListEntriesAsync(string remoteFolder="", CancellationToken cancellationToken = default(CancellationToken)) {
-            if (remoteFolder == null || remoteFolder == "/")
-                remoteFolder = "";
+            if (_api._shouldSanitizeBucketPaths)
+            {
+                remoteFolder = Utils.GetSanitizedBucketPath(remoteFolder, _api._showBucketWarnings);
+            }
             if (remoteFolder.Length != 0 && !remoteFolder.EndsWith("/"))
                 remoteFolder += '/';
 
@@ -621,9 +658,9 @@ namespace QarnotSDK {
         {
             using (var s3Client = await _api.GetS3ClientAsync(cancellationToken))
             {
-                if (string.IsNullOrWhiteSpace(prefix) || prefix == "/")
+                if (_api._shouldSanitizeBucketPaths)
                 {
-                    prefix = string.Empty;
+                    prefix = Utils.GetSanitizedBucketPath(prefix, _api._showBucketWarnings);
                 }
 
                 var s3Request = new Amazon.S3.Model.ListObjectsRequest
@@ -657,6 +694,10 @@ namespace QarnotSDK {
         /// <param name="filtering"> The filtering to add </param>
         public QBucket WithFiltering(ABucketFiltering filtering) {
             var newBucket = new QBucket(this);
+            if (_api._shouldSanitizeBucketPaths)
+            {
+                filtering.SanitizePaths(_api._showBucketWarnings);
+            }
             newBucket.Filtering = filtering;
             return newBucket;
         }
@@ -666,6 +707,10 @@ namespace QarnotSDK {
         /// <param name="transformation"> The resources transformation to add </param>
         public QBucket WithResourcesTransformation(AResourcesTransformation transformation) {
             var newBucket = new QBucket(this);
+            if (_api._shouldSanitizeBucketPaths)
+            {
+                transformation.SanitizePaths(_api._showBucketWarnings);
+            }
             newBucket.ResourcesTransformation = transformation;
             return newBucket;
         }

@@ -1,18 +1,28 @@
 using System;
-using System.Linq;
-using System.Web;
-using System.Net.Http;
-using System.Reflection;
-using System.Net.Http.Headers;
+using System.Collections;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
+using System.Web;
 
 namespace QarnotSDK {
     /// <summary>
     /// This class allows you to access the Qarnot compute API and construct other objects: QTask, QPool
     /// </summary>
     public partial class Connection {
+        /// <summary>
+        /// Feature flag to enable the sanitization of the bucket paths (removing leading and duplicated slashes)
+        /// </summary>
+        internal bool _shouldSanitizeBucketPaths = true;
+        /// <summary>
+        /// Flag to show the warnings when bucket path is sanitized (if sanitization is enabled with _shouldSanitizeBucketPaths=true)
+        /// </summary>
+        internal bool _showBucketWarnings = true;
         internal HttpClient _client;
         internal HttpClientHandler _httpClientHandler;
         internal IRetryHandler _retryHandler;
@@ -131,8 +141,9 @@ namespace QarnotSDK {
         /// <param name="httpClientHandler">An optional HttpClientHandler if you need to setup a proxy for example.</param>
         /// <param name="retryHandler">An optional IRetryHandler if you need to setup retry for transient error (default to exponential).</param>
         /// <param name="forceStoragePathStyle">An optional forceStoragePathStyle to force path style for request to storage.</param>
-        public Connection(string token, HttpClientHandler httpClientHandler = null, IRetryHandler retryHandler = null, bool forceStoragePathStyle = false)
-            : this("https://api.qarnot.com", token, httpClientHandler, retryHandler, forceStoragePathStyle) {
+        /// <param name="sanitizeBucketPaths">A flag to enable the sanitization of bucket paths (removing leading and duplicated slashes). Enabled by default</param>
+        public Connection(string token, HttpClientHandler httpClientHandler = null, IRetryHandler retryHandler = null, bool forceStoragePathStyle = false, bool sanitizeBucketPaths = true)
+            : this("https://api.qarnot.com", token, httpClientHandler, retryHandler, forceStoragePathStyle, sanitizeBucketPaths) {
         }
 
         /// <summary>
@@ -143,8 +154,9 @@ namespace QarnotSDK {
         /// <param name="httpClientHandler">An optional HttpClientHandler if you need to setup a proxy for example.</param>
         /// <param name="retryHandler">An optional IRetryHandler if you need to setup retry for transient error (default to exponential).</param>
         /// <param name="forceStoragePathStyle">An optional forceStoragePathStyle to force path style for request to storage.</param>
-        public Connection(string uri, string token, HttpClientHandler httpClientHandler = null, IRetryHandler retryHandler = null, bool forceStoragePathStyle = false)
-            : this(uri, null, token, httpClientHandler, retryHandler, forceStoragePathStyle) {
+        /// <param name="sanitizeBucketPaths">A flag to enable the sanitization of bucket paths (removing leading and duplicated slashes). Enabled by default</param>
+        public Connection(string uri, string token, HttpClientHandler httpClientHandler = null, IRetryHandler retryHandler = null, bool forceStoragePathStyle = false, bool sanitizeBucketPaths = true)
+            : this(uri, null, token, httpClientHandler, retryHandler, forceStoragePathStyle, sanitizeBucketPaths: sanitizeBucketPaths) {
         }
 
         /// <summary>
@@ -159,10 +171,25 @@ namespace QarnotSDK {
         /// <param name="forceStoragePathStyle">An optional forceStoragePathStyle to force path style for request to storage.</param>
         /// <param name="delegatingHandlers">A list of hander used by the api connection. Default will create a list with the QarnotSrvHandler.</param>
         /// <param name="dnsSrvLoadBalancingCacheTime">the cache time in minutes before retrieve the values of the QarnotSrvHandler. Unless you have a strong reason, you should keep the default value.</param>
-        public Connection(string uri, string storageUri, string token, HttpClientHandler httpClientHandler = null, IRetryHandler retryHandler = null, bool forceStoragePathStyle = false, List<DelegatingHandler> delegatingHandlers = null, uint? dnsSrvLoadBalancingCacheTime = 5) {
+        /// <param name="sanitizeBucketPaths">A flag to enable the sanitization of bucket paths (removing leading and duplicated slashes). Enabled by default</param>
+        /// <param name="showBucketWarnings">A flag to choose to show or remove the warnings during bucket sanitization. Enabled by default</param>
+        public Connection(
+            string uri,
+            string storageUri,
+            string token,
+            HttpClientHandler httpClientHandler = null,
+            IRetryHandler retryHandler = null,
+            bool forceStoragePathStyle = false,
+            List<DelegatingHandler> delegatingHandlers = null,
+            uint? dnsSrvLoadBalancingCacheTime = 5,
+            bool sanitizeBucketPaths = true,
+            bool showBucketWarnings = true)
+        {
             Uri = new Uri(uri);
             if (storageUri != null) StorageUri = new Uri(storageUri);
             ForceStoragePathStyle = forceStoragePathStyle;
+            _shouldSanitizeBucketPaths = sanitizeBucketPaths;
+            _showBucketWarnings = showBucketWarnings;
             Token = token;
             StorageSecretKey = token;
             _httpClientHandler = httpClientHandler ?? new HttpClientHandler();
@@ -405,7 +432,7 @@ namespace QarnotSDK {
             {
                 await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
 
-                var qapiTaskList = await response.Content.ReadAsAsync<List<TaskApi>>(cancellationToken);
+                var qapiTaskList = await response.Content.ReadAsAsync<List<TaskApi>>(Utils.GetCustomResponseFormatter(), cancellationToken);
                 var ret = new List<QTask>();
                 foreach (var item in qapiTaskList) {
                     ret.Add(await QTask.CreateAsync(this, item));
@@ -462,7 +489,7 @@ namespace QarnotSDK {
             {
                 await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
 
-                var qapiTaskList = await response.Content.ReadAsAsync<List<TaskApi>>(cancellationToken);
+                var qapiTaskList = await response.Content.ReadAsAsync<List<TaskApi>>(Utils.GetCustomResponseFormatter(), cancellationToken);
                 var ret = new List<QTaskSummary>();
                 foreach (var item in qapiTaskList) {
                     ret.Add(await QTaskSummary.CreateAsync(this, item));
@@ -483,7 +510,7 @@ namespace QarnotSDK {
             {
                 await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
 
-                var qapiTaskSummariesPages = await response.Content.ReadAsAsync<PaginatedResponseAPI<TaskApi>>(cancellationToken);
+                var qapiTaskSummariesPages = await response.Content.ReadAsAsync<PaginatedResponseAPI<TaskApi>>(Utils.GetCustomResponseFormatter(), cancellationToken);
                 return await PaginatedResponse<QTaskSummary>.CreateAsync(this, qapiTaskSummariesPages, QTaskSummary.CreateAsync);
             }
         }
@@ -500,7 +527,7 @@ namespace QarnotSDK {
             {
                 await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
 
-                var qapiTaskPages = await response.Content.ReadAsAsync<PaginatedResponseAPI<TaskApi>>(cancellationToken);
+                var qapiTaskPages = await response.Content.ReadAsAsync<PaginatedResponseAPI<TaskApi>>(Utils.GetCustomResponseFormatter(), cancellationToken);
                 return await PaginatedResponse<QTask>.CreateAsync(this, qapiTaskPages, QTask.CreateAsync);
             }
         }
@@ -565,7 +592,7 @@ namespace QarnotSDK {
             using (var response = await _client.PostAsJsonAsync<PaginatedRequestApi<QPool>>("pools/paginate", pageDetails._pageRequestApi, cancellationToken))
             {
                 await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
-                var qapiPoolPages = await response.Content.ReadAsAsync<PaginatedResponseAPI<PoolApi>>(cancellationToken);
+                var qapiPoolPages = await response.Content.ReadAsAsync<PaginatedResponseAPI<PoolApi>>(Utils.GetCustomResponseFormatter(), cancellationToken);
                 return await PaginatedResponse<QPool>.CreateAsync(this, qapiPoolPages, QPool.CreateAsync);
             }
         }
@@ -581,7 +608,7 @@ namespace QarnotSDK {
             using (var response = await _client.PostAsJsonAsync<PaginatedRequestApi<QPoolSummary>>("pools/summaries/paginate", pageDetails._pageRequestApi, cancellationToken))
             {
                 await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
-                var qapiPoolSummariesPages = await response.Content.ReadAsAsync<PaginatedResponseAPI<PoolApi>>(cancellationToken);
+                var qapiPoolSummariesPages = await response.Content.ReadAsAsync<PaginatedResponseAPI<PoolApi>>(Utils.GetCustomResponseFormatter(), cancellationToken);
                 return await PaginatedResponse<QPoolSummary>.CreateAsync(this, qapiPoolSummariesPages, QPoolSummary.CreateAsync);
             }
         }
@@ -597,7 +624,7 @@ namespace QarnotSDK {
             {
                 await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
 
-                var qapiPoolList = await response.Content.ReadAsAsync<List<PoolApi>>(cancellationToken);
+                var qapiPoolList = await response.Content.ReadAsAsync<List<PoolApi>>(Utils.GetCustomResponseFormatter(), cancellationToken);
                 var ret = new List<QPool>();
                 foreach (var item in qapiPoolList) {
                     ret.Add(new QPool(this, item));
@@ -914,6 +941,49 @@ namespace QarnotSDK {
                 return list.Constants;
             }
         }
+
+        /// <summary>
+        /// Retrieve a page of your user available hardware constraints.
+        /// </summary>
+        /// <param name="pageOffset">Response page limitation details</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>The complete user hardware constraints list.</returns>
+        public virtual async Task<OffsetPageResponse<HardwareConstraint>> RetrieveUserHardwareConstraintsPageAsync(OffsetPageRequest pageOffset, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            using (var response = await _client.GetAsync(
+                String.Format("/hardware-constraints{0}", pageOffset != default ? String.Format("?{0}", pageOffset.GetAsQueryString()) : ""),
+                cancellationToken))
+            {
+                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
+
+                var hardwareConstraints = await response.Content.ReadAsAsync<OffsetPageResponse<HardwareConstraint>>(
+                    Utils.GetCustomResponseFormatter(),
+                    cancellationToken);
+                return hardwareConstraints;
+            }
+        }
+
+        /// <summary>
+        /// Retrieve all available hardware constraints.
+        /// </summary>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>The user hardware constraints list.</returns>
+        public virtual async Task<IEnumerable<HardwareConstraint>> RetrieveUserHardwareConstraintsAsync(CancellationToken cancellationToken = default(CancellationToken))
+        {
+            var hardwareConstraints = new List<HardwareConstraint>();
+            bool shouldIterate;
+            var nextOffset = 0;
+
+            do
+            {
+                var hardwareConstraintsPage = await RetrieveUserHardwareConstraintsPageAsync(new OffsetPageRequest(Int32.MaxValue, nextOffset), cancellationToken);
+                hardwareConstraints.AddRange(hardwareConstraintsPage.Data ?? new List<HardwareConstraint>());
+                nextOffset = hardwareConstraintsPage.Limit + hardwareConstraintsPage.Offset;
+                shouldIterate = hardwareConstraintsPage.Total > nextOffset;
+            } while (shouldIterate);
+
+            return hardwareConstraints;
+        }
         #endregion
 
         #region RetrieveXByNameAsync
@@ -972,7 +1042,7 @@ namespace QarnotSDK {
             using (var response = await _client.GetAsync($"tasks/{shortname}", cancellationToken))
             {
                 await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
-                var apiTask = await response.Content.ReadAsAsync<TaskApi>(cancellationToken);
+                var apiTask = await response.Content.ReadAsAsync<TaskApi>(Utils.GetCustomResponseFormatter(), cancellationToken);
                 return await QTask.CreateAsync(this, apiTask);
             }
         }
@@ -992,7 +1062,7 @@ namespace QarnotSDK {
             using (var response = await _client.GetAsync($"tasks/{shortname}", cancellationToken))//TODO:Add the url path for summary when api is ready
             {
                 await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
-                var apiTask = await response.Content.ReadAsAsync<TaskApi>(cancellationToken);
+                var apiTask = await response.Content.ReadAsAsync<TaskApi>(Utils.GetCustomResponseFormatter(), cancellationToken);
                 return await QTaskSummary.CreateAsync(this, apiTask);
             }
         }
@@ -1007,7 +1077,7 @@ namespace QarnotSDK {
             using (var response = await _client.GetAsync($"tasks/{uuid}", cancellationToken))
             {
                 await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
-                var apiTask = await response.Content.ReadAsAsync<TaskApi>(cancellationToken);
+                var apiTask = await response.Content.ReadAsAsync<TaskApi>(Utils.GetCustomResponseFormatter(), cancellationToken);
                 return await QTask.CreateAsync(this, apiTask);
             }
         }
@@ -1022,7 +1092,7 @@ namespace QarnotSDK {
             using (var response = await _client.GetAsync($"tasks/{uuid}", cancellationToken))//TODO:Add the url path for summary when api is ready
             {
                 await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
-                var apiTask = await response.Content.ReadAsAsync<TaskApi>(cancellationToken);
+                var apiTask = await response.Content.ReadAsAsync<TaskApi>(Utils.GetCustomResponseFormatter(), cancellationToken);
                 return await QTaskSummary.CreateAsync(this, apiTask);
             }
         }
@@ -1118,7 +1188,7 @@ namespace QarnotSDK {
             using (var response = await _client.GetAsync($"pools/{shortname}", cancellationToken))
             {
                 await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
-                var apiPool = await response.Content.ReadAsAsync<PoolApi>(cancellationToken);
+                var apiPool = await response.Content.ReadAsAsync<PoolApi>(Utils.GetCustomResponseFormatter(), cancellationToken);
                 return await QPool.CreateAsync(this, apiPool);
             }
         }
@@ -1138,7 +1208,7 @@ namespace QarnotSDK {
             using (var response = await _client.GetAsync($"pools/{shortname}", cancellationToken))//TODO:Add the url path for summary when api is ready
             {
                 await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
-                var apiPool = await response.Content.ReadAsAsync<PoolApi>(cancellationToken);
+                var apiPool = await response.Content.ReadAsAsync<PoolApi>(Utils.GetCustomResponseFormatter(), cancellationToken);
                 return await QPoolSummary.CreateAsync(this, apiPool);
             }
         }
@@ -1152,7 +1222,7 @@ namespace QarnotSDK {
             using (var response = await _client.GetAsync($"pools/{uuid}", cancellationToken))
             {
                 await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
-                var apiPool = await response.Content.ReadAsAsync<PoolApi>(cancellationToken);
+                var apiPool = await response.Content.ReadAsAsync<PoolApi>(Utils.GetCustomResponseFormatter(), cancellationToken);
                 return await QPool.CreateAsync(this, apiPool);
             }
         }
@@ -1167,7 +1237,7 @@ namespace QarnotSDK {
             using (var response = await _client.GetAsync($"pools/{uuid}", cancellationToken))//TODO:Add the url path for summary when api is ready
             {
                 await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
-                var apiPool = await response.Content.ReadAsAsync<PoolApi>(cancellationToken);
+                var apiPool = await response.Content.ReadAsAsync<PoolApi>(Utils.GetCustomResponseFormatter(), cancellationToken);
                 return await QPoolSummary.CreateAsync(this, apiPool);
             }
         }
@@ -1185,7 +1255,7 @@ namespace QarnotSDK {
             List<QBulkTaskResponse> results;
             await Task.WhenAll(tasks.Select(task => task.PreSubmitAsync(cancellationToken)));
             using (var response = await _client.PostAsJsonAsync<List<TaskApi>>("tasks", tasks.Select(t => t._taskApi).ToList(), cancellationToken))
-                results = await response.Content.ReadAsAsync<List<QBulkTaskResponse>>(cancellationToken);
+                results = await response.Content.ReadAsAsync<List<QBulkTaskResponse>>(Utils.GetCustomResponseFormatter(), cancellationToken);
 
             // The "contract" with the api is that response should come in the same order as submission
             var errorMessage = String.Empty;

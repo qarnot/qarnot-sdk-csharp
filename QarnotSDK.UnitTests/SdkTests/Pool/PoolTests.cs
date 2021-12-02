@@ -283,12 +283,12 @@ namespace QarnotSDK.UnitTests
         }
 
         [Test]
-        public void CheckPoolPreparationCommandLineIsSendInThePoolRequest()
+        public async Task CheckPoolPreparationCommandLineIsSendInThePoolRequest()
         {
             var commanLine = "echo hello world";
             var pool = new QPool(Connect, Guid.NewGuid());
             pool.PreparationCommandLine = commanLine;
-            pool.StartAsync("profile", 5);
+            await pool.StartAsync("profile", 5);
             Assert.IsTrue(HttpHandler.ParsedRequests.Any(request => request.Content.Contains("\"CommandLine\":\"" + commanLine + "\"")));
         }
 
