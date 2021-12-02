@@ -528,6 +528,7 @@ namespace QarnotSDK {
         public bool AutoDeleteOnCompletion { get; set; }
         public TimeSpan CompletionTimeToLive { get; set; }
         public bool? WaitForPoolResourcesSynchronization { get; set; }
+        public HardwareConstraints HardwareConstraints { get; set; }
 
         internal TaskApi() {
             Constants = new List<KeyValHelper>();

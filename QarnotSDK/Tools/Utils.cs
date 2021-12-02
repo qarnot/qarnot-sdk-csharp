@@ -4,6 +4,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Net.Http.Formatting;
+using Newtonsoft.Json;
+using System.Reflection;
 
 #if (DEBUG)
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("QarnotSDK.UnitTests")]
@@ -115,5 +118,18 @@ namespace QarnotSDK {
             return path.Trim();
         }
 
+        internal static IEnumerable<MediaTypeFormatter> GetCustomResponseFormatter()
+        {
+            return new JsonMediaTypeFormatter[]
+            {
+                new JsonMediaTypeFormatter {
+                    SerializerSettings = new JsonSerializerSettings {
+                        Converters = new List<JsonConverter> {
+                            new HardwareConstraintsJsonConverter()
+                        }
+                    }
+                }
+            };
+        }
     }
 }

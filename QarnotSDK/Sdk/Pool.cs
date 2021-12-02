@@ -289,6 +289,22 @@ namespace QarnotSDK
             }
         }
 
+        /// <summary>
+        /// The pool hardware constraints list.
+        /// </summary>
+        [InternalDataApiName(Name="HardwareConstraints")]
+        public virtual HardwareConstraints HardwareConstraints
+        {
+            get
+            {
+                return _poolApi.HardwareConstraints;
+            }
+            set
+            {
+                _poolApi.HardwareConstraints = value;
+            }
+        }
+
         private Dictionary<string, string> _constants { get; set; }
 
         /// <summary>
@@ -731,7 +747,7 @@ namespace QarnotSDK
                 await Utils.LookForErrorAndThrowAsync(_api._client, response);
 
                 // Update the pool Uuid
-                var result = await response.Content.ReadAsAsync<PoolApi>(cancellationToken);
+                var result = await response.Content.ReadAsAsync<PoolApi>(Utils.GetCustomResponseFormatter(), cancellationToken);
                 _poolApi.Uuid = result.Uuid;
                 _uri = "pools/" + _poolApi.Uuid.ToString();
             }
@@ -789,7 +805,7 @@ namespace QarnotSDK
             using (var response = await _api._client.GetAsync(_uri, cancellationToken)) // get pool status
             {
                 await Utils.LookForErrorAndThrowAsync(_api._client, response);
-                var result = await response.Content.ReadAsAsync<PoolApi>(cancellationToken);
+                var result = await response.Content.ReadAsAsync<PoolApi>(Utils.GetCustomResponseFormatter(), cancellationToken);
                 await SyncFromApiObjectAsync(result);
             }
 

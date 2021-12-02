@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Reflection;
 using System.Net.Http.Headers;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Threading;
 
@@ -430,7 +431,7 @@ namespace QarnotSDK {
             {
                 await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
 
-                var qapiTaskList = await response.Content.ReadAsAsync<List<TaskApi>>(cancellationToken);
+                var qapiTaskList = await response.Content.ReadAsAsync<List<TaskApi>>(Utils.GetCustomResponseFormatter(), cancellationToken);
                 var ret = new List<QTask>();
                 foreach (var item in qapiTaskList) {
                     ret.Add(await QTask.CreateAsync(this, item));
@@ -487,7 +488,7 @@ namespace QarnotSDK {
             {
                 await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
 
-                var qapiTaskList = await response.Content.ReadAsAsync<List<TaskApi>>(cancellationToken);
+                var qapiTaskList = await response.Content.ReadAsAsync<List<TaskApi>>(Utils.GetCustomResponseFormatter(), cancellationToken);
                 var ret = new List<QTaskSummary>();
                 foreach (var item in qapiTaskList) {
                     ret.Add(await QTaskSummary.CreateAsync(this, item));
@@ -508,7 +509,7 @@ namespace QarnotSDK {
             {
                 await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
 
-                var qapiTaskSummariesPages = await response.Content.ReadAsAsync<PaginatedResponseAPI<TaskApi>>(cancellationToken);
+                var qapiTaskSummariesPages = await response.Content.ReadAsAsync<PaginatedResponseAPI<TaskApi>>(Utils.GetCustomResponseFormatter(), cancellationToken);
                 return await PaginatedResponse<QTaskSummary>.CreateAsync(this, qapiTaskSummariesPages, QTaskSummary.CreateAsync);
             }
         }
@@ -525,7 +526,7 @@ namespace QarnotSDK {
             {
                 await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
 
-                var qapiTaskPages = await response.Content.ReadAsAsync<PaginatedResponseAPI<TaskApi>>(cancellationToken);
+                var qapiTaskPages = await response.Content.ReadAsAsync<PaginatedResponseAPI<TaskApi>>(Utils.GetCustomResponseFormatter(), cancellationToken);
                 return await PaginatedResponse<QTask>.CreateAsync(this, qapiTaskPages, QTask.CreateAsync);
             }
         }
@@ -590,7 +591,7 @@ namespace QarnotSDK {
             using (var response = await _client.PostAsJsonAsync<PaginatedRequestApi<QPool>>("pools/paginate", pageDetails._pageRequestApi, cancellationToken))
             {
                 await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
-                var qapiPoolPages = await response.Content.ReadAsAsync<PaginatedResponseAPI<PoolApi>>(cancellationToken);
+                var qapiPoolPages = await response.Content.ReadAsAsync<PaginatedResponseAPI<PoolApi>>(Utils.GetCustomResponseFormatter(), cancellationToken);
                 return await PaginatedResponse<QPool>.CreateAsync(this, qapiPoolPages, QPool.CreateAsync);
             }
         }
@@ -606,7 +607,7 @@ namespace QarnotSDK {
             using (var response = await _client.PostAsJsonAsync<PaginatedRequestApi<QPoolSummary>>("pools/summaries/paginate", pageDetails._pageRequestApi, cancellationToken))
             {
                 await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
-                var qapiPoolSummariesPages = await response.Content.ReadAsAsync<PaginatedResponseAPI<PoolApi>>(cancellationToken);
+                var qapiPoolSummariesPages = await response.Content.ReadAsAsync<PaginatedResponseAPI<PoolApi>>(Utils.GetCustomResponseFormatter(), cancellationToken);
                 return await PaginatedResponse<QPoolSummary>.CreateAsync(this, qapiPoolSummariesPages, QPoolSummary.CreateAsync);
             }
         }
@@ -622,7 +623,7 @@ namespace QarnotSDK {
             {
                 await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
 
-                var qapiPoolList = await response.Content.ReadAsAsync<List<PoolApi>>(cancellationToken);
+                var qapiPoolList = await response.Content.ReadAsAsync<List<PoolApi>>(Utils.GetCustomResponseFormatter(), cancellationToken);
                 var ret = new List<QPool>();
                 foreach (var item in qapiPoolList) {
                     ret.Add(new QPool(this, item));
@@ -939,6 +940,51 @@ namespace QarnotSDK {
                 return list.Constants;
             }
         }
+
+        /// <summary>
+        /// Retrieve your user available hardware constraints list.
+        /// </summary>
+        /// <param name="pageOffset">Response page limitation details</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>The complete user hardware constraints list.</returns>
+        public virtual async Task<OffsetPageResponse<HardwareConstraint>> RetrieveUserHardwareConstraintsAsync(OffsetPageRequest pageOffset, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            using (var response = await _client.GetAsync(
+                String.Format("/hardware-constraints{0}", pageOffset != default ? String.Format("?{0}", pageOffset.GetAsQueryString()) : ""),
+                cancellationToken))
+            {
+                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
+
+                var hardwareConstraints = await response.Content.ReadAsAsync<OffsetPageResponse<HardwareConstraint>>(
+                    Utils.GetCustomResponseFormatter(),
+                    cancellationToken);
+                return hardwareConstraints;
+            }
+        }
+
+        /// <summary>
+        /// Retrieve all available hardware constraints.
+        /// </summary>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>The user hardware constraints list.</returns>
+        public virtual async IAsyncEnumerable<HardwareConstraint> RetrieveAllUserHardwareConstraintsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default(CancellationToken))
+        {
+            var shouldIterate = true;
+            var nextOffset = 0;
+            while (shouldIterate)
+            {
+                var hardwareConstraints = await RetrieveUserHardwareConstraintsAsync(new OffsetPageRequest(Int32.MaxValue, nextOffset), cancellationToken);
+                if (hardwareConstraints.Data != default)
+                {
+                    foreach (var constraint in hardwareConstraints.Data)
+                    {
+                        yield return constraint;
+                    }
+                }
+                nextOffset = hardwareConstraints.Limit + hardwareConstraints.Offset;
+                shouldIterate = hardwareConstraints.Total > nextOffset;
+            }
+        }
         #endregion
 
         #region RetrieveXByNameAsync
@@ -997,7 +1043,7 @@ namespace QarnotSDK {
             using (var response = await _client.GetAsync($"tasks/{shortname}", cancellationToken))
             {
                 await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
-                var apiTask = await response.Content.ReadAsAsync<TaskApi>(cancellationToken);
+                var apiTask = await response.Content.ReadAsAsync<TaskApi>(Utils.GetCustomResponseFormatter(), cancellationToken);
                 return await QTask.CreateAsync(this, apiTask);
             }
         }
@@ -1017,7 +1063,7 @@ namespace QarnotSDK {
             using (var response = await _client.GetAsync($"tasks/{shortname}", cancellationToken))//TODO:Add the url path for summary when api is ready
             {
                 await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
-                var apiTask = await response.Content.ReadAsAsync<TaskApi>(cancellationToken);
+                var apiTask = await response.Content.ReadAsAsync<TaskApi>(Utils.GetCustomResponseFormatter(), cancellationToken);
                 return await QTaskSummary.CreateAsync(this, apiTask);
             }
         }
@@ -1032,7 +1078,7 @@ namespace QarnotSDK {
             using (var response = await _client.GetAsync($"tasks/{uuid}", cancellationToken))
             {
                 await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
-                var apiTask = await response.Content.ReadAsAsync<TaskApi>(cancellationToken);
+                var apiTask = await response.Content.ReadAsAsync<TaskApi>(Utils.GetCustomResponseFormatter(), cancellationToken);
                 return await QTask.CreateAsync(this, apiTask);
             }
         }
@@ -1047,7 +1093,7 @@ namespace QarnotSDK {
             using (var response = await _client.GetAsync($"tasks/{uuid}", cancellationToken))//TODO:Add the url path for summary when api is ready
             {
                 await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
-                var apiTask = await response.Content.ReadAsAsync<TaskApi>(cancellationToken);
+                var apiTask = await response.Content.ReadAsAsync<TaskApi>(Utils.GetCustomResponseFormatter(), cancellationToken);
                 return await QTaskSummary.CreateAsync(this, apiTask);
             }
         }
@@ -1143,7 +1189,7 @@ namespace QarnotSDK {
             using (var response = await _client.GetAsync($"pools/{shortname}", cancellationToken))
             {
                 await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
-                var apiPool = await response.Content.ReadAsAsync<PoolApi>(cancellationToken);
+                var apiPool = await response.Content.ReadAsAsync<PoolApi>(Utils.GetCustomResponseFormatter(), cancellationToken);
                 return await QPool.CreateAsync(this, apiPool);
             }
         }
@@ -1163,7 +1209,7 @@ namespace QarnotSDK {
             using (var response = await _client.GetAsync($"pools/{shortname}", cancellationToken))//TODO:Add the url path for summary when api is ready
             {
                 await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
-                var apiPool = await response.Content.ReadAsAsync<PoolApi>(cancellationToken);
+                var apiPool = await response.Content.ReadAsAsync<PoolApi>(Utils.GetCustomResponseFormatter(), cancellationToken);
                 return await QPoolSummary.CreateAsync(this, apiPool);
             }
         }
@@ -1177,7 +1223,7 @@ namespace QarnotSDK {
             using (var response = await _client.GetAsync($"pools/{uuid}", cancellationToken))
             {
                 await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
-                var apiPool = await response.Content.ReadAsAsync<PoolApi>(cancellationToken);
+                var apiPool = await response.Content.ReadAsAsync<PoolApi>(Utils.GetCustomResponseFormatter(), cancellationToken);
                 return await QPool.CreateAsync(this, apiPool);
             }
         }
@@ -1192,7 +1238,7 @@ namespace QarnotSDK {
             using (var response = await _client.GetAsync($"pools/{uuid}", cancellationToken))//TODO:Add the url path for summary when api is ready
             {
                 await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
-                var apiPool = await response.Content.ReadAsAsync<PoolApi>(cancellationToken);
+                var apiPool = await response.Content.ReadAsAsync<PoolApi>(Utils.GetCustomResponseFormatter(), cancellationToken);
                 return await QPoolSummary.CreateAsync(this, apiPool);
             }
         }
@@ -1210,7 +1256,7 @@ namespace QarnotSDK {
             List<QBulkTaskResponse> results;
             await Task.WhenAll(tasks.Select(task => task.PreSubmitAsync(cancellationToken)));
             using (var response = await _client.PostAsJsonAsync<List<TaskApi>>("tasks", tasks.Select(t => t._taskApi).ToList(), cancellationToken))
-                results = await response.Content.ReadAsAsync<List<QBulkTaskResponse>>(cancellationToken);
+                results = await response.Content.ReadAsAsync<List<QBulkTaskResponse>>(Utils.GetCustomResponseFormatter(), cancellationToken);
 
             // The "contract" with the api is that response should come in the same order as submission
             var errorMessage = String.Empty;

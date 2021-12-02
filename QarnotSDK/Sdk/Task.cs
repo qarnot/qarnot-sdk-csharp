@@ -585,6 +585,22 @@ namespace QarnotSDK {
             }
         }
 
+        /// <summary>
+        /// The task hardware constraints list.
+        /// </summary>
+        [InternalDataApiName(Name="HardwareConstraints")]
+        public virtual HardwareConstraints HardwareConstraints
+        {
+            get
+            {
+                return _taskApi.HardwareConstraints;
+            }
+            set
+            {
+                _taskApi.HardwareConstraints = value;
+            }
+        }
+
 
         /// <summary>
         /// Queue in-pool task execution behind pool resources update.
@@ -1035,7 +1051,7 @@ namespace QarnotSDK {
             using (var response = await _api._client.PostAsJsonAsync<TaskApi>("tasks", _taskApi, cancellationToken))
             {
                 await Utils.LookForErrorAndThrowAsync(_api._client, response);
-                var result = await response.Content.ReadAsAsync<TaskApi>(cancellationToken);
+                var result = await response.Content.ReadAsAsync<TaskApi>(Utils.GetCustomResponseFormatter(), cancellationToken);
                 await PostSubmitAsync(result, cancellationToken);
             }
         }
@@ -1131,7 +1147,7 @@ namespace QarnotSDK {
             {
                 await Utils.LookForErrorAndThrowAsync(_api._client, response);
 
-                var result = await response.Content.ReadAsAsync<TaskApi>();
+                var result = await response.Content.ReadAsAsync<TaskApi>(Utils.GetCustomResponseFormatter(), cancellationToken);
                 await SyncFromApiObjectAsync(result);
 
                 if (updateQBucketsInfo) {
