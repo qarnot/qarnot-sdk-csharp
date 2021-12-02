@@ -80,5 +80,40 @@ namespace QarnotSDK {
             return handlers.First();
         }
 
+        internal static string GetSanitizedBucketPath(string path, bool showWarnings = true, bool ensureNotNull = true)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return ensureNotNull ? string.Empty : path;
+            }
+            var originalPath = path;
+            var warnings = "";
+            var directorySeparators = new[]{'/', '\\'};
+            foreach (var separator in directorySeparators)
+            {
+                while (path.Contains(String.Format("{0}{0}",separator)))
+                {
+                    warnings = $"Warning: Bucket path should not contain duplicated slashes ('{String.Format("{0}{0}",separator)}')\n";
+                    path = path.Replace(String.Format("{0}{0}", separator), separator.ToString());
+                }
+                if (path.StartsWith(separator.ToString()))
+                {
+                    warnings += $"Warning: Bucket path should not start with a slash ('{separator}')\n";
+                    path = path.TrimStart(separator);
+                }
+            }
+
+            if (path != originalPath)
+            {
+                warnings+= $"Remote path changed from {originalPath} to {path}.\n";
+                warnings += "If bucket path sanitization is not wanted, please open a new connection with the constructor flag 'sanitizeBucketPaths: false'";
+            }
+            if (showWarnings)
+            {
+                Console.WriteLine(warnings);
+            }
+            return path.Trim();
+        }
+
     }
 }

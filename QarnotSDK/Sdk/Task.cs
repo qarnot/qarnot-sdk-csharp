@@ -977,14 +977,14 @@ namespace QarnotSDK {
                             Filtering = resQBucket.Filtering is BucketFilteringPrefix prefixFiltering ?
                                 new ApiBucketFiltering {
                                     PrefixFiltering = new ApiBucketFilteringPrefix {
-                                        Prefix = prefixFiltering.Prefix
+                                        Prefix = _api._shouldSanitizeBucketPaths ? Utils.GetSanitizedBucketPath(prefixFiltering.Prefix, _api._showBucketWarnings) : prefixFiltering.Prefix
                                     }
                                 }
                                 : null,
                             ResourcesTransformation = resQBucket.ResourcesTransformation is ResourcesTransformationStripPrefix stripPrefixTransformation ?
                                 new ApiResourcesTransformation {
                                     StripPrefix = new ApiResourcesTransformationStripPrefix {
-                                        Prefix = stripPrefixTransformation.Prefix
+                                        Prefix = _api._shouldSanitizeBucketPaths ? Utils.GetSanitizedBucketPath(stripPrefixTransformation.Prefix, _api._showBucketWarnings) : stripPrefixTransformation.Prefix
                                     }
                                 }
                                 : null,

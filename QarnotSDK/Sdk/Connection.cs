@@ -13,6 +13,14 @@ namespace QarnotSDK {
     /// This class allows you to access the Qarnot compute API and construct other objects: QTask, QPool
     /// </summary>
     public partial class Connection {
+        /// <summary>
+        /// Feature flag to enable the sanitization of the bucket paths (removing leading and duplicated slashes)
+        /// </summary>
+        internal bool _shouldSanitizeBucketPaths = true;
+        /// <summary>
+        /// Flag to show the warnings when bucket path is sanitized (if sanitization is enabled with _shouldSanitizeBucketPaths=true)
+        /// </summary>
+        internal bool _showBucketWarnings = true;
         internal HttpClient _client;
         internal HttpClientHandler _httpClientHandler;
         internal IRetryHandler _retryHandler;
@@ -131,8 +139,9 @@ namespace QarnotSDK {
         /// <param name="httpClientHandler">An optional HttpClientHandler if you need to setup a proxy for example.</param>
         /// <param name="retryHandler">An optional IRetryHandler if you need to setup retry for transient error (default to exponential).</param>
         /// <param name="forceStoragePathStyle">An optional forceStoragePathStyle to force path style for request to storage.</param>
-        public Connection(string token, HttpClientHandler httpClientHandler = null, IRetryHandler retryHandler = null, bool forceStoragePathStyle = false)
-            : this("https://api.qarnot.com", token, httpClientHandler, retryHandler, forceStoragePathStyle) {
+        /// <param name="sanitizeBucketPaths">A flag to enable the sanitization of bucket paths (removing leading and duplicated slashes). Enabled by default</param>
+        public Connection(string token, HttpClientHandler httpClientHandler = null, IRetryHandler retryHandler = null, bool forceStoragePathStyle = false, bool sanitizeBucketPaths = true)
+            : this("https://api.qarnot.com", token, httpClientHandler, retryHandler, forceStoragePathStyle, sanitizeBucketPaths) {
         }
 
         /// <summary>
@@ -143,8 +152,9 @@ namespace QarnotSDK {
         /// <param name="httpClientHandler">An optional HttpClientHandler if you need to setup a proxy for example.</param>
         /// <param name="retryHandler">An optional IRetryHandler if you need to setup retry for transient error (default to exponential).</param>
         /// <param name="forceStoragePathStyle">An optional forceStoragePathStyle to force path style for request to storage.</param>
-        public Connection(string uri, string token, HttpClientHandler httpClientHandler = null, IRetryHandler retryHandler = null, bool forceStoragePathStyle = false)
-            : this(uri, null, token, httpClientHandler, retryHandler, forceStoragePathStyle) {
+        /// <param name="sanitizeBucketPaths">A flag to enable the sanitization of bucket paths (removing leading and duplicated slashes). Enabled by default</param>
+        public Connection(string uri, string token, HttpClientHandler httpClientHandler = null, IRetryHandler retryHandler = null, bool forceStoragePathStyle = false, bool sanitizeBucketPaths = true)
+            : this(uri, null, token, httpClientHandler, retryHandler, forceStoragePathStyle, sanitizeBucketPaths: sanitizeBucketPaths) {
         }
 
         /// <summary>
@@ -159,10 +169,25 @@ namespace QarnotSDK {
         /// <param name="forceStoragePathStyle">An optional forceStoragePathStyle to force path style for request to storage.</param>
         /// <param name="delegatingHandlers">A list of hander used by the api connection. Default will create a list with the QarnotSrvHandler.</param>
         /// <param name="dnsSrvLoadBalancingCacheTime">the cache time in minutes before retrieve the values of the QarnotSrvHandler. Unless you have a strong reason, you should keep the default value.</param>
-        public Connection(string uri, string storageUri, string token, HttpClientHandler httpClientHandler = null, IRetryHandler retryHandler = null, bool forceStoragePathStyle = false, List<DelegatingHandler> delegatingHandlers = null, uint? dnsSrvLoadBalancingCacheTime = 5) {
+        /// <param name="sanitizeBucketPaths">A flag to enable the sanitization of bucket paths (removing leading and duplicated slashes). Enabled by default</param>
+        /// <param name="showBucketWarnings">A flag to choose to show or remove the warnings during bucket sanitization. Enabled by default</param>
+        public Connection(
+            string uri,
+            string storageUri,
+            string token,
+            HttpClientHandler httpClientHandler = null,
+            IRetryHandler retryHandler = null,
+            bool forceStoragePathStyle = false,
+            List<DelegatingHandler> delegatingHandlers = null,
+            uint? dnsSrvLoadBalancingCacheTime = 5,
+            bool sanitizeBucketPaths = true,
+            bool showBucketWarnings = true)
+        {
             Uri = new Uri(uri);
             if (storageUri != null) StorageUri = new Uri(storageUri);
             ForceStoragePathStyle = forceStoragePathStyle;
+            _shouldSanitizeBucketPaths = sanitizeBucketPaths;
+            _showBucketWarnings = showBucketWarnings;
             Token = token;
             StorageSecretKey = token;
             _httpClientHandler = httpClientHandler ?? new HttpClientHandler();
