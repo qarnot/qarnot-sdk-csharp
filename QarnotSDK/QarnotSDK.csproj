@@ -4,7 +4,6 @@
     <AssemblyName>QarnotSDK</AssemblyName>
     <Version>5.4.0</Version>
     <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
-    <LangVersion>8.0</LangVersion>
     <OutputType>Library</OutputType>
     <Authors>Qarnot computing</Authors>
     <Description>SDK allowing the use of the Qarnot platform.</Description>
