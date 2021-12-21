@@ -1,13 +1,14 @@
 using System;
-using System.Linq;
-using System.Web;
-using System.Net.Http;
-using System.Reflection;
-using System.Net.Http.Headers;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
+using System.Web;
 
 namespace QarnotSDK {
     /// <summary>
@@ -942,12 +943,12 @@ namespace QarnotSDK {
         }
 
         /// <summary>
-        /// Retrieve your user available hardware constraints list.
+        /// Retrieve a page of your user available hardware constraints.
         /// </summary>
         /// <param name="pageOffset">Response page limitation details</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>The complete user hardware constraints list.</returns>
-        public virtual async Task<OffsetPageResponse<HardwareConstraint>> RetrieveUserHardwareConstraintsAsync(OffsetPageRequest pageOffset, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<OffsetPageResponse<HardwareConstraint>> RetrieveUserHardwareConstraintsPageAsync(OffsetPageRequest pageOffset, CancellationToken cancellationToken = default(CancellationToken))
         {
             using (var response = await _client.GetAsync(
                 String.Format("/hardware-constraints{0}", pageOffset != default ? String.Format("?{0}", pageOffset.GetAsQueryString()) : ""),
@@ -967,23 +968,21 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>The user hardware constraints list.</returns>
-        public virtual async IAsyncEnumerable<HardwareConstraint> RetrieveAllUserHardwareConstraintsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IEnumerable<HardwareConstraint>> RetrieveUserHardwareConstraintsAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-            var shouldIterate = true;
+            var hardwareConstraints = new List<HardwareConstraint>();
+            bool shouldIterate;
             var nextOffset = 0;
-            while (shouldIterate)
+
+            do
             {
-                var hardwareConstraints = await RetrieveUserHardwareConstraintsAsync(new OffsetPageRequest(Int32.MaxValue, nextOffset), cancellationToken);
-                if (hardwareConstraints.Data != default)
-                {
-                    foreach (var constraint in hardwareConstraints.Data)
-                    {
-                        yield return constraint;
-                    }
-                }
-                nextOffset = hardwareConstraints.Limit + hardwareConstraints.Offset;
-                shouldIterate = hardwareConstraints.Total > nextOffset;
-            }
+                var hardwareConstraintsPage = await RetrieveUserHardwareConstraintsPageAsync(new OffsetPageRequest(Int32.MaxValue, nextOffset), cancellationToken);
+                hardwareConstraints.AddRange(hardwareConstraintsPage.Data ?? new List<HardwareConstraint>());
+                nextOffset = hardwareConstraintsPage.Limit + hardwareConstraintsPage.Offset;
+                shouldIterate = hardwareConstraintsPage.Total > nextOffset;
+            } while (shouldIterate);
+
+            return hardwareConstraints;
         }
         #endregion
 

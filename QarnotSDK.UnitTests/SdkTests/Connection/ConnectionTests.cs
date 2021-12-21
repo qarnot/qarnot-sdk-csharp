@@ -548,7 +548,7 @@ namespace QarnotSDK.UnitTests
         {
             HttpHandler.ResponseBody = ConnectionTestsData.GetUserHardwareConstraints;
 
-            OffsetPageResponse<HardwareConstraint> hardwareConstraints = await Api.RetrieveUserHardwareConstraintsAsync(new());
+            OffsetPageResponse<HardwareConstraint> hardwareConstraints = await Api.RetrieveUserHardwareConstraintsPageAsync(new());
 
             var hardwareConstraintsRequests = HttpHandler.ParsedRequests.Where(req =>
                 req.Method.Contains("GET", StringComparison.InvariantCultureIgnoreCase) &&
@@ -557,10 +557,7 @@ namespace QarnotSDK.UnitTests
 
             var requestsCountBefore = hardwareConstraintsRequests.Count();
 
-            await foreach (var constraint in Api.RetrieveAllUserHardwareConstraintsAsync())
-            {
-                _ = constraint; // iterate only to force the calls
-            }
+            var constraints = await Api.RetrieveUserHardwareConstraintsAsync();
 
             hardwareConstraintsRequests = HttpHandler.ParsedRequests.Where(req =>
                 req.Method.Contains("GET", StringComparison.InvariantCultureIgnoreCase) &&
@@ -574,7 +571,7 @@ namespace QarnotSDK.UnitTests
         {
             HttpHandler.ResponseBody = ConnectionTestsData.GetUserHardwareConstraints;
 
-            OffsetPageResponse<HardwareConstraint> paginatedHardwareConstraints = await Api.RetrieveUserHardwareConstraintsAsync(new());
+            OffsetPageResponse<HardwareConstraint> paginatedHardwareConstraints = await Api.RetrieveUserHardwareConstraintsPageAsync(new());
 
             Assert.AreEqual(8, paginatedHardwareConstraints.Total);
             var hardwareConstraints = paginatedHardwareConstraints.Data;
@@ -602,24 +599,6 @@ namespace QarnotSDK.UnitTests
             Assert.AreEqual((hardwareConstraints[6] as MaximumRamHardware).MaximumMemoryMB, 32000);
             Assert.IsInstanceOf<GpuHardware>(hardwareConstraints[7]);
             Assert.AreEqual((hardwareConstraints[7] as GpuHardware).Discriminator, "GpuHardwareConstraint");
-        }
-
-        [Test]
-        public async Task RetrieveAllUserHardwareConstraintsAsyncCheckShouldReturnAllDataEvenIfLimited()
-        {
-            HttpHandler.ResponseBody = ConnectionTestsData.GetLimitedUserHardwareConstraints; // this call should cause another api call as the data is truncated
-            var constraintsCountFromLimitedRequest = 2;
-
-            List<HardwareConstraint> hardwareConstraints = new List<HardwareConstraint>();
-
-            await foreach (var constraint in Api.RetrieveAllUserHardwareConstraintsAsync())
-            {
-                hardwareConstraints.Add(constraint);
-                HttpHandler.ResponseBody = ConnectionTestsData.GetUserHardwareConstraints; // this call should be the last api call as the data is complete
-            }
-            var constraintsCountFromLastRequest = 8;
-
-            Assert.AreEqual(constraintsCountFromLimitedRequest + constraintsCountFromLastRequest, hardwareConstraints.Count());
         }
 
         [Test]
