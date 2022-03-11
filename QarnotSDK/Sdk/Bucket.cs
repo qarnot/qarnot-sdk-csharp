@@ -402,7 +402,7 @@ namespace QarnotSDK {
 
             try {
                 // First, we have to empty the bucket
-                await DeleteEntryAsync("/", cancellationToken);
+                await DeleteEntryAsync(String.Empty, cancellationToken);
 
                 using (var s3Client = await _api.GetS3ClientAsync(cancellationToken)) {
                     // Then we can delete it
@@ -584,11 +584,13 @@ namespace QarnotSDK {
                 }
 
                 // Then we can delete the entry
-                var s3Request = new Amazon.S3.Model.DeleteObjectRequest {
-                    BucketName = Shortname,
-                    Key = remotePath
-                };
-                var s3Response = await s3Client.DeleteObjectAsync(s3Request, cancellationToken);
+                if (!String.IsNullOrEmpty(remotePath)) {
+                    var s3Request = new Amazon.S3.Model.DeleteObjectRequest {
+                        BucketName = Shortname,
+                        Key = remotePath
+                    };
+                    var s3Response = await s3Client.DeleteObjectAsync(s3Request, cancellationToken);
+                }
             }
         }
 
