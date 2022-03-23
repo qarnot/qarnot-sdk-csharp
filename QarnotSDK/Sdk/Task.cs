@@ -601,6 +601,22 @@ namespace QarnotSDK {
             }
         }
 
+        /// <summary>
+        /// The task privileges list.
+        /// </summary>
+        [InternalDataApiName(Name="Privileges")]
+        public virtual Privileges Privileges
+        {
+            get
+            {
+                return _taskApi.Privileges;
+            }
+            set
+            {
+                _taskApi.Privileges = value;
+            }
+        }
+
 
         /// <summary>
         /// Queue in-pool task execution behind pool resources update.
@@ -1012,7 +1028,7 @@ namespace QarnotSDK {
 
             // Build the resource bucket list
             _taskApi.ResourceBuckets = new List<string>();
-            bool useAdvancedResources = _resources.Any(res => res?.Filtering != null || res?.ResourcesTransformation != null);
+            bool useAdvancedResources = _resources.Any(res => res?.Filtering != null || res?.ResourcesTransformation != null || res?.CacheTTLSec != null);
             foreach (var item in _resources) {
                 var resQBucket = item as QBucket;
                 if (resQBucket != null) {
@@ -1033,6 +1049,7 @@ namespace QarnotSDK {
                                     }
                                 }
                                 : null,
+                            CacheTTLSec = resQBucket.CacheTTLSec
                         });
                     } else {
                         _taskApi.ResourceBuckets.Add(resQBucket.Shortname);

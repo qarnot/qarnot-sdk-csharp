@@ -902,6 +902,17 @@ namespace QarnotSDK.UnitTests
 
             Assert.That(task._taskApi.WaitForPoolResourcesSynchronization, Is.EqualTo(wait));
         }
+
+        [Test]
+        public async Task CheckPrivilegesTestValues()
+        {
+            string uuid = Guid.NewGuid().ToString();
+            QTask task = new QTask(Connect, uuid);
+            Assert.IsNotNull(task.Privileges);
+            Assert.False(task.Privileges.ExportApiAndStorageCredentialsInEnvironment);
+            await task.UpdateStatusAsync();
+            Assert.False(task.Privileges.ExportApiAndStorageCredentialsInEnvironment);
+        }
     }
 
 
@@ -982,14 +993,16 @@ namespace QarnotSDK.UnitTests
 
         // Check that chaining both With* calls is correct
         [Test]
-        public async Task TestTaskPreSubmitAsync_WithPrefixFiltering_AndResourcesTransformation_FillsUpApiTask()
+        public async Task TestTaskPreSubmitAsync_WithPrefixFiltering_AndResourcesTransformation_AndCacheTTL_FillsUpApiTask()
         {
             string prefix = "filter/prefix";
+            int ttl = 1000;
             QBucket bucket = new QBucket(Connect, "the-bucket", create: false);
             QTask task = Connect.CreateTask("task-name", "task-profile", 1);
             task.Resources = new List<QAbstractStorage> {
                 bucket.WithFiltering(new BucketFilteringPrefix(prefix))
-                      .WithResourcesTransformation(new ResourcesTransformationStripPrefix(prefix)),
+                      .WithResourcesTransformation(new ResourcesTransformationStripPrefix(prefix))
+                      .WithCacheTTL(ttl),
             };
             await task.PreSubmitAsync(default);
 
@@ -1006,6 +1019,8 @@ namespace QarnotSDK.UnitTests
             Assert.IsNotNull(apiResource.ResourcesTransformation);
             Assert.IsNotNull(apiResource.ResourcesTransformation.StripPrefix);
             Assert.AreEqual(prefix, apiResource.ResourcesTransformation.StripPrefix.Prefix);
+
+            Assert.AreEqual(ttl, apiResource.CacheTTLSec);
         }
 
 
@@ -1029,7 +1044,7 @@ namespace QarnotSDK.UnitTests
 
 
         [Test]
-        public async Task TestTaskBuildFromJson_FillsUpFilterAndTransformation_InApiProxyObject()
+        public async Task TestTaskBuildFromJson_FillsUpFilterAndTransformationAndCacheTTL_InApiProxyObject()
         {
             var task = await Connect.RetrieveTaskByUuidAsync("11111111-1111-1111-1111-111111111111");
 
@@ -1046,15 +1061,17 @@ namespace QarnotSDK.UnitTests
             Assert.That(firstBucket.ResourcesTransformation, Is.Not.Null);
             Assert.That(firstBucket.ResourcesTransformation.StripPrefix, Is.Not.Null);
             Assert.That(firstBucket.ResourcesTransformation.StripPrefix.Prefix, Is.EqualTo("transformed-prefix/"));
+            Assert.AreEqual(1000, firstBucket.CacheTTLSec);
 
             Assert.That(secondBucket.BucketName, Is.EqualTo("someOtherBucket"));
             Assert.That(secondBucket.Filtering, Is.Null);
             Assert.That(secondBucket.ResourcesTransformation, Is.Null);
+            Assert.That(secondBucket.CacheTTLSec, Is.Null);
         }
 
 
         [Test]
-        public async Task TestTaskBuildFromJson_FillsUpFilterAndTransformation_InSDKObject()
+        public async Task TestTaskBuildFromJson_FillsUpFilterAndTransformationAndCacheTTL_InSDKObject()
         {
             var task = await Connect.RetrieveTaskByUuidAsync("11111111-1111-1111-1111-111111111111");
 
@@ -1070,15 +1087,17 @@ namespace QarnotSDK.UnitTests
             Assert.That(firstBucket.ResourcesTransformation, Is.Not.Null);
             Assert.That(firstBucket.ResourcesTransformation, Is.AssignableFrom(typeof(ResourcesTransformationStripPrefix)));
             Assert.That((firstBucket.ResourcesTransformation as ResourcesTransformationStripPrefix).Prefix, Is.EqualTo("transformed-prefix/"));
+            Assert.AreEqual(1000, firstBucket.CacheTTLSec);
 
             Assert.That(secondBucket.Shortname, Is.EqualTo("someOtherBucket"));
             Assert.That(secondBucket.Filtering, Is.Null);
             Assert.That(secondBucket.ResourcesTransformation, Is.Null);
+            Assert.That(secondBucket.CacheTTLSec, Is.Null);
         }
 
 
         [Test]
-        public async Task TestTaskBuildFromJson_FillsUpFilterAndTransformation_InSDKObject_WithLegacyResources()
+        public async Task TestTaskBuildFromJson_FillsUpFilterAndTransformationAndCacheTTL_InSDKObject_WithLegacyResources()
         {
             var task = await ConnectLegacyBucket.RetrieveTaskByUuidAsync("11111111-1111-1111-1111-111111111111");
 
@@ -1090,10 +1109,12 @@ namespace QarnotSDK.UnitTests
             Assert.That(firstBucket.Shortname, Is.EqualTo("someBucket"));
             Assert.That(firstBucket.Filtering, Is.Null);
             Assert.That(firstBucket.ResourcesTransformation, Is.Null);
+            Assert.That(firstBucket.CacheTTLSec, Is.Null);
 
             Assert.That(secondBucket.Shortname, Is.EqualTo("someOtherBucket"));
             Assert.That(secondBucket.Filtering, Is.Null);
             Assert.That(secondBucket.ResourcesTransformation, Is.Null);
+            Assert.That(secondBucket.CacheTTLSec, Is.Null);
         }
     }
 }

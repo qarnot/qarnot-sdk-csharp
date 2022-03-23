@@ -305,6 +305,22 @@ namespace QarnotSDK
             }
         }
 
+        /// <summary>
+        /// The pool privileges list.
+        /// </summary>
+        [InternalDataApiName(Name="Privileges")]
+        public virtual Privileges Privileges
+        {
+            get
+            {
+                return _poolApi.Privileges;
+            }
+            set
+            {
+                _poolApi.Privileges = value;
+            }
+        }
+
         private Dictionary<string, string> _constants { get; set; }
 
         /// <summary>
@@ -364,10 +380,20 @@ namespace QarnotSDK
         }
 
         /// <summary>
-        /// Minimum node number for the pool in elastic mode
+        /// Minimum slot number for the pool in elastic mode
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.MinTotalSlots")]
+        [Obsolete("Use ElasticMinimumTotalSlots instead")]
         public virtual uint ElasticMinimumTotalNodes {
+            get => ElasticMinimumTotalSlots;
+            set { ElasticMinimumTotalSlots = value; }
+        }
+
+        /// <summary>
+        /// Minimum slot number for the pool in elastic mode
+        /// </summary>
+        [InternalDataApiName(Name="ElasticProperty.MinTotalSlots")]
+        public virtual uint ElasticMinimumTotalSlots {
             get { return _poolApi?.ElasticProperty?.MinTotalSlots ?? 0; }
             set
             {
@@ -381,10 +407,20 @@ namespace QarnotSDK
         }
 
         /// <summary>
-        /// Maximum node number for the pool in elastic mode
+        /// Maximum slot number for the pool in elastic mode
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.MaxTotalSlots")]
+        [Obsolete("Use ElasticMaximumTotalSlots instead")]
         public virtual uint ElasticMaximumTotalNodes {
+            get => ElasticMaximumTotalSlots;
+            set { ElasticMaximumTotalSlots = value; }
+        }
+
+        /// <summary>
+        /// Maximum slot number for the pool in elastic mode
+        /// </summary>
+        [InternalDataApiName(Name="ElasticProperty.MaxTotalSlots")]
+        public virtual uint ElasticMaximumTotalSlots {
             get { return _poolApi?.ElasticProperty?.MaxTotalSlots ?? 0; }
             set
             {
@@ -398,10 +434,20 @@ namespace QarnotSDK
         }
 
         /// <summary>
-        /// Minimum idling node number.
+        /// Minimum idling slot number.
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.MinIdleSlots")]
+        [Obsolete("Use ElasticMinimumIdlingSlots instead")]
         public virtual uint ElasticMinimumIdlingNodes {
+            get => ElasticMinimumIdlingSlots;
+            set { ElasticMinimumIdlingSlots = value; }
+        }
+
+        /// <summary>
+        /// Minimum idling slot number.
+        /// </summary>
+        [InternalDataApiName(Name="ElasticProperty.MinIdleSlots")]
+        public virtual uint ElasticMinimumIdlingSlots {
             get { return _poolApi?.ElasticProperty?.MinIdleSlots ?? 0; }
             set
             {
@@ -694,7 +740,7 @@ namespace QarnotSDK
             foreach(var c in _constraints) { _poolApi.Constraints.Add(new KeyValHelper(c.Key, c.Value)); }
 
             _poolApi.ResourceBuckets = new List<string>();
-            bool useAdvancedResources = _resources.Any(res => res?.Filtering != null || res?.ResourcesTransformation != null);
+            bool useAdvancedResources = _resources.Any(res => res?.Filtering != null || res?.ResourcesTransformation != null || res?.CacheTTLSec != null);
             foreach (var item in _resources) {
                 var resQBucket = item as QBucket;
                 if (resQBucket != null) {
@@ -715,6 +761,7 @@ namespace QarnotSDK
                                     }
                                 }
                                 : null,
+                            CacheTTLSec = resQBucket.CacheTTLSec
                         });
                     } else {
                         _poolApi.ResourceBuckets.Add(resQBucket.Shortname);

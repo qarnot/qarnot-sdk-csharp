@@ -154,7 +154,7 @@ namespace QarnotSDK.UnitTests
         }";
 
         public const string TaskResponseFullBody = @"{
-                ""elasticProperty"": {
+            ""elasticProperty"": {
                 ""isElastic"": false,
                 ""minTotalSlots"": 0,
                 ""maxTotalSlots"": 0,
@@ -305,7 +305,10 @@ namespace QarnotSDK.UnitTests
             ""runningCoreCount"": 16,
             ""executionTime"": ""00:00:25.1000003"",
             ""wallTime"": ""00:02:12"",
-            ""credits"": 0.01
+            ""credits"": 0.01,
+            ""privileges"": {
+                ""exportApiAndStorageCredentialsInEnvironment"": false
+            }
         }";
 
 
@@ -334,7 +337,8 @@ namespace QarnotSDK.UnitTests
                         ""stripPrefix"": {
                             ""prefix"": ""transformed-prefix/""
                         },
-                    }
+                    },
+                    ""cacheTTLSec"": 1000
                 },
                 {
                     ""bucketName"": ""someOtherBucket"",

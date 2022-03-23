@@ -298,6 +298,12 @@ namespace QarnotSDK {
         public AResourcesTransformation ResourcesTransformation { get; protected set; }
 
         /// <summary>
+        /// Time to live for the resource cache (in seconds).
+        /// Override the task default value DefaultResourcesCacheTTLSec
+        /// </summary>
+        public int? CacheTTLSec { get; protected set; }
+
+        /// <summary>
         /// Create a bucket object.
         /// </summary>
         /// <param name="connection">The inner connection object.</param>
@@ -316,6 +322,7 @@ namespace QarnotSDK {
         internal QBucket(QBucket originalBucket) : this(originalBucket.Connection, originalBucket.Shortname, create: false) {
             Filtering = originalBucket.Filtering;
             ResourcesTransformation = originalBucket.ResourcesTransformation;
+            CacheTTLSec = originalBucket.CacheTTLSec;
         }
 
         internal QBucket(Connection connection, Amazon.S3.Model.S3Bucket s3Bucket) : this(connection, s3Bucket.BucketName, create: false) {
@@ -335,6 +342,7 @@ namespace QarnotSDK {
         internal async Task<QBucket> InitializeAsync(Connection qapi, ApiAdvancedResourceBucket advancedBucket, bool create=true, CancellationToken ct=default(CancellationToken)) {
              _api = qapi;
             Shortname = advancedBucket.BucketName;
+            CacheTTLSec = advancedBucket.CacheTTLSec;
             if (advancedBucket.Filtering?.PrefixFiltering != null) {
                 if (_api._shouldSanitizeBucketPaths)
                 {
@@ -714,6 +722,15 @@ namespace QarnotSDK {
                 transformation.SanitizePaths(_api._showBucketWarnings);
             }
             newBucket.ResourcesTransformation = transformation;
+            return newBucket;
+        }
+
+
+        /// <summary> Returns a copy of the bucket object with a cache TTL added </summary>
+        /// <param name="ttl"> The resources cache TTL to add </param>
+        public QBucket WithCacheTTL(int ttl) {
+            var newBucket = new QBucket(this);
+            newBucket.CacheTTLSec = ttl;
             return newBucket;
         }
 
