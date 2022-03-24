@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -110,7 +111,7 @@ namespace QarnotSDK {
     }
 
     /// <summary>
-    /// ExponentialRetryHandler is an IRetryHandler implementation, with a growing interval between retries
+    /// ExponentialRetryHandler is an IRetryHandler implementation, with an exponentially growing interval between retries
     /// </summary>
     public class ExponentialRetryHandler : IRetryHandler
     {
@@ -142,6 +143,7 @@ namespace QarnotSDK {
         {
             HttpResponseMessage response;
             int tries = 0;
+
             while(true) {
                 response = await base.SendAsync(request, cancellationToken);
                 if (response.IsSuccessStatusCode) // Success!
@@ -150,15 +152,16 @@ namespace QarnotSDK {
                     break;
                 if (tries++ >= MaxRetries) // No more retry
                     break;
+
                 // Transient error, wait & retry
-                await Task.Delay(RetryInterval * tries, cancellationToken);
+                await Task.Delay((int)(Math.Pow(2, tries - 1) * RetryInterval), cancellationToken);
             }
             return response;
         }
     }
 
     /// <summary>
-    /// LinearRetryHandler is an IRetryHandler implementation, with a fixed interval between retries
+    /// LinearRetryHandler is an IRetryHandler implementation, with a linearly growing interval between retries.
     /// </summary>
     public class LinearRetryHandler : IRetryHandler
     {
@@ -187,14 +190,14 @@ namespace QarnotSDK {
             int tries = 0;
             while(true) {
                 response = await base.SendAsync(request, cancellationToken);
-                if (response.IsSuccessStatusCode)// Success!
+                if (response.IsSuccessStatusCode) // Success!
                     break;
-                if (!TransientStatusCodes.Contains(response.StatusCode))// Not a transient error
+                if (!TransientStatusCodes.Contains(response.StatusCode)) // Not a transient error
                     break;
-                if (tries++ >= MaxRetries)// No more retry
+                if (tries++ >= MaxRetries) // No more retry
                     break;
                 // Transient error, wait & retry
-                await Task.Delay(RetryInterval, cancellationToken);
+                await Task.Delay(RetryInterval * tries, cancellationToken);
             }
             return response;
         }

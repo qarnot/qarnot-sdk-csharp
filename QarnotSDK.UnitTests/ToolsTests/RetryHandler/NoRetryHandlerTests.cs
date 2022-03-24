@@ -1,6 +1,7 @@
 namespace QarnotSDK.UnitTests
 {
     using System;
+    using System.Linq;
     using System.Diagnostics.CodeAnalysis;
     using System.Threading.Tasks;
     using NUnit.Framework;
@@ -55,24 +56,21 @@ namespace QarnotSDK.UnitTests
             using var retryHandler = new ExponentialRetryHandler(nbrOfTry, milliSecondWaitTime);
             var connect = new Connection(url, token, handler, retryHandler);
             var job0 = connect.CreateJob("job", pool: null, UseTaskDependencies: false);
-            DateTime now = DateTime.Now;
-            int j = 0;
-            for (int i = 0; i <= nbrOfFail; i++)
-            {
-                j += i;
-            }
 
-            DateTime min_time = now.AddMilliseconds((double)(milliSecondWaitTime * j));
-            DateTime max_time = now.AddMilliseconds((double)((milliSecondWaitTime * j) + 1000));
+            // We multiply by 2 because there are two requests performed in `SubmitAsync`.
+            var expectedWaitTime = 2 * Enumerable
+                .Range(0, nbrOfFail)
+                .Select(i => milliSecondWaitTime * Math.Pow(2, i))
+                .Sum();
+
+            DateTime now = DateTime.Now;
+            DateTime min_time = now.AddMilliseconds(expectedWaitTime);
+            DateTime max_time = now.AddMilliseconds(expectedWaitTime + 1000);
+
             await job0.SubmitAsync();
-            if (DateTime.Now < min_time)
-            {
-                throw new Exception($"wait job is to short... start: {now}, actual:{DateTime.Now} < {min_time}");
-            }
-            else if (DateTime.Now > max_time)
-            {
-                throw new Exception($"wait job is good... start: {now}, actual:{DateTime.Now} > {max_time}");
-            }
+
+            Assert.That(DateTime.Now, Is.AtLeast(min_time), "wait time is too short");
+            Assert.That(DateTime.Now, Is.AtMost(max_time), "wait time is too long");
 
             await job0.UpdateStatusAsync();
             await job0.TerminateAsync();
