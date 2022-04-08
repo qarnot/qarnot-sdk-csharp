@@ -261,6 +261,20 @@ namespace QarnotSDK.UnitTests
         }
 
         [Test]
+        public void GetAPIFilterPropertyNameForPoolElasticMinimumIdlingSlotsReturnTheGoodStringValue()
+        {
+            var value = DataDetailHelper.GetAPIFilterPropertyName<QPool, uint>(t => t.ElasticMinimumIdlingSlots);
+            Assert.AreEqual(value, "ElasticProperty.MinIdleSlots");
+        }
+
+        [Test]
+        public void GetAPISelectPropertyNameForPoolElasticMinimumIdlingSlotsReturnTheGoodStringValue()
+        {
+            var value = DataDetailHelper.GetAPISelectPropertyName<QPool, uint>(t => t.ElasticMinimumIdlingSlots);
+            Assert.AreEqual(value, "ElasticProperty.MinIdleSlots");
+        }
+
+        [Test]
         public void GetAPIFilterPropertyNameForPoolElasticMinimumIdlingNodesReturnTheGoodStringValue()
         {
             var value = DataDetailHelper.GetAPIFilterPropertyName<QPool, uint>(t => t.ElasticMinimumIdlingNodes);
@@ -275,6 +289,20 @@ namespace QarnotSDK.UnitTests
         }
 
         [Test]
+        public void GetAPIFilterPropertyNameForPoolElasticMaximumTotalSlotsReturnTheGoodStringValue()
+        {
+            var value = DataDetailHelper.GetAPIFilterPropertyName<QPool, uint>(t => t.ElasticMaximumTotalSlots);
+            Assert.AreEqual(value, "ElasticProperty.MaxTotalSlots");
+        }
+
+        [Test]
+        public void GetAPISelectPropertyNameForPoolElasticMaximumTotalSlotsReturnTheGoodStringValue()
+        {
+            var value = DataDetailHelper.GetAPISelectPropertyName<QPool, uint>(t => t.ElasticMaximumTotalSlots);
+            Assert.AreEqual(value, "ElasticProperty.MaxTotalSlots");
+        }
+
+        [Test]
         public void GetAPIFilterPropertyNameForPoolElasticMaximumTotalNodesReturnTheGoodStringValue()
         {
             var value = DataDetailHelper.GetAPIFilterPropertyName<QPool, uint>(t => t.ElasticMaximumTotalNodes);
@@ -286,6 +314,20 @@ namespace QarnotSDK.UnitTests
         {
             var value = DataDetailHelper.GetAPISelectPropertyName<QPool, uint>(t => t.ElasticMaximumTotalNodes);
             Assert.AreEqual(value, "ElasticProperty.MaxTotalSlots");
+        }
+
+        [Test]
+        public void GetAPIFilterPropertyNameForPoolElasticMinimumTotalSlotsReturnTheGoodStringValue()
+        {
+            var value = DataDetailHelper.GetAPIFilterPropertyName<QPool, uint>(t => t.ElasticMinimumTotalSlots);
+            Assert.AreEqual(value, "ElasticProperty.MinTotalSlots");
+        }
+
+        [Test]
+        public void GetAPISelectPropertyNameForPoolElasticMinimumTotalSlotsReturnTheGoodStringValue()
+        {
+            var value = DataDetailHelper.GetAPISelectPropertyName<QPool, uint>(t => t.ElasticMinimumTotalSlots);
+            Assert.AreEqual(value, "ElasticProperty.MinTotalSlots");
         }
 
         [Test]

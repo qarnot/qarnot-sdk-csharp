@@ -364,10 +364,20 @@ namespace QarnotSDK
         }
 
         /// <summary>
-        /// Minimum node number for the pool in elastic mode
+        /// Minimum slot number for the pool in elastic mode
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.MinTotalSlots")]
+        [Obsolete("Use ElasticMinimumTotalSlots instead")]
         public virtual uint ElasticMinimumTotalNodes {
+            get => ElasticMinimumTotalSlots;
+            set { ElasticMinimumTotalSlots = value; }
+        }
+
+        /// <summary>
+        /// Minimum slot number for the pool in elastic mode
+        /// </summary>
+        [InternalDataApiName(Name="ElasticProperty.MinTotalSlots")]
+        public virtual uint ElasticMinimumTotalSlots {
             get { return _poolApi?.ElasticProperty?.MinTotalSlots ?? 0; }
             set
             {
@@ -381,10 +391,20 @@ namespace QarnotSDK
         }
 
         /// <summary>
-        /// Maximum node number for the pool in elastic mode
+        /// Maximum slot number for the pool in elastic mode
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.MaxTotalSlots")]
+        [Obsolete("Use ElasticMaximumTotalSlots instead")]
         public virtual uint ElasticMaximumTotalNodes {
+            get => ElasticMaximumTotalSlots;
+            set { ElasticMaximumTotalSlots = value; }
+        }
+
+        /// <summary>
+        /// Maximum slot number for the pool in elastic mode
+        /// </summary>
+        [InternalDataApiName(Name="ElasticProperty.MaxTotalSlots")]
+        public virtual uint ElasticMaximumTotalSlots {
             get { return _poolApi?.ElasticProperty?.MaxTotalSlots ?? 0; }
             set
             {
@@ -398,10 +418,20 @@ namespace QarnotSDK
         }
 
         /// <summary>
-        /// Minimum idling node number.
+        /// Minimum idling slot number.
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.MinIdleSlots")]
+        [Obsolete("Use ElasticMinimumIdlingSlots instead")]
         public virtual uint ElasticMinimumIdlingNodes {
+            get => ElasticMinimumIdlingSlots;
+            set { ElasticMinimumIdlingSlots = value; }
+        }
+
+        /// <summary>
+        /// Minimum idling slot number.
+        /// </summary>
+        [InternalDataApiName(Name="ElasticProperty.MinIdleSlots")]
+        public virtual uint ElasticMinimumIdlingSlots {
             get { return _poolApi?.ElasticProperty?.MinIdleSlots ?? 0; }
             set
             {
