@@ -58,6 +58,7 @@
         public string BucketName { get; set; }
         public ApiBucketFiltering Filtering { get; set; }
         public ApiResourcesTransformation ResourcesTransformation { get; set; }
+        public int? CacheTTLSec { get; set; }
     }
 
 

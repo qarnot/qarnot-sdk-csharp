@@ -334,7 +334,8 @@ namespace QarnotSDK.UnitTests
                         ""stripPrefix"": {
                             ""prefix"": ""transformed-prefix/""
                         },
-                    }
+                    },
+                    ""cacheTTLSec"": 1000
                 },
                 {
                     ""bucketName"": ""someOtherBucket"",

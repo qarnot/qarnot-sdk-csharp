@@ -724,7 +724,7 @@ namespace QarnotSDK
             foreach(var c in _constraints) { _poolApi.Constraints.Add(new KeyValHelper(c.Key, c.Value)); }
 
             _poolApi.ResourceBuckets = new List<string>();
-            bool useAdvancedResources = _resources.Any(res => res?.Filtering != null || res?.ResourcesTransformation != null);
+            bool useAdvancedResources = _resources.Any(res => res?.Filtering != null || res?.ResourcesTransformation != null || res?.CacheTTLSec != null);
             foreach (var item in _resources) {
                 var resQBucket = item as QBucket;
                 if (resQBucket != null) {
@@ -745,6 +745,7 @@ namespace QarnotSDK
                                     }
                                 }
                                 : null,
+                            CacheTTLSec = resQBucket.CacheTTLSec
                         });
                     } else {
                         _poolApi.ResourceBuckets.Add(resQBucket.Shortname);

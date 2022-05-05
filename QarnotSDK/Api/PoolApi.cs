@@ -434,6 +434,7 @@ namespace QarnotSDK {
         public int TotalSlotCapacity { get; set; }
         public double PoolUsage { get; set; }
         public HardwareConstraints HardwareConstraints { get; set; }
+        public int? DefaultResourcesCacheTTLSec { get; set; }
 
         internal PoolApi() {
             Constants = new List<KeyValHelper>();

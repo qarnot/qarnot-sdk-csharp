@@ -1012,7 +1012,7 @@ namespace QarnotSDK {
 
             // Build the resource bucket list
             _taskApi.ResourceBuckets = new List<string>();
-            bool useAdvancedResources = _resources.Any(res => res?.Filtering != null || res?.ResourcesTransformation != null);
+            bool useAdvancedResources = _resources.Any(res => res?.Filtering != null || res?.ResourcesTransformation != null || res?.CacheTTLSec != null);
             foreach (var item in _resources) {
                 var resQBucket = item as QBucket;
                 if (resQBucket != null) {
@@ -1033,6 +1033,7 @@ namespace QarnotSDK {
                                     }
                                 }
                                 : null,
+                            CacheTTLSec = resQBucket.CacheTTLSec
                         });
                     } else {
                         _taskApi.ResourceBuckets.Add(resQBucket.Shortname);
