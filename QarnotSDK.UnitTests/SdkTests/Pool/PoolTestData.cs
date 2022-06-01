@@ -301,7 +301,10 @@ namespace QarnotSDK.UnitTests
             ""credits"": 0.01,
             ""poolUsage"": 0.91,
             ""totalSlotCapacity"": 5,
-            ""queuedOrRunningTaskInstancesCount"": 71
+            ""queuedOrRunningTaskInstancesCount"": 71,
+            ""privileges"": {
+                ""exportApiAndStorageCredentialsInEnvironment"": false
+            }
         }";
 
 

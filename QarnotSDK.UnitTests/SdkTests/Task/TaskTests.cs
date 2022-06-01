@@ -902,6 +902,17 @@ namespace QarnotSDK.UnitTests
 
             Assert.That(task._taskApi.WaitForPoolResourcesSynchronization, Is.EqualTo(wait));
         }
+
+        [Test]
+        public async Task CheckPrivilegesTestValues()
+        {
+            string uuid = Guid.NewGuid().ToString();
+            QTask task = new QTask(Connect, uuid);
+            Assert.IsNotNull(task.Privileges);
+            Assert.False(task.Privileges.ExportApiAndStorageCredentialsInEnvironment);
+            await task.UpdateStatusAsync();
+            Assert.False(task.Privileges.ExportApiAndStorageCredentialsInEnvironment);
+        }
     }
 
 

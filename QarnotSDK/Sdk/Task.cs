@@ -601,6 +601,22 @@ namespace QarnotSDK {
             }
         }
 
+        /// <summary>
+        /// The task privileges list.
+        /// </summary>
+        [InternalDataApiName(Name="Privileges")]
+        public virtual Privileges Privileges
+        {
+            get
+            {
+                return _taskApi.Privileges;
+            }
+            set
+            {
+                _taskApi.Privileges = value;
+            }
+        }
+
 
         /// <summary>
         /// Queue in-pool task execution behind pool resources update.

@@ -544,6 +544,17 @@ namespace QarnotSDK.UnitTests
 
             Assert.That(pool._poolApi.TaskDefaultWaitForPoolResourcesSynchronization, Is.EqualTo(wait));
         }
+
+        [Test]
+        public async Task CheckPrivilegesTestValues()
+        {
+            string uuid = Guid.NewGuid().ToString();
+            QPool pool = new QPool(Connect, uuid);
+            Assert.IsNotNull(pool.Privileges);
+            Assert.False(pool.Privileges.ExportApiAndStorageCredentialsInEnvironment);
+            await pool.UpdateStatusAsync();
+            Assert.False(pool.Privileges.ExportApiAndStorageCredentialsInEnvironment);
+        }
     }
 
     [TestFixture]

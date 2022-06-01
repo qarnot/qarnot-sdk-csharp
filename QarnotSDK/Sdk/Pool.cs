@@ -305,6 +305,22 @@ namespace QarnotSDK
             }
         }
 
+        /// <summary>
+        /// The pool privileges list.
+        /// </summary>
+        [InternalDataApiName(Name="Privileges")]
+        public virtual Privileges Privileges
+        {
+            get
+            {
+                return _poolApi.Privileges;
+            }
+            set
+            {
+                _poolApi.Privileges = value;
+            }
+        }
+
         private Dictionary<string, string> _constants { get; set; }
 
         /// <summary>

@@ -435,6 +435,7 @@ namespace QarnotSDK {
         public double PoolUsage { get; set; }
         public HardwareConstraints HardwareConstraints { get; set; }
         public int? DefaultResourcesCacheTTLSec { get; set; }
+        public Privileges Privileges { get; set; }
 
         internal PoolApi() {
             Constants = new List<KeyValHelper>();
@@ -446,6 +447,7 @@ namespace QarnotSDK {
             Errors = new List<QPoolError>();
             ElasticProperty = new QPoolElasticProperty();
             AutoDeleteOnCompletion = false;
+            Privileges = new Privileges();
         }
     }
 }

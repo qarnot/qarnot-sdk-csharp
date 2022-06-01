@@ -530,6 +530,7 @@ namespace QarnotSDK {
         public bool? WaitForPoolResourcesSynchronization { get; set; }
         public HardwareConstraints HardwareConstraints { get; set; }
         public int? DefaultResourcesCacheTTLSec { get; set; }
+        public Privileges Privileges { get; set; }
 
         internal TaskApi() {
             Constants = new List<KeyValHelper>();
@@ -541,6 +542,7 @@ namespace QarnotSDK {
             Errors = new List<QTaskError>();
             CompletedInstances = new List<QTaskCompletedInstance>();
             AutoDeleteOnCompletion = false;
+            Privileges = new Privileges();
         }
     }
 
