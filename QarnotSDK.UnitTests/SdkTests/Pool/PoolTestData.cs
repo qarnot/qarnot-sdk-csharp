@@ -305,7 +305,11 @@ namespace QarnotSDK.UnitTests
             ""privileges"": {
                 ""exportApiAndStorageCredentialsInEnvironment"": false
             },
-            ""defaultResourcesCacheTTLSec"": 7776000
+            ""defaultResourcesCacheTTLSec"": 7776000,
+            ""defaultRetrySettings"": {
+                ""maxTotalRetries"": 12,
+                ""maxPerInstanceRetries"": 12
+            },
         }";
 
 

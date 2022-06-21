@@ -436,6 +436,7 @@ namespace QarnotSDK {
         public HardwareConstraints HardwareConstraints { get; set; }
         public uint? DefaultResourcesCacheTTLSec { get; set; }
         public Privileges Privileges { get; set; }
+        public RetrySettings DefaultRetrySettings { get; set; }
 
         internal PoolApi() {
             Constants = new List<KeyValHelper>();
@@ -448,6 +449,7 @@ namespace QarnotSDK {
             ElasticProperty = new QPoolElasticProperty();
             AutoDeleteOnCompletion = false;
             Privileges = new Privileges();
+            DefaultRetrySettings = new RetrySettings();
         }
     }
 }

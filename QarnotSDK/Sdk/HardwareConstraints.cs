@@ -23,6 +23,7 @@ namespace QarnotSDK
         public const string MinimumRamHardwareConstraint = "MinimumRamHardwareConstraint";
         public const string MaximumRamHardwareConstraint = "MaximumRamHardwareConstraint";
         public const string GpuHardwareConstraint = "GpuHardwareConstraint";
+        public const string CpuModelHardwareConstraint = "CpuModelHardwareConstraint";
         # pragma warning restore CS1591
     }
 
@@ -221,6 +222,31 @@ namespace QarnotSDK
         public MaximumRamHardware(decimal ram)
         {
             MaximumMemoryMB = ram;
+        }
+    }
+
+    /// <summary>
+    /// Constraint to request a specific CPU
+    /// </summary>
+    public class CpuModelHardware : HardwareConstraint
+    {
+        /// <summary>
+        /// Type of the Constraint.
+        /// </summary>
+        public override string Discriminator => HardwareConstraintDiscriminators.CpuModelHardwareConstraint;
+
+        /// <summary>
+        /// Requested CPU model
+        /// </summary>
+        public string CpuModel { get; set; }
+
+        /// <summary>
+        /// Request a specific CPU
+        /// </summary>
+        /// <param name="cpuModel">requested CPU model</param>
+        public CpuModelHardware(string cpuModel)
+        {
+            CpuModel = cpuModel;
         }
     }
 }

@@ -531,6 +531,7 @@ namespace QarnotSDK {
         public HardwareConstraints HardwareConstraints { get; set; }
         public uint? DefaultResourcesCacheTTLSec { get; set; }
         public Privileges Privileges { get; set; }
+        public RetrySettings RetrySettings { get; set; }
 
         internal TaskApi() {
             Constants = new List<KeyValHelper>();
@@ -543,6 +544,7 @@ namespace QarnotSDK {
             CompletedInstances = new List<QTaskCompletedInstance>();
             AutoDeleteOnCompletion = false;
             Privileges = new Privileges();
+            RetrySettings = new RetrySettings();
         }
     }
 

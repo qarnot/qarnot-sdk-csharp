@@ -964,6 +964,27 @@ namespace QarnotSDK {
         }
 
         /// <summary>
+        /// Search for CPU Model constraints matching a given CPU model search term.
+        /// </summary>
+        /// <param name="cpuModel">Search term to be used to match constraints</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>Matching CPU model constraints, ordered by relevancy.</returns>
+        public virtual async Task<IEnumerable<CpuModelHardware>> SearchCpuModelConstraints(string cpuModel, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            using (var response = await _client.GetAsync(
+                String.Format("/hardware-constraints/cpu-model-constraints/search?cpuModel={0}", HttpUtility.UrlEncode(cpuModel)),
+                cancellationToken))
+            {
+                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
+
+                var hardwareConstraints = await response.Content.ReadAsAsync<List<CpuModelHardware>>(
+                    Utils.GetCustomResponseFormatter(),
+                    cancellationToken);
+                return hardwareConstraints;
+            }
+        }
+
+        /// <summary>
         /// Retrieve all available hardware constraints.
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>

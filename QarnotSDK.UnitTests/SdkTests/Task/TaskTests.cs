@@ -924,6 +924,19 @@ namespace QarnotSDK.UnitTests
             await task.UpdateStatusAsync();
             Assert.False(task.Privileges.ExportApiAndStorageCredentialsInEnvironment);
         }
+
+        [Test]
+        public async Task CheckRetrySettingsTestValues()
+        {
+            string uuid = Guid.NewGuid().ToString();
+            QTask task = new QTask(Connect, uuid);
+            Assert.IsNotNull(task.RetrySettings);
+            Assert.IsNull(task.RetrySettings.MaxTotalRetries);
+            Assert.IsNull(task.RetrySettings.MaxPerInstanceRetries);
+            await task.UpdateStatusAsync();
+            Assert.AreEqual(12, task.RetrySettings.MaxTotalRetries);
+            Assert.AreEqual(12, task.RetrySettings.MaxPerInstanceRetries);
+        }
     }
 
 

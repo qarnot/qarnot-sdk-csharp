@@ -395,6 +395,7 @@ namespace QarnotSDK {
         /// How many times this task can be retrieved if it is stopped while running.
         /// </summary>
         [InternalDataApiName(Name = "MaxRetriesPerInstance", IsFilterable = false)]
+        [Obsolete("Prefer the use of the RetrySettings field and its MaxPerInstanceRetries property")]
         public virtual uint MaxRetriesPerInstance {
             get {
                 return _taskApi.MaxRetriesPerInstance;
@@ -630,6 +631,38 @@ namespace QarnotSDK {
             set
             {
                 _taskApi.Privileges = value;
+            }
+        }
+
+        /// <summary>
+        /// The task retry settings if instance fails.
+        /// </summary>
+        [InternalDataApiName(Name="RetrySettings")]
+        public virtual RetrySettings RetrySettings
+        {
+            get
+            {
+                return _taskApi.RetrySettings;
+            }
+            set
+            {
+                _taskApi.RetrySettings = value;
+            }
+        }
+
+        /// <summary>
+        /// The list of status of completed instances.
+        /// </summary>
+        [InternalDataApiName(Name="CompletedInstances")]
+        public virtual List<QTaskCompletedInstance> CompletedInstances
+        {
+            get
+            {
+                return _taskApi.CompletedInstances;
+            }
+            set
+            {
+                _taskApi.CompletedInstances = value;
             }
         }
 
