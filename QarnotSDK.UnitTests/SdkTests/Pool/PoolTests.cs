@@ -546,6 +546,17 @@ namespace QarnotSDK.UnitTests
         }
 
         [Test]
+        public async Task CheckDefaultTTLTestValues()
+        {
+            string uuid = Guid.NewGuid().ToString();
+            QPool pool = new QPool(Connect, uuid);
+            Assert.IsNull(pool.DefaultResourcesCacheTTLSec);
+            await pool.UpdateStatusAsync();
+            Assert.IsNotNull(pool.DefaultResourcesCacheTTLSec);
+            Assert.AreEqual(7776000, pool.DefaultResourcesCacheTTLSec);
+        }
+
+        [Test]
         public async Task CheckPrivilegesTestValues()
         {
             string uuid = Guid.NewGuid().ToString();
