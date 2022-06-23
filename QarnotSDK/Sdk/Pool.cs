@@ -306,6 +306,22 @@ namespace QarnotSDK
         }
 
         /// <summary>
+        /// The default TTL for the pool resources cache.
+        /// </summary>
+        [InternalDataApiName(Name="DefaultResourcesCacheTTLSec")]
+        public virtual uint? DefaultResourcesCacheTTLSec
+        {
+            get
+            {
+                return _poolApi.DefaultResourcesCacheTTLSec;
+            }
+            set
+            {
+                _poolApi.DefaultResourcesCacheTTLSec = value;
+            }
+        }
+
+        /// <summary>
         /// The pool privileges list.
         /// </summary>
         [InternalDataApiName(Name="Privileges")]

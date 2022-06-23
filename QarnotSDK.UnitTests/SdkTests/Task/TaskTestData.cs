@@ -308,7 +308,8 @@ namespace QarnotSDK.UnitTests
             ""credits"": 0.01,
             ""privileges"": {
                 ""exportApiAndStorageCredentialsInEnvironment"": false
-            }
+            },
+            ""defaultResourcesCacheTTLSec"": 7776000
         }";
 
 

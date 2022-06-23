@@ -304,7 +304,8 @@ namespace QarnotSDK.UnitTests
             ""queuedOrRunningTaskInstancesCount"": 71,
             ""privileges"": {
                 ""exportApiAndStorageCredentialsInEnvironment"": false
-            }
+            },
+            ""defaultResourcesCacheTTLSec"": 7776000
         }";
 
 

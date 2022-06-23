@@ -529,7 +529,7 @@ namespace QarnotSDK {
         public TimeSpan CompletionTimeToLive { get; set; }
         public bool? WaitForPoolResourcesSynchronization { get; set; }
         public HardwareConstraints HardwareConstraints { get; set; }
-        public int? DefaultResourcesCacheTTLSec { get; set; }
+        public uint? DefaultResourcesCacheTTLSec { get; set; }
         public Privileges Privileges { get; set; }
 
         internal TaskApi() {

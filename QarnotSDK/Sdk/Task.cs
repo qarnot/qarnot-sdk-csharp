@@ -602,6 +602,22 @@ namespace QarnotSDK {
         }
 
         /// <summary>
+        /// The default TTL for the task resources cache.
+        /// </summary>
+        [InternalDataApiName(Name="DefaultResourcesCacheTTLSec")]
+        public virtual uint? DefaultResourcesCacheTTLSec
+        {
+            get
+            {
+                return _taskApi.DefaultResourcesCacheTTLSec;
+            }
+            set
+            {
+                _taskApi.DefaultResourcesCacheTTLSec = value;
+            }
+        }
+
+        /// <summary>
         /// The task privileges list.
         /// </summary>
         [InternalDataApiName(Name="Privileges")]
