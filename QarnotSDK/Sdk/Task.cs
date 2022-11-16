@@ -633,6 +633,22 @@ namespace QarnotSDK {
             }
         }
 
+        /// <summary>
+        /// The task retry settings if instance fails.
+        /// </summary>
+        [InternalDataApiName(Name="RetrySettings")]
+        public virtual RetrySettings RetrySettings
+        {
+            get
+            {
+                return _taskApi.RetrySettings;
+            }
+            set
+            {
+                _taskApi.RetrySettings = value;
+            }
+        }
+
 
         /// <summary>
         /// Queue in-pool task execution behind pool resources update.

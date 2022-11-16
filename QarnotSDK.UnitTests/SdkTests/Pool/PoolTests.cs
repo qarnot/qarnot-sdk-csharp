@@ -566,6 +566,19 @@ namespace QarnotSDK.UnitTests
             await pool.UpdateStatusAsync();
             Assert.False(pool.Privileges.ExportApiAndStorageCredentialsInEnvironment);
         }
+
+        [Test]
+        public async Task CheckDefaultRetrySettingsTestValues()
+        {
+            string uuid = Guid.NewGuid().ToString();
+            QPool pool = new QPool(Connect, uuid);
+            Assert.IsNotNull(pool.DefaultRetrySettings);
+            Assert.IsNull(pool.DefaultRetrySettings.MaxTotalRetries);
+            Assert.IsNull(pool.DefaultRetrySettings.MaxPerInstanceRetries);
+            await pool.UpdateStatusAsync();
+            Assert.AreEqual(12, pool.DefaultRetrySettings.MaxTotalRetries);
+            Assert.AreEqual(12, pool.DefaultRetrySettings.MaxPerInstanceRetries);
+        }
     }
 
     [TestFixture]

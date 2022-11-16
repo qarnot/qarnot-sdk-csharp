@@ -337,6 +337,22 @@ namespace QarnotSDK
             }
         }
 
+        /// <summary>
+        /// The default retry settings for the pool tasks.
+        /// </summary>
+        [InternalDataApiName(Name="DefaultRetrySettings")]
+        public virtual RetrySettings DefaultRetrySettings
+        {
+            get
+            {
+                return _poolApi.DefaultRetrySettings;
+            }
+            set
+            {
+                _poolApi.DefaultRetrySettings = value;
+            }
+        }
+
         private Dictionary<string, string> _constants { get; set; }
 
         /// <summary>
