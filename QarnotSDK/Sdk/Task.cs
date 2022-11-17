@@ -395,6 +395,7 @@ namespace QarnotSDK {
         /// How many times this task can be retrieved if it is stopped while running.
         /// </summary>
         [InternalDataApiName(Name = "MaxRetriesPerInstance", IsFilterable = false)]
+        [Obsolete("Prefer the use of the RetrySettings field and its MaxPerInstanceRetries property")]
         public virtual uint MaxRetriesPerInstance {
             get {
                 return _taskApi.MaxRetriesPerInstance;
