@@ -650,6 +650,22 @@ namespace QarnotSDK {
             }
         }
 
+        /// <summary>
+        /// The list of status of completed instances.
+        /// </summary>
+        [InternalDataApiName(Name="CompletedInstances")]
+        public virtual List<QTaskCompletedInstance> CompletedInstances
+        {
+            get
+            {
+                return _taskApi.CompletedInstances;
+            }
+            set
+            {
+                _taskApi.CompletedInstances = value;
+            }
+        }
+
 
         /// <summary>
         /// Queue in-pool task execution behind pool resources update.
