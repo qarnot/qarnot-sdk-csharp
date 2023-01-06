@@ -67,11 +67,11 @@ namespace QarnotSDK
                 return _resources.Select(bucket => (QAbstractStorage) bucket).ToList();
             }
             set {
-                _resources = QBucket.GetBucketsFromResources(value);
+                _resources = QBucket.GetBucketsFromResources(value).OfType<QAbstractStorage>().ToList();
             }
         }
 
-        private List<QBucket> _resources { get; set; }
+        private List<QAbstractStorage> _resources { get; set; }
 
         /// <summary>
         /// Qarnot resources buckets bound to this pool.
@@ -80,7 +80,7 @@ namespace QarnotSDK
         [InternalDataApiName(Name="ResourceBuckets", IsFilterable=false)]
         public virtual IEnumerable<QBucket> ResourcesBuckets {
             get {
-                return _resources;
+                return _resources.OfType<QBucket>();
             }
         }
 
@@ -614,7 +614,7 @@ namespace QarnotSDK
             _poolApi.Profile = profile;
             _poolApi.InstanceCount = initialNodeCount;
             _poolApi.TaskDefaultWaitForPoolResourcesSynchronization = taskDefaultWaitForPoolResourcesSynchronization;
-            _resources = new List<QBucket>();
+            _resources = new List<QAbstractStorage>();
             _constants = new Dictionary<string, string>();
             _constraints = new Dictionary<string, string>();
 
@@ -629,16 +629,21 @@ namespace QarnotSDK
         /// </summary>
         /// <param name="connection">The inner connection object.</param>
         /// <param name="uuid">The Uuid of an already existing pool.</param>
-        public QPool(Connection connection, Guid uuid) : this(connection, uuid.ToString()) {
+        /// <param name="updateFromApi">Update the pool from api values (if true, will call compute API to retrieve pool info)</param>
+        public QPool(Connection connection, Guid uuid, bool updateFromApi = false) : this(connection, uuid.ToString()) {
             _uri = "pools/" + uuid.ToString();
             _poolApi.Uuid = uuid;
+            if (updateFromApi)
+            {
+                UpdateStatusAsync().Wait();
+            }
         }
 
         internal QPool() {}
 
         internal QPool(Connection qapi, PoolApi poolApi) : base(qapi, poolApi) {
             _uri = "pools/" + poolApi.Uuid.ToString();
-            if (_resources == null) _resources = new List<QBucket>();
+            if (_resources == null) _resources = new List<QAbstractStorage>();
             if (_constants == null) _constants = new Dictionary<string, string>();
             if (_constraints == null) _constraints = new Dictionary<string, string>();
             SyncFromApiObjectAsync(poolApi).Wait();
@@ -647,7 +652,7 @@ namespace QarnotSDK
         internal async new Task<QPool> InitializeAsync(Connection qapi, PoolApi poolApi) {
             await base.InitializeAsync(qapi, poolApi);
             _uri = "pools/" + poolApi.Uuid.ToString();
-            if (_resources == null) _resources = new List<QBucket>();
+            if (_resources == null) _resources = new List<QAbstractStorage>();
             if (_constants == null) _constants = new Dictionary<string, string>();
             if (_constraints == null) _constraints = new Dictionary<string, string>();
             await SyncFromApiObjectAsync(poolApi);
@@ -772,7 +777,7 @@ namespace QarnotSDK
             foreach(var c in _constraints) { _poolApi.Constraints.Add(new KeyValHelper(c.Key, c.Value)); }
 
             _poolApi.ResourceBuckets = new List<string>();
-            bool useAdvancedResources = _resources.Any(res => res?.Filtering != null || res?.ResourcesTransformation != null || res?.CacheTTLSec != null);
+            bool useAdvancedResources = ResourcesBuckets.Any(res => res?.Filtering != null || res?.ResourcesTransformation != null || res?.CacheTTLSec != null);
             foreach (var item in _resources) {
                 var resQBucket = item as QBucket;
                 if (resQBucket != null) {

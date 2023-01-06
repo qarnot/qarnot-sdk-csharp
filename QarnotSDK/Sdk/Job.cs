@@ -44,6 +44,8 @@ namespace QarnotSDK {
         /// </summary>
         protected string _uri = null;
 
+        private QPool _pool = null;
+
         internal JobApi _jobApi { get; set; }
 
         /// <summary>
@@ -256,7 +258,11 @@ namespace QarnotSDK {
             {
                 if (_jobApi.PoolUuid.IsNullOrEmpty())
                     return null;
-                return new QPool(_api, new Guid(_jobApi.PoolUuid));
+                else if (_pool == default)
+                {
+                    _pool = new QPool(_api, new Guid(_jobApi.PoolUuid), true);
+                }
+                return _pool;
             }
         }
 

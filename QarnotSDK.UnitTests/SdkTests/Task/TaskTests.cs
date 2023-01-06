@@ -920,7 +920,7 @@ namespace QarnotSDK.UnitTests
             string uuid = Guid.NewGuid().ToString();
             QTask task = new QTask(Connect, uuid);
             Assert.IsNotNull(task.Privileges);
-            Assert.False(task.Privileges.ExportApiAndStorageCredentialsInEnvironment);
+            Assert.IsNull(task.Privileges.ExportApiAndStorageCredentialsInEnvironment);
             await task.UpdateStatusAsync();
             Assert.False(task.Privileges.ExportApiAndStorageCredentialsInEnvironment);
         }
@@ -936,6 +936,29 @@ namespace QarnotSDK.UnitTests
             await task.UpdateStatusAsync();
             Assert.AreEqual(12, task.RetrySettings.MaxTotalRetries);
             Assert.AreEqual(12, task.RetrySettings.MaxPerInstanceRetries);
+        }
+
+        [Test]
+        public async Task CheckTaskPoolNameValues()
+        {
+            string poolUuid = PoolTestsData.PoolResponseUuid;
+            var pool = new QPool(Connect, Guid.NewGuid().ToString());
+            HttpHandler.ResponseBody = PoolTestsData.PoolResponseBody;
+            await pool.UpdateStatusAsync();
+            Assert.AreEqual(poolUuid, pool.Uuid.ToString());
+            Assert.False(string.IsNullOrWhiteSpace(pool.Name));
+            Assert.False(string.IsNullOrWhiteSpace(pool.Shortname));
+
+            HttpHandler.ResponseBody = TaskTestsData.TaskInPoolResponseBody;
+            QTask task = new QTask(Connect, Guid.NewGuid().ToString(), pool);
+            await task.UpdateStatusAsync();
+            Assert.AreEqual(poolUuid, task.PoolUuid.ToString());
+
+            HttpHandler.ResponseBody = PoolTestsData.PoolResponseBody;
+            var taskPool = task.Pool;
+            Assert.AreEqual(poolUuid, taskPool.Uuid.ToString());
+            Assert.AreEqual(pool.Name, taskPool.Name);
+            Assert.AreEqual(pool.Shortname, taskPool.Shortname);
         }
     }
 

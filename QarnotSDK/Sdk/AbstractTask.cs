@@ -185,6 +185,23 @@ namespace QarnotSDK {
 
 
         #region stdin/stdout
+
+        /// <summary>
+        /// Copies the full content of the outputs received from the endpoint to the given stream
+        /// Note: the Content will rotate if it's too large
+        /// </summary>
+        /// <param name="destinationStream">The destination stream.</param>
+        /// <param name="endpoint">Endpoint from which to get the output content.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns></returns>
+        protected virtual async Task CopyOutputsToAsync(Stream destinationStream, string endpoint, CancellationToken cancellationToken = default(CancellationToken)) {
+            using (var response = await _api._client.GetAsync(endpoint, cancellationToken))
+            {
+                await Utils.LookForErrorAndThrowAsync(_api._client, response, cancellationToken);
+                await response.Content.CopyToAsync(destinationStream);
+            }
+        }
+
         /// <summary>
         /// Copies the full standard output to the given stream.
         /// Note: the standard output will rotate if it's too large.
@@ -193,11 +210,20 @@ namespace QarnotSDK {
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
         public virtual async Task CopyStdoutToAsync(Stream destinationStream, CancellationToken cancellationToken = default(CancellationToken)) {
-            using (var response = await _api._client.GetAsync(_uri + "/stdout", cancellationToken))
-            {
-                await Utils.LookForErrorAndThrowAsync(_api._client, response, cancellationToken);
-                await response.Content.CopyToAsync(destinationStream);
-            }
+            await CopyOutputsToAsync(destinationStream, _uri + "/stdout", cancellationToken);
+        }
+
+        /// <summary>
+        /// Copies the full standard output of the task instance to the given stream.
+        /// Note: the standard output will rotate if it's too large.
+        /// </summary>
+        /// <param name="destinationStream">The destination stream.</param>
+        /// <param name="instanceId">(optional) Id of the instance of which we want the stdout. Will retrieve the stdout of all instances if null</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns></returns>
+        public virtual async Task CopyStdoutToAsync(Stream destinationStream, uint? instanceId, CancellationToken cancellationToken = default(CancellationToken)) {
+            var endpoint = string.Format("{0}/stdout/{1}", _uri, instanceId);
+            await CopyOutputsToAsync(destinationStream, endpoint, cancellationToken);
         }
 
         /// <summary>
@@ -208,7 +234,32 @@ namespace QarnotSDK {
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
         public virtual async Task CopyStderrToAsync(Stream destinationStream, CancellationToken cancellationToken = default(CancellationToken)) {
-            using (var response = await _api._client.GetAsync(_uri + "/stderr", cancellationToken))
+            await CopyOutputsToAsync(destinationStream, _uri + "/stderr", cancellationToken);
+        }
+
+        /// <summary>
+        /// Copies the full standard error of the task instance to the given stream.
+        /// Note: the standard error will rotate if it's too large.
+        /// </summary>
+        /// <param name="destinationStream">The destination stream.</param>
+        /// <param name="instanceId">(optional) Id of the instance of which we want the stderr. Will retrieve the stderr of all instances if null</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns></returns>
+        public virtual async Task CopyStderrToAsync(Stream destinationStream, uint? instanceId, CancellationToken cancellationToken = default(CancellationToken)) {
+            var endpoint = string.Format("{0}/stderr/{1}", _uri, instanceId);
+            await CopyOutputsToAsync(destinationStream, endpoint, cancellationToken);
+        }
+
+        /// <summary>
+        /// Copies the fresh new content of the outputs since the last call to the given stream.
+        /// </summary>
+        /// <param name="destinationStream">The destination stream.</param>
+        /// <param name="endpoint">Endpoint from which to get the output content.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns></returns>
+        protected virtual async Task CopyFreshOutputsToAsync(Stream destinationStream, string endpoint, CancellationToken cancellationToken = default(CancellationToken)) {
+            if (_api.IsReadOnly) throw new Exception("Can't retrieve fresh outputs, this connection is configured in read-only mode");
+            using (var response = await _api._client.PostAsync(endpoint, null, cancellationToken))
             {
                 await Utils.LookForErrorAndThrowAsync(_api._client, response, cancellationToken);
                 await response.Content.CopyToAsync(destinationStream);
@@ -222,27 +273,41 @@ namespace QarnotSDK {
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
         public virtual async Task CopyFreshStdoutToAsync(Stream destinationStream, CancellationToken cancellationToken = default(CancellationToken)) {
-            if (_api.IsReadOnly) throw new Exception("Can't retrieve fresh standard output, this connection is configured in read-only mode");
-            using (var response = await _api._client.PostAsync(_uri + "/stdout", null, cancellationToken))
-            {
-                await Utils.LookForErrorAndThrowAsync(_api._client, response, cancellationToken);
-                await response.Content.CopyToAsync(destinationStream);
-            }
+            await CopyFreshOutputsToAsync(destinationStream, _uri + "/stdout", cancellationToken);
         }
 
         /// <summary>
-        /// Copies the fresh new standard error since the last call to the given stream.
+        /// Copies the fresh new standard output of the task instance since the last call to the given stream.
+        /// </summary>
+        /// <param name="destinationStream">The destination stream.</param>
+        /// <param name="instanceId">(optional) Id of the instance of which we want the fresh stdout. Will retrieve the fresh stdout of all instances if null</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns></returns>
+        public virtual async Task CopyFreshStdoutToAsync(Stream destinationStream, uint? instanceId, CancellationToken cancellationToken = default(CancellationToken)) {
+            var endpoint = string.Format("{0}/stdout/{1}", _uri, instanceId);
+            await CopyFreshOutputsToAsync(destinationStream, endpoint, cancellationToken);
+        }
+
+        /// <summary>
+        /// Copies the fresh new standard error of the task instance since the last call to the given stream.
         /// </summary>
         /// <param name="destinationStream">The destination stream.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
         public virtual async Task CopyFreshStderrToAsync(Stream destinationStream, CancellationToken cancellationToken = default(CancellationToken)) {
-            if (_api.IsReadOnly) throw new Exception("Can't retrieve fresh standard error, this connection is configured in read-only mode");
-            using (var response = await _api._client.PostAsync(_uri + "/stderr", null, cancellationToken))
-            {
-                await Utils.LookForErrorAndThrowAsync(_api._client, response, cancellationToken);
-                await response.Content.CopyToAsync(destinationStream);
-            }
+            await CopyFreshOutputsToAsync(destinationStream, _uri + "/stderr", cancellationToken);
+        }
+
+        /// <summary>
+        /// Copies the fresh new standard error of the task instance since the last call to the given stream.
+        /// </summary>
+        /// <param name="destinationStream">The destination stream.</param>
+        /// <param name="instanceId">(optional) Id of the instance of which we want the fresh stderr. Will retrieve the fresh stderr of all instances if null</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns></returns>
+        public virtual async Task CopyFreshStderrToAsync(Stream destinationStream, uint? instanceId, CancellationToken cancellationToken = default(CancellationToken)) {
+            var endpoint = string.Format("{0}/stderr/{1}", _uri, instanceId);
+            await CopyFreshOutputsToAsync(destinationStream, endpoint, cancellationToken);
         }
 
         /// <summary>
@@ -254,6 +319,23 @@ namespace QarnotSDK {
         public virtual async Task<string> StdoutAsync(CancellationToken cancellationToken = default(CancellationToken)) {
             using (MemoryStream ms = new MemoryStream()) {
                 await CopyStdoutToAsync(ms, cancellationToken);
+                ms.Position = 0;
+                using (var reader = new StreamReader(ms)) {
+                    return await reader.ReadToEndAsync();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns the full standard output of the task instance.
+        /// Note: the standard output will rotate if it's too large.
+        /// </summary>
+        /// <param name="instanceId">(optional) Id of the instance of which we want the stdout. Will retrieve the stdout of all instances if null.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>The instance standard output.</returns>
+        public virtual async Task<string> StdoutAsync(uint? instanceId, CancellationToken cancellationToken = default(CancellationToken)) {
+            using (MemoryStream ms = new MemoryStream()) {
+                await CopyStdoutToAsync(ms, instanceId, cancellationToken);
                 ms.Position = 0;
                 using (var reader = new StreamReader(ms)) {
                     return await reader.ReadToEndAsync();
@@ -278,6 +360,23 @@ namespace QarnotSDK {
         }
 
         /// <summary>
+        /// Return the full standard error of the task instance.
+        /// Note: the standard error will rotate if it's too large.
+        /// </summary>
+        /// <param name="instanceId">(optional) Id of the instance of which we want the stderr. Will retrieve the stderr of all instances if null.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>The instance standard error.</returns>
+        public virtual async Task<string> StderrAsync(uint? instanceId, CancellationToken cancellationToken = default(CancellationToken)) {
+            using (MemoryStream ms = new MemoryStream()) {
+                await CopyStderrToAsync(ms, instanceId, cancellationToken);
+                ms.Position = 0;
+                using (var reader = new StreamReader(ms)) {
+                    return await reader.ReadToEndAsync();
+                }
+            }
+        }
+
+        /// <summary>
         /// Returns the fresh new standard output since the last call.
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
@@ -293,6 +392,22 @@ namespace QarnotSDK {
         }
 
         /// <summary>
+        /// Returns the fresh new standard output of the task instance since the last call.
+        /// </summary>
+        /// <param name="instanceId">(optional) Id of the instance of which we want the fresh stdout. Will retrieve the fresh stdout of all instances if null.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>The instance fresh standard output.</returns>
+        public virtual async Task<string> FreshStdoutAsync(uint? instanceId, CancellationToken cancellationToken = default(CancellationToken)) {
+            using (MemoryStream ms = new MemoryStream()) {
+                await CopyFreshStdoutToAsync(ms, instanceId, cancellationToken);
+                ms.Position = 0;
+                using (var reader = new StreamReader(ms)) {
+                    return await reader.ReadToEndAsync();
+                }
+            }
+        }
+
+        /// <summary>
         /// Returns the fresh new standard error since the last call.
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
@@ -300,6 +415,22 @@ namespace QarnotSDK {
         public virtual async Task<string> FreshStderrAsync(CancellationToken cancellationToken = default(CancellationToken)) {
             using (MemoryStream ms = new MemoryStream()) {
                 await CopyFreshStderrToAsync(ms, cancellationToken);
+                ms.Position = 0;
+                using (var reader = new StreamReader(ms)) {
+                    return await reader.ReadToEndAsync();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns the fresh new standard error of the task instance since the last call.
+        /// </summary>
+        /// <param name="instanceId">(optional) Id of the instance of which we want the fresh stderr. Will retrieve the fresh stderr of all instances if null.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>The instance fresh standard error.</returns>
+        public virtual async Task<string> FreshStderrAsync(uint? instanceId, CancellationToken cancellationToken = default(CancellationToken)) {
+            using (MemoryStream ms = new MemoryStream()) {
+                await CopyFreshStderrToAsync(ms, instanceId, cancellationToken);
                 ms.Position = 0;
                 using (var reader = new StreamReader(ms)) {
                     return await reader.ReadToEndAsync();

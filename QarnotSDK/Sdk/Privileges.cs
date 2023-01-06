@@ -10,6 +10,6 @@ namespace QarnotSDK
         /// Default is false.
         /// </summary>
         /// <example>true</example>
-        public bool ExportApiAndStorageCredentialsInEnvironment { get; set; }
+        public bool? ExportApiAndStorageCredentialsInEnvironment { get; set; }
     }
 }

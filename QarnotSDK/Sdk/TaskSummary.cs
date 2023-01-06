@@ -14,6 +14,8 @@ namespace QarnotSDK {
 
         private AdvancedRanges _advancedRange = null;
 
+        private QPool _pool = null;
+
         /// <summary>
         /// The task shortname identifier. The shortname is provided by the user. It has to be unique.
         /// </summary>
@@ -43,7 +45,16 @@ namespace QarnotSDK {
         /// <summary>
         /// The pool where the task is running or null if the task doesn't belong to a pool.
         /// </summary>
-        public virtual QPool Pool { get { return (_taskApi.PoolUuid == null || _taskApi.PoolUuid == Guid.Empty.ToString()) ? null : new QPool(_api, new Guid(_taskApi.PoolUuid)); } }
+        public virtual QPool Pool { get {
+            if (_taskApi.PoolUuid.IsNullOrEmpty() || _taskApi.PoolUuid == Guid.Empty.ToString()) {
+                return null;
+            }
+            else if (_pool == null)
+            {
+                _pool = new QPool(_api, new Guid(_taskApi.PoolUuid), true);
+            }
+            return _pool;
+        } }
 
         /// <summary>
         /// True if the task is completed or false if the task is still running or deploying.
