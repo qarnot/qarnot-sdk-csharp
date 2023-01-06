@@ -920,7 +920,7 @@ namespace QarnotSDK.UnitTests
             string uuid = Guid.NewGuid().ToString();
             QTask task = new QTask(Connect, uuid);
             Assert.IsNotNull(task.Privileges);
-            Assert.False(task.Privileges.ExportApiAndStorageCredentialsInEnvironment);
+            Assert.IsNull(task.Privileges.ExportApiAndStorageCredentialsInEnvironment);
             await task.UpdateStatusAsync();
             Assert.False(task.Privileges.ExportApiAndStorageCredentialsInEnvironment);
         }

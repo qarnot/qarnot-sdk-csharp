@@ -562,7 +562,7 @@ namespace QarnotSDK.UnitTests
             string uuid = Guid.NewGuid().ToString();
             QPool pool = new QPool(Connect, uuid);
             Assert.IsNotNull(pool.Privileges);
-            Assert.False(pool.Privileges.ExportApiAndStorageCredentialsInEnvironment);
+            Assert.IsNull(pool.Privileges.ExportApiAndStorageCredentialsInEnvironment);
             await pool.UpdateStatusAsync();
             Assert.False(pool.Privileges.ExportApiAndStorageCredentialsInEnvironment);
         }
