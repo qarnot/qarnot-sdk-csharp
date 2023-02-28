@@ -83,14 +83,15 @@ namespace QarnotSDK {
         [InternalDataApiName(IsFilterable=false, IsSelectable=false)]
         public virtual List<QAbstractStorage> Resources {
             get {
-                return _resources.Select(bucket => (QAbstractStorage) bucket).ToList();
+                return _resources;
             }
             set {
-                _resources = QBucket.GetBucketsFromResources(value);
+                _resources = QBucket.GetBucketsFromResources(value).OfType<QAbstractStorage>().ToList();
             }
         }
 
-        private List<QBucket> _resources { get; set; }
+        //private List<QBucket> _resources { get; set; }
+        private List<QAbstractStorage> _resources { get; set; }
 
         /// <summary>
         /// Qarnot resources buckets bound to this task.
@@ -99,7 +100,7 @@ namespace QarnotSDK {
         [InternalDataApiName(Name="ResourceBuckets", IsFilterable=false)]
         public virtual IEnumerable<QBucket> ResourcesBuckets {
             get {
-                return _resources;
+                return _resources.OfType<QBucket>();
             }
         }
 
@@ -697,7 +698,7 @@ namespace QarnotSDK {
             : base (connection, new TaskApi()) {
             _taskApi.Name = name;
             _taskApi.Profile = profile;
-            _resources = new List<QBucket>();
+            _resources = new List<QAbstractStorage>();
             _constants = new Dictionary<string, string>();
             _constraints = new Dictionary<string, string>();
             _taskApi.Shortname = shortname;
@@ -809,14 +810,14 @@ namespace QarnotSDK {
         }
 
         internal QTask() {
-            _resources = new List<QBucket>();
+            _resources = new List<QAbstractStorage>();
             _constants = new Dictionary<string, string>();
             _constraints = new Dictionary<string, string>();
         }
         internal async new Task<QTask> InitializeAsync(Connection qapi, TaskApi taskApi) {
             await base.InitializeAsync(qapi, taskApi);
              _uri = "tasks/" + taskApi.Uuid.ToString();
-            if (_resources == null) _resources = new List<QBucket>();
+            if (_resources == null) _resources = new List<QAbstractStorage>();
             if (_constants == null) _constants = new Dictionary<string, string>();
             if (_constraints == null) _constraints = new Dictionary<string, string>();
             await SyncFromApiObjectAsync(taskApi);
@@ -1077,7 +1078,7 @@ namespace QarnotSDK {
 
             // Build the resource bucket list
             _taskApi.ResourceBuckets = new List<string>();
-            bool useAdvancedResources = _resources.Any(res => res?.Filtering != null || res?.ResourcesTransformation != null || res?.CacheTTLSec != null);
+            bool useAdvancedResources = ResourcesBuckets.Any(res => res?.Filtering != null || res?.ResourcesTransformation != null || res?.CacheTTLSec != null);
             foreach (var item in _resources) {
                 var resQBucket = item as QBucket;
                 if (resQBucket != null) {
@@ -1243,7 +1244,7 @@ namespace QarnotSDK {
             try {
                 if (_api.IsReadOnly) throw new Exception("Can't delete tasks, this connection is configured in read-only mode");
 
-                var resourcesToDelete = new List<QBucket>();
+                var resourcesToDelete = new List<QAbstractStorage>();
                 QAbstractStorage resultToDelete = null;
 
                 if(purgeResources)
