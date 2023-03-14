@@ -629,9 +629,14 @@ namespace QarnotSDK
         /// </summary>
         /// <param name="connection">The inner connection object.</param>
         /// <param name="uuid">The Uuid of an already existing pool.</param>
-        public QPool(Connection connection, Guid uuid) : this(connection, uuid.ToString()) {
+        /// <param name="updateFromApi">Update the pool from api values (if true, will call compute API to retrieve pool info)</param>
+        public QPool(Connection connection, Guid uuid, bool updateFromApi = false) : this(connection, uuid.ToString()) {
             _uri = "pools/" + uuid.ToString();
             _poolApi.Uuid = uuid;
+            if (updateFromApi)
+            {
+                UpdateStatusAsync().Wait();
+            }
         }
 
         internal QPool() {}

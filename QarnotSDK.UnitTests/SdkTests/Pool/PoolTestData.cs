@@ -20,7 +20,7 @@ namespace QarnotSDK.UnitTests
             },
             ""uuid"": ""f78fdff8-7081-46e1-bb2f-d9cd4e185ece"",
             ""name"": ""pool_name"",
-            ""shortname"": ""f78fdff8-7081-46e1-bb2f-d9cd4e185ece"",
+            ""shortname"": ""f78fdff8-7081-46e1-bb2f-d9cd4e185ece-shortname"",
             ""profile"": ""docker-batch"",
             ""state"": ""Success"",
             ""instanceCount"": 3,
