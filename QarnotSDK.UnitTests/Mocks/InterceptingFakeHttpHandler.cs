@@ -8,9 +8,6 @@ namespace QarnotSDK.UnitTests
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
-    using Newtonsoft.Json;
-    using NUnit.Framework;
-    using QarnotSDK;
 
     public class ParsedRequest
     {

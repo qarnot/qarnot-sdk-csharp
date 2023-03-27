@@ -67,18 +67,34 @@ build_release_sdk_csharp:
 
 # --- Testing & Coverage --- #
 
-junit_tests_sdk_csharp:
+unit_tests_sdk_csharp:
   stage: test
   needs:
     - job: build_release_sdk_csharp
-  variables:
-    EXTRA_REQUIREMENTS_FILE: requirements-test.txt
   script:
-    - dotnet test -c Debug --logger:"junit;LogFilePath=report.xml" QarnotSDK.UnitTests/QarnotSDK.UnitTests.csproj || export EXIT_CODE=$?;
+    - dotnet test -c Debug --logger:"junit;LogFilePath=report.xml" QarnotSDK.UnitTests/QarnotSDK.UnitTests.csproj
+  after_script:
     - export TEST_REPORT_FILE_PATH=$(find QarnotSDK.UnitTests -name "report.xml")
     - echo "$TEST_REPORT_FILE_PATH"
-    - cp "$TEST_REPORT_FILE_PATH" report-sdk-csharp-test.xml
-    - exit $EXIT_CODE
+    - cp "$TEST_REPORT_FILE_PATH" report-sdk-csharp-unit-test.xml
+  artifacts:
+    when: always
+    expire_in: 1hour
+    paths:
+      - ./report-sdk-csharp-test.xml
+    reports:
+      junit: ./report-sdk-csharp-test.xml
+
+integration_tests_sdk_csharp:
+  stage: test
+  needs:
+    - job: build_release_sdk_csharp
+  script:
+    - dotnet test -c Debug --logger:"junit;LogFilePath=report.xml" QarnotSDK.IntegrationTests/QarnotSDK.IntegrationTests.csproj
+  after_script:
+    - export TEST_REPORT_FILE_PATH=$(find QarnotSDK.IntegrationTests -name "report.xml")
+    - echo "$TEST_REPORT_FILE_PATH"
+    - cp "$TEST_REPORT_FILE_PATH" report-sdk-csharp-integration-test.xml
   artifacts:
     when: always
     expire_in: 1hour
