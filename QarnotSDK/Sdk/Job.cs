@@ -260,7 +260,14 @@ namespace QarnotSDK {
                     return null;
                 else if (_pool == default)
                 {
-                    _pool = new QPool(_api, new Guid(_jobApi.PoolUuid), true);
+                    try
+                    {
+                        _pool = new QPool(_api, new Guid(_jobApi.PoolUuid), true);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("Warning: Could not load pool {0} info from API for job {1}. {2}", _jobApi.PoolUuid, _jobApi.Uuid, e);
+                    }
                 }
                 return _pool;
             }
@@ -287,7 +294,10 @@ namespace QarnotSDK {
             _jobApi.Name = name;
             _jobApi.Shortname = shortname;
             if (pool != null)
+            {
                 _jobApi.PoolUuid = pool.Uuid.ToString();
+                _pool = pool;
+            }
             _jobApi.UseDependencies = UseTaskDependencies;
             _uri = "jobs/" + _jobApi.Shortname;
         }
@@ -297,10 +307,15 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="connection">The inner connection object.</param>
         /// <param name="uuid">The Uuid of an already existing job.</param>
-        public QJob(Connection connection, Guid uuid) : this(connection, new JobApi())
+        /// <param name="updateFromApi">Update the job from api values (if true, will call compute API to retrieve job info)</param>
+        public QJob(Connection connection, Guid uuid, bool updateFromApi = false) : this(connection, new JobApi())
         {
             _uri = "jobs/" + uuid.ToString();
             _jobApi.Uuid = uuid;
+            if (updateFromApi)
+            {
+                UpdateStatusAsync().Wait();
+            }
         }
 
         /// <summary>

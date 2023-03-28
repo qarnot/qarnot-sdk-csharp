@@ -437,6 +437,7 @@ namespace QarnotSDK {
         public uint? DefaultResourcesCacheTTLSec { get; set; }
         public Privileges Privileges { get; set; }
         public RetrySettings DefaultRetrySettings { get; set; }
+        public Scaling Scaling { get; set; }
 
         internal PoolApi() {
             Constants = new List<KeyValHelper>();
@@ -446,10 +447,11 @@ namespace QarnotSDK {
             ResourceBuckets = new List<String>();
             AdvancedResourceBuckets = new List<ApiAdvancedResourceBucket>();
             Errors = new List<QPoolError>();
-            ElasticProperty = new QPoolElasticProperty();
+            ElasticProperty = null;
             AutoDeleteOnCompletion = false;
             Privileges = new Privileges();
             DefaultRetrySettings = new RetrySettings();
+            Scaling = null;
         }
     }
 }

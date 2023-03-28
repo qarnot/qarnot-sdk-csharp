@@ -61,6 +61,7 @@ namespace QarnotSDK {
         private bool _useStandaloneJob = false;
         private AdvancedRanges _advancedRange = null;
         private QPool _pool = null;
+        private QJob _job = null;
         /// <summary>
         /// The task shortname identifier. The shortname is provided by the user. It has to be unique.
         /// </summary>
@@ -351,7 +352,14 @@ namespace QarnotSDK {
             }
             else if (_pool == null)
             {
-                _pool = new QPool(_api, new Guid(_taskApi.PoolUuid), true);
+                try
+                {
+                    _pool = new QPool(_api, new Guid(_taskApi.PoolUuid), true);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Warning: Could not load pool {0} info from API for task {1}. {2}", _taskApi.PoolUuid, _taskApi.Uuid, e);
+                }
             }
             return _pool;
         } }
@@ -367,7 +375,23 @@ namespace QarnotSDK {
         /// The job the task is attached to or null if the task isn't attached to a job.
         /// </summary>
         [InternalDataApiName(IsFilterable=false, IsSelectable=false)]
-        public virtual QJob Job { get { return (_taskApi.JobUuid.IsNullOrEmpty() || _taskApi.JobUuid == Guid.Empty.ToString()) ? null : new QJob(_api, new Guid(_taskApi.JobUuid)); } }
+        public virtual QJob Job { get {
+            if (_taskApi.JobUuid.IsNullOrEmpty() || _taskApi.JobUuid == Guid.Empty.ToString()) {
+                return null;
+            }
+            else if (_job == null)
+            {
+                try
+                {
+                    _job = new QJob(_api, new Guid(_taskApi.JobUuid), true);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Warning: Could not load job {0} info from API for task {1}. {2}", _taskApi.JobUuid, _taskApi.Uuid, e);
+                }
+            }
+            return _job;
+        } }
 
         /// <summary>
         /// True if the task is completed or false if the task is still running or deploying.
@@ -754,6 +778,7 @@ namespace QarnotSDK {
             : this(connection, name, (string)null, instanceCount, shortname)
         {
             _taskApi.PoolUuid = pool.Uuid.ToString();
+            _pool = pool;
             _taskApi.WaitForPoolResourcesSynchronization = waitForPoolResourcesSynchronization;
         }
 
@@ -789,6 +814,7 @@ namespace QarnotSDK {
             string profile=default(string)) : this(connection, name, profile, instanceCount, shortname)
         {
             _taskApi.JobUuid = job.Uuid.ToString();
+            _job = job;
 
             if (job.PoolUuid == default(Guid))
                 _useStandaloneJob = true;

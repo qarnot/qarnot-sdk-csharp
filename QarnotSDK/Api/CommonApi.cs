@@ -1,5 +1,7 @@
 ﻿namespace QarnotSDK {
 
+    using System.Collections.Generic;
+
     // This class is used to serialize constants in pools and tasks
     internal class KeyValHelper {
         public string Key { get; set; }
@@ -18,13 +20,25 @@
     // This class is used to serialize errors
     internal class Error {
         public string Message { get; set; }
+        public ProblemDetailsWithErrors ProblemDetails { get; set; }
 
-        internal Error(string msg) {
+        internal Error(string msg, ProblemDetailsWithErrors problemDetails=null) {
             Message = msg;
+            ProblemDetails = problemDetails;
         }
 
         internal Error() {
         }
+    }
+
+
+    internal class ProblemDetailsWithErrors
+    {
+        public string Type { get; set; }
+        public string Title { get; set; }
+        public int Status { get; set; }
+        public string TraceId { get; set; }
+        public Dictionary<string, string[]> Errors { get; set; }
     }
 
 

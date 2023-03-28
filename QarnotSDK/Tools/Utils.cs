@@ -32,7 +32,13 @@ namespace QarnotSDK {
                 // First try to retrieve the error returned by the API
                 Error e;
                 try {
-                    e = await response.Content.ReadAsAsync<Error>(cancellationToken: ct);
+                    if (response.Content.Headers.ContentType?.MediaType == "application/problem+json") {
+                        var problemDetailsStr = await response.Content.ReadAsStringAsync();
+                        var problemDetails = JsonConvert.DeserializeObject<ProblemDetailsWithErrors>(problemDetailsStr);
+                        e = new Error(problemDetailsStr, problemDetails);
+                    } else {
+                        e = await response.Content.ReadAsAsync<Error>(cancellationToken: ct);
+                    }
                 } catch (Exception ex) {
                     e = new Error();
                     e.Message = ex.Message;
@@ -125,7 +131,9 @@ namespace QarnotSDK {
                 new JsonMediaTypeFormatter {
                     SerializerSettings = new JsonSerializerSettings {
                         Converters = new List<JsonConverter> {
-                            new HardwareConstraintsJsonConverter()
+                            new HardwareConstraintsJsonConverter(),
+                            new ScalingPolicyConverter(),
+                            new TimePeriodSpecificationConverter(),
                         }
                     }
                 }
