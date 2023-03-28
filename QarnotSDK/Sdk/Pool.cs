@@ -64,7 +64,7 @@ namespace QarnotSDK
         [InternalDataApiName(IsFilterable=false, IsSelectable=false)]
         public virtual List<QAbstractStorage> Resources {
             get {
-                return _resources.Select(bucket => (QAbstractStorage) bucket).ToList();
+                return _resources;
             }
             set {
                 _resources = QBucket.GetBucketsFromResources(value).OfType<QAbstractStorage>().ToList();
