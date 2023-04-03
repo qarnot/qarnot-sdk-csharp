@@ -352,7 +352,14 @@ namespace QarnotSDK {
             }
             else if (_pool == null)
             {
-                _pool = new QPool(_api, new Guid(_taskApi.PoolUuid), true);
+                try
+                {
+                    _pool = new QPool(_api, new Guid(_taskApi.PoolUuid), true);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Warning: Could not load pool {0} info from API for task {1}. {2}", _taskApi.PoolUuid, _taskApi.Uuid, e);
+                }
             }
             return _pool;
         } }
@@ -374,7 +381,14 @@ namespace QarnotSDK {
             }
             else if (_job == null)
             {
-                _job = new QJob(_api, new Guid(_taskApi.JobUuid), true);
+                try
+                {
+                    _job = new QJob(_api, new Guid(_taskApi.JobUuid), true);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Warning: Could not load job {0} info from API for task {1}. {2}", _taskApi.JobUuid, _taskApi.Uuid, e);
+                }
             }
             return _job;
         } }

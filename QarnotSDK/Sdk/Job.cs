@@ -260,7 +260,14 @@ namespace QarnotSDK {
                     return null;
                 else if (_pool == default)
                 {
-                    _pool = new QPool(_api, new Guid(_jobApi.PoolUuid), true);
+                    try
+                    {
+                        _pool = new QPool(_api, new Guid(_jobApi.PoolUuid), true);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("Warning: Could not load pool {0} info from API for job {1}. {2}", _jobApi.PoolUuid, _jobApi.Uuid, e);
+                    }
                 }
                 return _pool;
             }
