@@ -61,6 +61,7 @@ namespace QarnotSDK {
         private bool _useStandaloneJob = false;
         private AdvancedRanges _advancedRange = null;
         private QPool _pool = null;
+        private QJob _job = null;
         /// <summary>
         /// The task shortname identifier. The shortname is provided by the user. It has to be unique.
         /// </summary>
@@ -367,7 +368,16 @@ namespace QarnotSDK {
         /// The job the task is attached to or null if the task isn't attached to a job.
         /// </summary>
         [InternalDataApiName(IsFilterable=false, IsSelectable=false)]
-        public virtual QJob Job { get { return (_taskApi.JobUuid.IsNullOrEmpty() || _taskApi.JobUuid == Guid.Empty.ToString()) ? null : new QJob(_api, new Guid(_taskApi.JobUuid)); } }
+        public virtual QJob Job { get {
+            if (_taskApi.JobUuid.IsNullOrEmpty() || _taskApi.JobUuid == Guid.Empty.ToString()) {
+                return null;
+            }
+            else if (_job == null)
+            {
+                _job = new QJob(_api, new Guid(_taskApi.JobUuid), true);
+            }
+            return _job;
+        } }
 
         /// <summary>
         /// True if the task is completed or false if the task is still running or deploying.

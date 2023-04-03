@@ -297,10 +297,15 @@ namespace QarnotSDK {
         /// </summary>
         /// <param name="connection">The inner connection object.</param>
         /// <param name="uuid">The Uuid of an already existing job.</param>
-        public QJob(Connection connection, Guid uuid) : this(connection, new JobApi())
+        /// <param name="updateFromApi">Update the job from api values (if true, will call compute API to retrieve job info)</param>
+        public QJob(Connection connection, Guid uuid, bool updateFromApi = false) : this(connection, new JobApi())
         {
             _uri = "jobs/" + uuid.ToString();
             _jobApi.Uuid = uuid;
+            if (updateFromApi)
+            {
+                UpdateStatusAsync().Wait();
+            }
         }
 
         /// <summary>
