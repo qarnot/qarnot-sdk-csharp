@@ -294,7 +294,10 @@ namespace QarnotSDK {
             _jobApi.Name = name;
             _jobApi.Shortname = shortname;
             if (pool != null)
+            {
                 _jobApi.PoolUuid = pool.Uuid.ToString();
+                _pool = pool;
+            }
             _jobApi.UseDependencies = UseTaskDependencies;
             _uri = "jobs/" + _jobApi.Shortname;
         }

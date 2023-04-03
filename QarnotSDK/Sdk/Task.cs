@@ -778,6 +778,7 @@ namespace QarnotSDK {
             : this(connection, name, (string)null, instanceCount, shortname)
         {
             _taskApi.PoolUuid = pool.Uuid.ToString();
+            _pool = pool;
             _taskApi.WaitForPoolResourcesSynchronization = waitForPoolResourcesSynchronization;
         }
 
@@ -813,6 +814,7 @@ namespace QarnotSDK {
             string profile=default(string)) : this(connection, name, profile, instanceCount, shortname)
         {
             _taskApi.JobUuid = job.Uuid.ToString();
+            _job = job;
 
             if (job.PoolUuid == default(Guid))
                 _useStandaloneJob = true;
