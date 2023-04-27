@@ -6,6 +6,7 @@ namespace QarnotSDK.UnitTests
     using System.Threading.Tasks;
     using NUnit.Framework;
     using QarnotSDK;
+    using Newtonsoft.Json.Linq;
 
     [TestFixture]
     public class PoolTests
@@ -779,5 +780,192 @@ namespace QarnotSDK.UnitTests
             Assert.That(secondBucket.ResourcesTransformation, Is.Null);
             Assert.That(secondBucket.CacheTTLSec, Is.Null);
         }
+
+
+        [Test]
+        public async Task TestPoolBuildFromJson_WithNewScaling_UpdatesScaling()
+        {
+            HttpHandler.ResponseBody = PoolTestsData.PoolResponseWithScalingFullBody;
+            var pool = await Connect.RetrievePoolByUuidAsync("f78fdff8-7081-46e1-bb2f-d9cd4e185ece");
+
+            var expectedFirstPolicy = new ManagedTasksQueueScalingPolicy(
+                name: "managed-policy",
+                enabledPeriods: new() {
+                    new TimePeriodWeeklyRecurring(
+                        name: "thursday-evening",
+                        days: new() { DayOfWeek.Thursday },
+                        startTimeUtc: "19:30:00",
+                        endTimeUtc: "22:00:00"
+                    ),
+                    new TimePeriodWeeklyRecurring(
+                        name: "wednesdays",
+                        days: new() { DayOfWeek.Wednesday },
+                        startTimeUtc: "00:00:00",
+                        endTimeUtc: TimeOnly.MaxValue.ToString("o")
+                    )
+                },
+                minTotalSlots: 0,
+                maxTotalSlots: 10,
+                minIdleSlots: 1,
+                minIdleTimeSeconds: 90,
+                scalingFactor: 0.5f);
+
+            var expectedSecondPolicy = new FixedScalingPolicy(
+                "fixed-policy",
+                new() {
+                    new TimePeriodAlways("really-always")
+                },
+                4
+            );
+
+            Assert.That(pool.Scaling, Is.Not.Null);
+            Assert.That(pool.Scaling.ActivePolicyName, Is.EqualTo("managed-policy"));
+
+            Assert.That(pool.Scaling.Policies, Has.Count.EqualTo(2));
+
+            Assert.That(pool.Scaling.Policies[0], Is.EqualTo(expectedFirstPolicy));
+            Assert.That(pool.Scaling.Policies[1], Is.EqualTo(expectedSecondPolicy));
+            Assert.That(pool.Scaling.ActivePolicy, Is.EqualTo(expectedFirstPolicy));
+        }
+
+
+        [Test]
+        public async Task TestPoolWithScaling_IsProperlySubmitted()
+        {
+            var pool = new QPool();
+            var poolApi = new PoolApi() { Uuid = Guid.NewGuid() };
+            await pool.InitializeAsync(Connect, poolApi);
+
+            var firstPolicy = new ManagedTasksQueueScalingPolicy(
+                name: "managed-policy",
+                enabledPeriods: new() {
+                    new TimePeriodWeeklyRecurring(
+                        name: "thursday-evening",
+                        days: new() { DayOfWeek.Thursday },
+                        startTimeUtc: "19:30:00",
+                        endTimeUtc: "22:00:00"
+                    ),
+                    new TimePeriodWeeklyRecurring(
+                        name: "wednesdays",
+                        days: new() { DayOfWeek.Wednesday },
+                        startTimeUtc: "00:00:00",
+                        endTimeUtc: TimeOnly.MaxValue.ToString("o")
+                    )
+                },
+                minTotalSlots: 0,
+                maxTotalSlots: 10,
+                minIdleSlots: 1,
+                minIdleTimeSeconds: 90,
+                scalingFactor: 0.5f);
+
+            var secondPolicy = new FixedScalingPolicy(
+                "fixed-policy",
+                new() {
+                    new TimePeriodAlways("really-always")
+                },
+                4
+            );
+
+            var scaling = new Scaling(policies: new() { firstPolicy, secondPolicy });
+            pool.Scaling = scaling;
+
+            Assert.That(poolApi.Scaling, Is.EqualTo(scaling));
+
+
+            await pool.StartAsync("profile", 5);
+
+            var poolCreateRequest = HttpHandler.ParsedRequests.FirstOrDefault(req =>
+                req.Method.Contains("POST", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ApiUrl}/pool", StringComparison.InvariantCultureIgnoreCase));
+
+            Assert.That(poolCreateRequest, Is.Not.Null);
+
+            var poolCreateString = poolCreateRequest.Content;
+            dynamic poolCreateJson = JObject.Parse(poolCreateString);
+
+            Assert.That(poolCreateJson.Scaling, Is.Not.Null);
+            Assert.That(poolCreateJson.Scaling.Policies, Has.Count.EqualTo(2));
+
+            // Just testing that types are properly passed. The rest should be OK, the goal is not to unit test
+            // Newtonsoft.Json.
+            var firstPolicyJson = poolCreateJson.Scaling.Policies[0];
+            Assert.That(firstPolicyJson.Name.Value, Is.EqualTo("managed-policy"));
+            Assert.That(firstPolicyJson.Type.Value, Is.EqualTo("ManagedTasksQueue"));
+            Assert.That(firstPolicyJson.EnabledPeriods[0].Type.Value, Is.EqualTo("Weekly"));
+
+            var secondPolicyJson = poolCreateJson.Scaling.Policies[1];
+            Assert.That(secondPolicyJson.Name.Value, Is.EqualTo("fixed-policy"));
+            Assert.That(secondPolicyJson.Type.Value, Is.EqualTo("Fixed"));
+            Assert.That(secondPolicyJson.EnabledPeriods[0].Type.Value, Is.EqualTo("Always"));
+        }
+
+
+        [Test]
+        public async Task TestUpdatePoolScaling_IsProperlySubmitted()
+        {
+            var pool = new QPool();
+            var poolApi = new PoolApi() { Uuid = Guid.NewGuid() };
+            await pool.InitializeAsync(Connect, poolApi);
+
+            var firstPolicy = new ManagedTasksQueueScalingPolicy(
+                name: "managed-policy",
+                enabledPeriods: new() {
+                    new TimePeriodWeeklyRecurring(
+                        name: "thursday-evening",
+                        days: new() { DayOfWeek.Thursday },
+                        startTimeUtc: "19:30:00",
+                        endTimeUtc: "22:00:00"
+                    ),
+                    new TimePeriodWeeklyRecurring(
+                        name: "wednesdays",
+                        days: new() { DayOfWeek.Wednesday },
+                        startTimeUtc: "00:00:00",
+                        endTimeUtc: TimeOnly.MaxValue.ToString("o")
+                    )
+                },
+                minTotalSlots: 0,
+                maxTotalSlots: 10,
+                minIdleSlots: 1,
+                minIdleTimeSeconds: 90,
+                scalingFactor: 0.5f);
+
+            var secondPolicy = new FixedScalingPolicy(
+                "fixed-policy",
+                new() {
+                    new TimePeriodAlways("really-always")
+                },
+                4
+            );
+
+            var scaling = new Scaling(policies: new() { secondPolicy });
+            pool.Scaling = scaling;
+
+            await pool.UpdateScalingAsync(new Scaling(policies: new() { firstPolicy, secondPolicy }));
+
+            var poolScalingUpdate = HttpHandler.ParsedRequests.FirstOrDefault(req =>
+                req.Method.Contains("PUT", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ApiUrl}/pools/{pool.Uuid}/scaling", StringComparison.InvariantCultureIgnoreCase));
+
+            Assert.That(poolScalingUpdate, Is.Not.Null);
+
+            var scalingUpdateString = poolScalingUpdate.Content;
+            dynamic scalingUpdateJson = JObject.Parse(scalingUpdateString);
+
+            Assert.That(scalingUpdateJson, Is.Not.Null);
+            Assert.That(scalingUpdateJson.Policies, Has.Count.EqualTo(2));
+
+            // Just testing that types are properly passed. The rest should be OK, the goal is not to unit test
+            // Newtonsoft.Json.
+            var firstPolicyJson = scalingUpdateJson.Policies[0];
+            Assert.That(firstPolicyJson.Name.Value, Is.EqualTo("managed-policy"));
+            Assert.That(firstPolicyJson.Type.Value, Is.EqualTo("ManagedTasksQueue"));
+            Assert.That(firstPolicyJson.EnabledPeriods[0].Type.Value, Is.EqualTo("Weekly"));
+
+            var secondPolicyJson = scalingUpdateJson.Policies[1];
+            Assert.That(secondPolicyJson.Name.Value, Is.EqualTo("fixed-policy"));
+            Assert.That(secondPolicyJson.Type.Value, Is.EqualTo("Fixed"));
+            Assert.That(secondPolicyJson.EnabledPeriods[0].Type.Value, Is.EqualTo("Always"));
+        }
+
     }
 }

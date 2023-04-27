@@ -131,7 +131,9 @@ namespace QarnotSDK {
                 new JsonMediaTypeFormatter {
                     SerializerSettings = new JsonSerializerSettings {
                         Converters = new List<JsonConverter> {
-                            new HardwareConstraintsJsonConverter()
+                            new HardwareConstraintsJsonConverter(),
+                            new ScalingPolicyConverter(),
+                            new TimePeriodSpecificationConverter(),
                         }
                     }
                 }

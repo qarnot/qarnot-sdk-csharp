@@ -394,6 +394,24 @@ namespace QarnotSDK
             }
         }
 
+
+        /// <summary>
+        /// Scaling specification for the pool. Mutually exclusive with other elastic properties
+        /// such as <see cref="IsElastic" />, <see cref="ElasticMinimumTotalNodes" />
+        /// </summary>
+        [InternalDataApiName(Name="Scaling", IsFilterable=false)]
+        public Scaling Scaling {
+            get
+            {
+                return _poolApi?.Scaling;
+            }
+            set
+            {
+                _poolApi.Scaling = value;
+            }
+        }
+
+
         #region Elastic properties
         /// <summary>
         /// Allow the automatic resize of the pool
@@ -754,6 +772,21 @@ namespace QarnotSDK
 
             using (var response = await _api._client.PutAsJsonAsync<PoolApi>(_uri, _poolApi, cancellationToken))
                 await Utils.LookForErrorAndThrowAsync(_api._client, response);
+        }
+
+
+        /// <summary>
+        /// Commit the local pool changes.
+        /// </summary>
+        /// <param name="newScaling">The new Scaling specification to which you want to update</param>
+        /// <param name="cancellationToken">Optional token to cancel the request</param>
+        /// <returns></returns>
+        public virtual async Task UpdateScalingAsync(Scaling newScaling, CancellationToken cancellationToken = default(CancellationToken)) {
+            Scaling = newScaling;
+
+            using (var response = await _api._client.PutAsJsonAsync<Scaling>(_uri + "/scaling", _poolApi.Scaling, cancellationToken)) {
+                await Utils.LookForErrorAndThrowAsync(_api._client, response);
+            }
         }
 
         /// <summary>
