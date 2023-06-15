@@ -722,6 +722,20 @@ namespace QarnotSDK {
         }
 
         /// <summary>
+        /// Description of the secrets the task will have access to when running.
+        /// </summary>
+        /// <remarks>
+        /// Secrets can be accessible either by exact match on the key or by using a prefix
+        /// in order to match all the secrets starting with said prefix.
+        /// </remarks>
+        [InternalDataApiName(Name="SecretAccessRights", IsFilterable = false)]
+        public virtual QSecretAccessRights SecretAccessRights
+        {
+            get => _taskApi.SecretAccessRights;
+            set => _taskApi.SecretAccessRights = value;
+        }
+
+        /// <summary>
         /// Create a new task outside of a pool.
         /// </summary>
         /// <param name="connection">The inner connection object.</param>

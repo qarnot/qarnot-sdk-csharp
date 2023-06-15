@@ -1,11 +1,8 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
@@ -120,6 +117,11 @@ namespace QarnotSDK {
         public virtual int RetryInterval { get { return _retryHandler.RetryInterval; } set { _retryHandler.RetryInterval = value; } }
 
         /// <summary>
+        /// Allows to interact with the Qarnot Secrets API.
+        /// </summary>
+        public virtual Secrets Secrets { get; }
+
+        /// <summary>
         /// Sdk user agent: adding references to the current version to trace bugs and usages
         /// </summary>
         private static string SdkUserAgent { get {
@@ -192,33 +194,20 @@ namespace QarnotSDK {
             _showBucketWarnings = showBucketWarnings;
             Token = token;
             StorageSecretKey = token;
-            _httpClientHandler = httpClientHandler ?? new HttpClientHandler();
 
-            _retryHandler = retryHandler ?? new ExponentialRetryHandler();
+            var httpClientComponents = new CustomHttpClientFactory(Token, Uri)
+                .WithHttpClientHandler(httpClientHandler)
+                .WithRetryHandler(retryHandler)
+                .WithDelegatingHandlers(delegatingHandlers)
+                .WithLoadBalancingCacheTime(dnsSrvLoadBalancingCacheTime)
+                .WithUserAgent(SdkUserAgent)
+                .Build();
 
-            if (delegatingHandlers == null)
-            {
-                delegatingHandlers = delegatingHandlers ?? new List<DelegatingHandler>();
-            }
+            _client = httpClientComponents.HttpClient;
+            _httpClientHandler = httpClientComponents.HttpClientHandler;
+            _retryHandler = httpClientComponents.RetryHandler;
 
-            AddDnsLoadBalancerToTheDelegateHandlers(dnsSrvLoadBalancingCacheTime, delegatingHandlers);
-            delegatingHandlers.Add(_retryHandler);
-            _client = new HttpClient(Utils.LinkHandlers(delegatingHandlers, _httpClientHandler));
-            _client.BaseAddress = Uri;
-            _client.DefaultRequestHeaders.Clear();
-            _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(Token);
-            _client.DefaultRequestHeaders.Add("User-Agent", SdkUserAgent);
-        }
-
-        private void AddDnsLoadBalancerToTheDelegateHandlers(uint? dnsSrvLoadBalancingCacheTime, List<DelegatingHandler> delegatingHandlers)
-        {
-            var qarnotDnsLoadBalancerHandlerFactory = new QarnotDnsLoadBalancerHandlerFactory(Uri, dnsSrvLoadBalancingCacheTime);
-            var qarnotDnsLoadBalancerHandler = qarnotDnsLoadBalancerHandlerFactory.DnsBalancingMessageHandler;
-            if (qarnotDnsLoadBalancerHandler != null)
-            {
-                delegatingHandlers.Add(qarnotDnsLoadBalancerHandler);
-            }
+            Secrets = new Secrets(_client);
         }
 
         #region CreateX

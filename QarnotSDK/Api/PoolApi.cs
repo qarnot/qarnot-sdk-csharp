@@ -438,6 +438,7 @@ namespace QarnotSDK {
         public Privileges Privileges { get; set; }
         public RetrySettings DefaultRetrySettings { get; set; }
         public Scaling Scaling { get; set; }
+        public QSecretAccessRights SecretAccessRights { get; set; }
 
         internal PoolApi() {
             Constants = new List<KeyValHelper>();
