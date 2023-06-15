@@ -606,6 +606,20 @@ namespace QarnotSDK
         }
 
         /// <summary>
+        /// Description of the secrets the tasks in this pool will have access to when running.
+        /// </summary>
+        /// <remarks>
+        /// Secrets can be accessible either by exact match on the key or by using a prefix
+        /// in order to match all the secrets starting with said prefix.
+        /// </remarks>
+        [InternalDataApiName(Name="SecretAccessRights", IsFilterable = false)]
+        public virtual QSecretAccessRights SecretAccessRights
+        {
+            get => _poolApi.SecretAccessRights;
+            set => _poolApi.SecretAccessRights = value;
+        }
+
+        /// <summary>
         /// Default value of <see cref="QTask.WaitForPoolResourcesSynchronization" /> for pool's tasks
         /// </summary>
         public virtual bool? TaskDefaultWaitForPoolResourcesSynchronization {

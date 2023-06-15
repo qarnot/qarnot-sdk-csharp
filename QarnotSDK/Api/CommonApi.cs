@@ -1,6 +1,7 @@
 ﻿namespace QarnotSDK {
 
     using System.Collections.Generic;
+    using System.Linq;
 
     // This class is used to serialize constants in pools and tasks
     internal class KeyValHelper {
@@ -74,6 +75,4 @@
         public ApiResourcesTransformation ResourcesTransformation { get; set; }
         public int? CacheTTLSec { get; set; }
     }
-
-
 }
