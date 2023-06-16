@@ -14,7 +14,7 @@ namespace QarnotSDK
     {
         private HttpClient _client { get; }
         private static string _dataPrefix = "secrets-manager/data";
-        private static string _searchPrefix = "secrets-maanger/search";
+        private static string _searchPrefix = "secrets-manager/search";
 
         internal Secrets(HttpClient client)
         {
