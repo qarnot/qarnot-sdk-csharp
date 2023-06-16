@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
@@ -13,41 +12,13 @@ namespace QarnotSDK
     /// </summary>
     public class Secrets
     {
-        /// <summary>The URI targeted by the client</summary>
-        public Uri Uri { get; }
-        /// <summary>The token used for authentication against the API</summary>
-        public string Token { get; }
-
         private HttpClient _client { get; }
         private static string _dataPrefix = "secrets-manager/data";
         private static string _searchPrefix = "secrets-maanger/search";
 
-        /// <summary>Instantiate a new Qarnot secrets API client</summary>
-        /// <param name="token">Token used for authentication, available at https://account.qarnot.com</param>
-        /// <param name="uri">Change default API location, defaults to https://secrets.qarnot.com</param>
-        /// <param name="httpClientHandler">An optional HttpClientHandler for the api, if you need to setup a proxy for example.</param>
-        /// <param name="retryHandler">An optional IRetryHandler if you need to setup retry for transient error (default to exponential).</param>
-        /// <param name="delegatingHandlers">A list of hander used by the api connection. Default will create a list with the QarnotSrvHandler.</param>
-        /// <param name="dnsSrvLoadBalancingCacheTime">the cache time in minutes before retrieving the values of the QarnotSrvHandler. Unless you have a strong reason, you should keep the default value</param>
-        public Secrets(
-                string token,
-                string uri = null,
-                HttpClientHandler httpClientHandler = null,
-                IRetryHandler retryHandler = null,
-                List<DelegatingHandler> delegatingHandlers = null,
-                uint? dnsSrvLoadBalancingCacheTime = 5
-            )
+        internal Secrets(HttpClient client)
         {
-            Token = token;
-            Uri = new Uri(uri ?? "https://secrets.qarnot.com");
-
-            _client = new CustomHttpClientFactory(Token, Uri)
-                .WithHttpClientHandler(httpClientHandler)
-                .WithRetryHandler(retryHandler)
-                .WithDelegatingHandlers(delegatingHandlers)
-                .WithLoadBalancingCacheTime(dnsSrvLoadBalancingCacheTime)
-                .Build()
-                .HttpClient;
+            _client = client;
         }
 
         /// <summary>Retrieve the value of the secret with the key <paramref name="key" /></summary>

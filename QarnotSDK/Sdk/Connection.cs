@@ -117,6 +117,11 @@ namespace QarnotSDK {
         public virtual int RetryInterval { get { return _retryHandler.RetryInterval; } set { _retryHandler.RetryInterval = value; } }
 
         /// <summary>
+        /// Allows to interact with the Qarnot Secrets API.
+        /// </summary>
+        public virtual Secrets Secrets { get; }
+
+        /// <summary>
         /// Sdk user agent: adding references to the current version to trace bugs and usages
         /// </summary>
         private static string SdkUserAgent { get {
@@ -195,11 +200,14 @@ namespace QarnotSDK {
                 .WithRetryHandler(retryHandler)
                 .WithDelegatingHandlers(delegatingHandlers)
                 .WithLoadBalancingCacheTime(dnsSrvLoadBalancingCacheTime)
+                .WithUserAgent(SdkUserAgent)
                 .Build();
 
             _client = httpClientComponents.HttpClient;
             _httpClientHandler = httpClientComponents.HttpClientHandler;
             _retryHandler = httpClientComponents.RetryHandler;
+
+            Secrets = new Secrets(_client);
         }
 
         #region CreateX
