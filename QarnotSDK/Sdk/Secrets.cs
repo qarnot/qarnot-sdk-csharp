@@ -85,7 +85,7 @@ namespace QarnotSDK
         }
 
         /// <summary>Delete the secret at <paramref name="key" /></summary>
-        public async void DeleteSecretAsync(string key, CancellationToken ct = default)
+        public async Task DeleteSecretAsync(string key, CancellationToken ct = default)
         {
             key = key.Trim('/');
 
