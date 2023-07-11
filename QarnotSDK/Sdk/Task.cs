@@ -751,6 +751,7 @@ namespace QarnotSDK {
             _constraints = new Dictionary<string, string>();
             _taskApi.Shortname = shortname;
             _uri = "tasks/" + shortname;
+            SecretAccessRights = new QSecretAccessRights();
         }
 
         /// <summary>
@@ -863,7 +864,9 @@ namespace QarnotSDK {
             _resources = new List<QAbstractStorage>();
             _constants = new Dictionary<string, string>();
             _constraints = new Dictionary<string, string>();
+            SecretAccessRights = new QSecretAccessRights();
         }
+
         internal async new Task<QTask> InitializeAsync(Connection qapi, TaskApi taskApi) {
             await base.InitializeAsync(qapi, taskApi);
              _uri = "tasks/" + taskApi.Uuid.ToString();

@@ -9,6 +9,12 @@ namespace QarnotSDK
     /// </summary>
     public class QSecretAccessRights
     {
+        public QSecretAccessRights()
+        {
+            BySecret = new List<QSecretAccessRightBySecret>();
+            ByPrefix = new List<QSecretAccessRightByPrefix>();
+        }
+
         /// <summary>
         /// The secrets the task will have access to, described using
         /// an exacty key match.
