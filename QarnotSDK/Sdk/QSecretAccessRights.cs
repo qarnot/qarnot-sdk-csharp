@@ -10,6 +10,15 @@ namespace QarnotSDK
     public class QSecretAccessRights
     {
         /// <summary>
+        /// Build an empty list of secrets access rights.
+        /// </summary>
+        public QSecretAccessRights()
+        {
+            BySecret = new List<QSecretAccessRightBySecret>();
+            ByPrefix = new List<QSecretAccessRightByPrefix>();
+        }
+
+        /// <summary>
         /// The secrets the task will have access to, described using
         /// an exacty key match.
         /// </summary>

@@ -728,11 +728,11 @@ namespace QarnotSDK {
         /// Secrets can be accessible either by exact match on the key or by using a prefix
         /// in order to match all the secrets starting with said prefix.
         /// </remarks>
-        [InternalDataApiName(Name="SecretAccessRights", IsFilterable = false)]
-        public virtual QSecretAccessRights SecretAccessRights
+        [InternalDataApiName(Name="SecretsAccessRights", IsFilterable = false)]
+        public virtual QSecretAccessRights SecretsAccessRights
         {
-            get => _taskApi.SecretAccessRights;
-            set => _taskApi.SecretAccessRights = value;
+            get => _taskApi.SecretsAccessRights;
+            set => _taskApi.SecretsAccessRights = value;
         }
 
         /// <summary>
@@ -751,6 +751,7 @@ namespace QarnotSDK {
             _constraints = new Dictionary<string, string>();
             _taskApi.Shortname = shortname;
             _uri = "tasks/" + shortname;
+            SecretsAccessRights = new QSecretAccessRights();
         }
 
         /// <summary>
@@ -864,6 +865,7 @@ namespace QarnotSDK {
             _constants = new Dictionary<string, string>();
             _constraints = new Dictionary<string, string>();
         }
+
         internal async new Task<QTask> InitializeAsync(Connection qapi, TaskApi taskApi) {
             await base.InitializeAsync(qapi, taskApi);
              _uri = "tasks/" + taskApi.Uuid.ToString();
