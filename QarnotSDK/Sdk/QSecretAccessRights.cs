@@ -9,6 +9,9 @@ namespace QarnotSDK
     /// </summary>
     public class QSecretAccessRights
     {
+        /// <summary>
+        /// Build an empty list of secrets access rights.
+        /// </summary>
         public QSecretAccessRights()
         {
             BySecret = new List<QSecretAccessRightBySecret>();

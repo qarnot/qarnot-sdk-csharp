@@ -532,7 +532,7 @@ namespace QarnotSDK {
         public uint? DefaultResourcesCacheTTLSec { get; set; }
         public Privileges Privileges { get; set; }
         public RetrySettings RetrySettings { get; set; }
-        public QSecretAccessRights SecretAccessRights { get; set; }
+        public QSecretAccessRights SecretsAccessRights { get; set; }
 
         internal TaskApi() {
             Constants = new List<KeyValHelper>();
@@ -546,6 +546,7 @@ namespace QarnotSDK {
             AutoDeleteOnCompletion = false;
             Privileges = new Privileges();
             RetrySettings = new RetrySettings();
+            SecretsAccessRights = new QSecretAccessRights();
         }
     }
 
