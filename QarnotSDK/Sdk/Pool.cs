@@ -654,6 +654,7 @@ namespace QarnotSDK
                 _poolApi.Shortname = shortname;
                 _uri = "pools/" + shortname;
             }
+            SecretsAccessRights = new QSecretAccessRights();
         }
 
         /// <summary>

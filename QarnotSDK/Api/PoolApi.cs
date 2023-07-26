@@ -453,6 +453,7 @@ namespace QarnotSDK {
             Privileges = new Privileges();
             DefaultRetrySettings = new RetrySettings();
             Scaling = null;
+            SecretsAccessRights = new QSecretAccessRights();
         }
     }
 }
