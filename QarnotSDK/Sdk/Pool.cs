@@ -612,11 +612,11 @@ namespace QarnotSDK
         /// Secrets can be accessible either by exact match on the key or by using a prefix
         /// in order to match all the secrets starting with said prefix.
         /// </remarks>
-        [InternalDataApiName(Name="SecretAccessRights", IsFilterable = false)]
-        public virtual QSecretAccessRights SecretAccessRights
+        [InternalDataApiName(Name="SecretsAccessRights", IsFilterable = false)]
+        public virtual QSecretAccessRights SecretsAccessRights
         {
-            get => _poolApi.SecretAccessRights;
-            set => _poolApi.SecretAccessRights = value;
+            get => _poolApi.SecretsAccessRights;
+            set => _poolApi.SecretsAccessRights = value;
         }
 
         /// <summary>
@@ -654,6 +654,7 @@ namespace QarnotSDK
                 _poolApi.Shortname = shortname;
                 _uri = "pools/" + shortname;
             }
+            SecretsAccessRights = new QSecretAccessRights();
         }
 
         /// <summary>
