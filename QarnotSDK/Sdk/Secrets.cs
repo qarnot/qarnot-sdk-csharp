@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using System.Linq;
+using System.Text;
 
 namespace QarnotSDK
 {
@@ -69,7 +70,7 @@ namespace QarnotSDK
 
             var payload = new UpdateSecretApiRequest { Value = value };
             var request = new HttpRequestMessage(new HttpMethod("PATCH"), $"{_dataPrefix}/{key}");
-            request.Content = new StringContent(JsonConvert.SerializeObject(payload));
+            request.Content = new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json");
 
             using (var resp = await _client.SendAsync(request, ct))
             {
