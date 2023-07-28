@@ -337,7 +337,9 @@ namespace QarnotSDK.UnitTests
             ""retrySettings"": {
                 ""maxTotalRetries"": 12,
                 ""maxPerInstanceRetries"": 12
-            }
+            },
+            ""schedulingType"": ""Reserved"",
+            ""targetedReservedMachineKey"": ""some-reserved-machine"",
         }";
 
 

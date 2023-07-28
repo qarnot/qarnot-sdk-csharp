@@ -412,6 +412,45 @@ namespace QarnotSDK
         }
 
 
+        /// <summary>
+        /// Scheduling type used for the dispatch of the pool.
+        /// </summary>
+        /// <remarks>
+        /// Available scheduling are: <see cref="SchedulingType.Flex" />, <see cref="SchedulingType.OnDemand" />
+        /// and <see cref="SchedulingType.Reserved" />
+        /// </remarks>
+        [InternalDataApiName(Name="SchedulingType", IsFilterable=false)]
+        public SchedulingType? SchedulingType {
+            get
+            {
+                return _poolApi?.SchedulingType;
+            }
+            set
+            {
+                _poolApi.SchedulingType = value;
+            }
+        }
+
+
+        /// <summary>
+        /// The key of the reserved machine the pool should be dispatch on.
+        /// </summary>
+        /// <remarks>
+        /// To use with <see cref="SchedulingType.Reserved" /> SchedulingType
+        /// </remarks>
+        [InternalDataApiName(Name="TargetedReservedMachineKey", IsFilterable=false)]
+        public string TargetedReservedMachineKey {
+            get
+            {
+                return _poolApi?.TargetedReservedMachineKey;
+            }
+            set
+            {
+                _poolApi.TargetedReservedMachineKey = value;
+            }
+        }
+
+
         #region Elastic properties
         /// <summary>
         /// Allow the automatic resize of the pool
@@ -639,8 +678,10 @@ namespace QarnotSDK
         /// <param name="shortname">optional unique friendly shortname of the pool.</param>
         /// <param name="taskDefaultWaitForPoolResourcesSynchronization">Default value for task's <see
         /// cref="QTask.WaitForPoolResourcesSynchronization" />, see also <see cref="TaskDefaultWaitForPoolResourcesSynchronization" /></param>
+        /// <param name="schedulingType">Type of scheduling used for the dispatch of the task</param>
         public QPool(Connection connection, string name, string profile = null, uint initialNodeCount = 0,
-                     string shortname = default(string), bool? taskDefaultWaitForPoolResourcesSynchronization=null)
+                     string shortname = default(string), bool? taskDefaultWaitForPoolResourcesSynchronization=null,
+                     SchedulingType? schedulingType = null)
             : base(connection, new PoolApi()) {
             _poolApi.Name = name;
             _poolApi.Profile = profile;
@@ -655,6 +696,7 @@ namespace QarnotSDK
                 _uri = "pools/" + shortname;
             }
             SecretsAccessRights = new QSecretAccessRights();
+            SchedulingType = schedulingType;
         }
 
         /// <summary>
@@ -816,6 +858,9 @@ namespace QarnotSDK
 
 
         internal void PreSubmit(string profile=null, uint initialNodeCount=0) {
+            if (_poolApi.TargetedReservedMachineKey != default(string) && _poolApi.SchedulingType != QarnotSDK.SchedulingType.Reserved) {
+                throw new Exception("Cannot target a reserved machine without using a 'Reserved' scheduling type.");
+            }
             // build the constants
             _poolApi.Constants = new List<KeyValHelper>();
             foreach(var c in _constants) { _poolApi.Constants.Add(new KeyValHelper(c.Key, c.Value)); }

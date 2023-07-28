@@ -735,6 +735,45 @@ namespace QarnotSDK {
             set => _taskApi.SecretsAccessRights = value;
         }
 
+
+        /// <summary>
+        /// Scheduling type use for the dispatch of the task.
+        /// </summary>
+        /// <remarks>
+        /// Available scheduling are: <see cref="SchedulingType.Flex" />, <see cref="SchedulingType.OnDemand" />
+        /// and <see cref="SchedulingType.Reserved" />
+        /// </remarks>
+        [InternalDataApiName(Name="SchedulingType", IsFilterable=false)]
+        public SchedulingType? SchedulingType {
+            get
+            {
+                return _taskApi?.SchedulingType;
+            }
+            set
+            {
+                _taskApi.SchedulingType = value;
+            }
+        }
+
+
+        /// <summary>
+        /// The key of the reserved machine the task should be dispatch on.
+        /// </summary>
+        /// <remarks>
+        /// To use with <see cref="SchedulingType.Reserved" /> SchedulingType
+        /// </remarks>
+        [InternalDataApiName(Name="TargetedReservedMachineKey", IsFilterable=false)]
+        public string TargetedReservedMachineKey {
+            get
+            {
+                return _taskApi?.TargetedReservedMachineKey;
+            }
+            set
+            {
+                _taskApi.TargetedReservedMachineKey = value;
+            }
+        }
+
         /// <summary>
         /// Create a new task outside of a pool.
         /// </summary>
@@ -762,8 +801,10 @@ namespace QarnotSDK {
         /// <param name="profile">The task profile. If not specified, it must be given when the task is submitted.</param>
         /// <param name="instanceCount">How many times the task have to run. If not specified, it must be given when the task is submitted.</param>
         /// <param name="shortname">optional unique friendly shortname of the task.</param>
-        public QTask(Connection connection, string name, string profile, uint instanceCount = 0, string shortname = default(string)) : this(connection, name, profile, shortname) {
+        /// <param name="schedulingType">Type of scheduling used for the dispatch of the task</param>
+        public QTask(Connection connection, string name, string profile, uint instanceCount = 0, string shortname = default(string), SchedulingType? schedulingType = null) : this(connection, name, profile, shortname) {
             _taskApi.InstanceCount = instanceCount;
+            _taskApi.SchedulingType = schedulingType;
         }
 
         /// <summary>
@@ -774,9 +815,11 @@ namespace QarnotSDK {
         /// <param name="profile">The task profile. If not specified, it must be given when the task is submitted.</param>
         /// <param name="range">Which instance ids of the task have to run. If not specified, it must be given when the task is submitted.</param>
         /// <param name="shortname">optional unique friendly shortname of the task.</param>
-        public QTask(Connection connection, string name, string profile, AdvancedRanges range, string shortname = default(string)) : this(connection, name, profile, shortname) {
+        /// <param name="schedulingType">Type of scheduling used for the dispatch of the task</param>
+        public QTask(Connection connection, string name, string profile, AdvancedRanges range, string shortname = default(string), SchedulingType? schedulingType = null) : this(connection, name, profile, shortname) {
             _advancedRange = range ?? new AdvancedRanges(null);
             _taskApi.AdvancedRanges = _advancedRange.ToString();
+            _taskApi.SchedulingType = schedulingType;
         }
 
         /// <summary>
@@ -825,8 +868,9 @@ namespace QarnotSDK {
         /// <param name="instanceCount">How many times the task have to run. If not specified, it must be given when the task is submitted.</param>
         /// <param name="shortname">optional unique friendly shortname of the task.</param>
         /// <param name="profile">profile for the task.(should be use with a job not attached to a pool)</param>
+        /// <param name="schedulingType">Type of scheduling used for the dispatch of the task</param>
         public QTask(Connection connection, string name, QJob job, uint instanceCount = 0, string shortname = default(string),
-            string profile=default(string)) : this(connection, name, profile, instanceCount, shortname)
+            string profile=default(string), SchedulingType? schedulingType = null) : this(connection, name, profile, instanceCount, shortname, schedulingType)
         {
             _taskApi.JobUuid = job.Uuid.ToString();
             _job = job;
@@ -844,8 +888,9 @@ namespace QarnotSDK {
         /// <param name="range">Which instance ids of the task have to run. If not specified, it must be given when the task is submitted.</param>
         /// <param name="shortname">optional unique friendly shortname of the task.</param>
         /// <param name="profile">profile for the task.(should be use with a job not attached to a pool)</param>
+        /// <param name="schedulingType">Type of scheduling used for the dispatch of the task</param>
         public QTask(Connection connection, string name, QJob job, AdvancedRanges range, string shortname = default(string),
-            string profile=default(string)) : this(connection, name, job, 0, shortname, profile) {
+            string profile=default(string), SchedulingType? schedulingType = null) : this(connection, name, job, 0, shortname, profile, schedulingType) {
             _advancedRange = range ?? new AdvancedRanges(null);
             _taskApi.AdvancedRanges = _advancedRange.ToString();
         }
@@ -1109,6 +1154,9 @@ namespace QarnotSDK {
             }
             if (_taskApi.JobUuid != default(string) && !_useStandaloneJob  && _taskApi.Profile != default(string)) {
                 throw new Exception("A task attached to a job with a pool can not have a profile.");
+            }
+            if (_taskApi.TargetedReservedMachineKey != default(string) && _taskApi.SchedulingType != QarnotSDK.SchedulingType.Reserved) {
+                throw new Exception("Cannot target a reserved machine without using a 'Reserved' scheduling type.");
             }
 
             // Is a result bucket defined?

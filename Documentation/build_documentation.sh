@@ -9,15 +9,14 @@ cd $expected_cur_dir
 pushd ..
 
 pushd QarnotSDK
-msbuild -t:restore
-msbuild /p:Configuration=Debug QarnotSDK.csproj
+dotnet restore
+dotnet build -c Debug QarnotSDK.csproj
 popd
 popd
-if [ ! -d docfx ]; then
-    nuget install docfx.console -OutputDirectory docfx -Version $docfx_version
-fi
-chmod 755 docfx/docfx.console.$docfx_version/tools/docfx.exe
-mono docfx/docfx.console.$docfx_version/tools/docfx.exe metadata docfx.json
-mono docfx/docfx.console.$docfx_version/tools/docfx.exe build docfx.json
+dotnet tool update -g docfx
+docfx=$(find / -name docfx | grep tools/docfx)
+$docfx metadata docfx.json
+$docfx build docfx.json
+chown $(whoami) -R ./_site
 
 # back in toplevel directory
