@@ -25,7 +25,6 @@
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
     <DocumentationFile>bin\Release\QarnotSDK.XML</DocumentationFile>
-
   </PropertyGroup>
   <!-- Common Deps -->
   <ItemGroup>
