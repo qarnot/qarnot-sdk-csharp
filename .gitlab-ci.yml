@@ -10,6 +10,16 @@ stages:
 variables:
   MAKEFILE_PATH: $CI_PROJECT_DIR/build/Makefile
   AVAILABLE_FRAMEWORKS: "net45;netstandard2.0"
+  SAMPLES_BRANCH: "master"
+
+# Other possible variables:
+# * for samples:
+#   - TRIGGER_SAMPLES should be set to "true" when triggering the pipeline from the web UI when you want to trigger the samples
+#   - CSHARP_SAMPLES_WHITELIST to specify only a set of csharp samples to run
+#   - CSHARP_SAMPLES_BLACKLIST to specify set of csharp samples that should not be run run
+#   - API_ENDPOINT for the compute api endpoint
+#   - API_TOKEN for the compute api user token
+#   - STORAGE_ENDPOINT for the storage api endpoint
 
 workflow:
   rules:
@@ -24,6 +34,18 @@ workflow:
     - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     # Run pipelines on tags
     - if: $CI_COMMIT_TAG
+
+.samples_rules:
+  rules:
+    # Run pipelines triggered from the web UI
+    - if: $CI_PIPELINE_SOURCE == "web" && $TRIGGER_SAMPLES == "true"
+    # Run pipelines on tags
+    - if: $CI_COMMIT_TAG
+    # If files changed in commit or MR
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" || ($CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH)
+      changes:
+        paths:
+          - QarnotSDK/**/*
 
 
 # --- Building & Linting --- #
@@ -47,6 +69,8 @@ build_release_sdk_csharp:
 
 junit_tests_sdk_csharp:
   stage: test
+  needs:
+    - job: build_release_sdk_csharp
   variables:
     EXTRA_REQUIREMENTS_FILE: requirements-test.txt
   script:
@@ -62,6 +86,26 @@ junit_tests_sdk_csharp:
       - ./report-sdk-csharp-test.xml
     reports:
       junit: ./report-sdk-csharp-test.xml
+
+
+# Trigger samples if sdk changed
+
+trigger_samples:
+  stage: trigger
+  needs:
+    - job: build_release_sdk_csharp
+  rules:
+    - !reference [.samples_rules, rules]
+  variables:
+    TRIGGER_SOURCE: "sdk-csharp"
+    CSHARP_SDK_BRANCH_OR_COMMIT: "$CI_COMMIT_SHA"
+    SAMPLES_CONF_API_URL: $API_ENDPOINT
+    SAMPLES_CONF_TOKEN: $API_TOKEN
+    SAMPLES_CONF_STORAGE_URL: $STORAGE_ENDPOINT
+  trigger:
+    project: sdk/sdks-samples
+    branch: $SAMPLES_BRANCH
+    strategy: depend
 
 
 # --- Packaging --- #
@@ -91,6 +135,8 @@ publish_sdk_csharp:
 
 generate_doc_sdk_csharp:
   stage: package
+  needs:
+    - job: build_release_sdk_csharp
   script:
     - /bin/bash ./Documentation/build_documentation.sh
   artifacts:
