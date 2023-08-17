@@ -39,7 +39,7 @@
     <Reference Include="System.Web" />
   </ItemGroup>
   <!-- NET45 Deps -->
-  <ItemGroup Condition="'$(TargetFramework)' == 'net45'">
+  <ItemGroup> <!--Condition="'$(TargetFramework)' == 'net45'">-->
     <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.3" />
     <Reference Include="System.Net.Http.WebRequest" />
     <Reference Include="System.Net.Http" />

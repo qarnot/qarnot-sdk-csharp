@@ -2,5 +2,7 @@
 packages/
 QarnotSDK/obj
 QarnotSDK/bin
+QarnotSDK.IntegrationTests/obj
+QarnotSDK.IntegrationTests/bin
 Documentation/Help
 .sonarqube

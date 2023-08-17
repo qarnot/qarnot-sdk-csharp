@@ -603,7 +603,7 @@ namespace QarnotSDK {
         }
 
         /// <summary>
-        /// List the files and folders entries in the corresponding folder.
+        /// List the files and folders entries in the corresponding folder (without content of subfolders).
         /// </summary>
         /// <param name="remoteFolder">The folder to list.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>

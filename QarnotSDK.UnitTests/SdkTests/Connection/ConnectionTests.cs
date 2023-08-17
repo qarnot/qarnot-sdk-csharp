@@ -573,7 +573,7 @@ namespace QarnotSDK.UnitTests
 
             OffsetPageResponse<HardwareConstraint> paginatedHardwareConstraints = await Api.RetrieveUserHardwareConstraintsPageAsync(new());
 
-            Assert.AreEqual(8, paginatedHardwareConstraints.Total);
+            Assert.AreEqual(10, paginatedHardwareConstraints.Total);
             var hardwareConstraints = paginatedHardwareConstraints.Data;
             Assert.IsInstanceOf<List<HardwareConstraint>>(hardwareConstraints);
             Assert.IsInstanceOf<MinimumCoreHardware>(hardwareConstraints[0]);
@@ -599,6 +599,10 @@ namespace QarnotSDK.UnitTests
             Assert.AreEqual((hardwareConstraints[6] as MaximumRamHardware).MaximumMemoryMB, 32000);
             Assert.IsInstanceOf<GpuHardware>(hardwareConstraints[7]);
             Assert.AreEqual((hardwareConstraints[7] as GpuHardware).Discriminator, "GpuHardwareConstraint");
+            Assert.IsInstanceOf<SSDHardware>(hardwareConstraints[8]);
+            Assert.AreEqual((hardwareConstraints[8] as SSDHardware).Discriminator, "SSDHardwareConstraint");
+            Assert.IsInstanceOf<NoSSDHardware>(hardwareConstraints[9]);
+            Assert.AreEqual((hardwareConstraints[9] as NoSSDHardware).Discriminator, "NoSSDHardwareConstraint");
         }
 
         [Test]

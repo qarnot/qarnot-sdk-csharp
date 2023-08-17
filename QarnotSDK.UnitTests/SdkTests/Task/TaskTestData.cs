@@ -340,6 +340,24 @@ namespace QarnotSDK.UnitTests
             },
             ""schedulingType"": ""Reserved"",
             ""targetedReservedMachineKey"": ""some-reserved-machine"",
+            ""forcedNetworkRules"": [
+                {
+                    ""Inbound"": true,
+                    ""Proto"": ""tcp"",
+                    ""To"": ""bound-to-be-alive"",
+                    ""Port"": ""1234"",
+                    ""Priority"": ""1000"",
+                    ""Description"": ""Inbound test"",
+                },
+                {
+                    ""Inbound"": false,
+                    ""Proto"": ""tcp"",
+                    ""PublicHost"": ""bound-to-the-devil"",
+                    ""PublicPort"": ""666"",
+                    ""Priority"": ""1000"",
+                    ""Description"": ""Outbound test"",
+                }
+            ],
         }";
 
 

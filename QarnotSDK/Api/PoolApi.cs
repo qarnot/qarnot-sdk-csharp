@@ -441,6 +441,7 @@ namespace QarnotSDK {
         public QSecretAccessRights SecretsAccessRights { get; set; }
         public SchedulingType? SchedulingType { get; set; }
         public string TargetedReservedMachineKey { get; set; }
+        public List<ForcedNetworkRule> ForcedNetworkRules { get; set; }
 
         internal PoolApi() {
             Constants = new List<KeyValHelper>();

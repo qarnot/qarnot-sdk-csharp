@@ -1,4 +1,4 @@
-namespace QarnotSDK.UnitTests
+namespace QarnotSDK.IntegrationTests
 {
     using System;
     using System.Collections.Generic;
@@ -8,6 +8,9 @@ namespace QarnotSDK.UnitTests
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
+    using Newtonsoft.Json;
+    using NUnit.Framework;
+    using QarnotSDK;
 
     public class ParsedRequest
     {
@@ -22,6 +25,19 @@ namespace QarnotSDK.UnitTests
         public string Content { get; set; }
 
         public override string ToString() => $"[{Method}-{Uri}] : {Content}";
+    }
+
+    public class FakeS3HttpClientFactory : S3HttpClientFactory
+    {
+        private HttpClientHandler HttpHandler;
+        public FakeS3HttpClientFactory(HttpClientHandler handler)
+        {
+            HttpHandler = handler;
+        }
+        protected override HttpClientHandler CreateClientHandler()
+        {
+            return HttpHandler;
+        }
     }
 
     public class InterceptingFakeHttpHandler : HttpClientHandler

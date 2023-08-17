@@ -666,6 +666,22 @@ namespace QarnotSDK
                 return _poolApi?.TaskDefaultWaitForPoolResourcesSynchronization;
             }
         }
+
+        /// <summary>
+        /// Network rules forced for the pool.
+        /// </summary>
+        [InternalDataApiName(Name="ForcedNetworkRules")]
+        public virtual List<ForcedNetworkRule> ForcedNetworkRules
+        {
+            get
+            {
+                return _poolApi.ForcedNetworkRules;
+            }
+            set
+            {
+                _poolApi.ForcedNetworkRules = value;
+            }
+        }
         #endregion
 
         /// <summary>

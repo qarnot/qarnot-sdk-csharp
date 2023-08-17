@@ -10,6 +10,18 @@ stages:
 variables:
   MAKEFILE_PATH: $CI_PROJECT_DIR/build/Makefile
   AVAILABLE_FRAMEWORKS: "net45;netstandard2.0"
+  SAMPLES_BRANCH: "master"
+  GITLAB_CI: "true"
+  #CI_DEBUG_SERVICES: "true" # to have logs of services in pipeline
+
+# Other possible variables:
+# * for samples:
+#   - TRIGGER_SAMPLES should be set to "true" when triggering the pipeline from the web UI when you want to trigger the samples
+#   - CSHARP_SAMPLES_WHITELIST to specify only a set of csharp samples to run
+#   - CSHARP_SAMPLES_BLACKLIST to specify set of csharp samples that should not be run run
+#   - API_ENDPOINT for the compute api endpoint
+#   - API_TOKEN for the compute api user token
+#   - STORAGE_ENDPOINT for the storage api endpoint
 
 workflow:
   rules:
@@ -24,6 +36,18 @@ workflow:
     - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     # Run pipelines on tags
     - if: $CI_COMMIT_TAG
+
+.samples_rules:
+  rules:
+    # Run pipelines triggered from the web UI
+    - if: $CI_PIPELINE_SOURCE == "web" && $TRIGGER_SAMPLES == "true"
+    # Run pipelines on tags
+    - if: $CI_COMMIT_TAG
+    # If files changed in commit or MR
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" || ($CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH)
+      changes:
+        paths:
+          - QarnotSDK/**/*
 
 
 # --- Building & Linting --- #
@@ -45,23 +69,84 @@ build_release_sdk_csharp:
 
 # --- Testing & Coverage --- #
 
-junit_tests_sdk_csharp:
+unit_tests_sdk_csharp:
   stage: test
-  variables:
-    EXTRA_REQUIREMENTS_FILE: requirements-test.txt
+  needs:
+    - job: build_release_sdk_csharp
   script:
-    - dotnet test -c Debug --logger:"junit;LogFilePath=report.xml" QarnotSDK.UnitTests/QarnotSDK.UnitTests.csproj || export EXIT_CODE=$?;
+    - dotnet test -c Debug --logger:"junit;LogFilePath=report.xml" QarnotSDK.UnitTests/QarnotSDK.UnitTests.csproj
+  after_script:
     - export TEST_REPORT_FILE_PATH=$(find QarnotSDK.UnitTests -name "report.xml")
     - echo "$TEST_REPORT_FILE_PATH"
-    - cp "$TEST_REPORT_FILE_PATH" report-sdk-csharp-test.xml
-    - exit $EXIT_CODE
+    - cp "$TEST_REPORT_FILE_PATH" report-sdk-csharp-unit-test.xml
   artifacts:
     when: always
     expire_in: 1hour
     paths:
-      - ./report-sdk-csharp-test.xml
+      - ./report-sdk-csharp-unit-test.xml
     reports:
-      junit: ./report-sdk-csharp-test.xml
+      junit: ./report-sdk-csharp-unit-test.xml
+
+integration_tests_sdk_csharp:
+  stage: test
+  needs:
+    - job: build_release_sdk_csharp
+  services:
+    - name: docker.redmont.qarnot.net/ceph-nano
+      alias: ceph-storage
+      variables:
+        CEPH_DEMO_UID: rgw
+        CEPH_DEMO_ACCESS_KEY: access
+        CEPH_DEMO_SECRET_KEY: secret
+  variables:
+    QARNOT_SDK_CSHARP_TESTS_USE_REAL_REMOTE_STORAGE: "true"
+    QARNOT_SDK_CSHARP_TESTS_STORAGE_IP: ceph-storage
+    QARNOT_SDK_CSHARP_TESTS_STORAGE_ADMIN_UID: rgw
+    QARNOT_SDK_CSHARP_TESTS_STORAGE_ADMIN_ACCESS_KEY: access
+    QARNOT_SDK_CSHARP_TESTS_STORAGE_ADMIN_SECRET_KEY: secret
+  before_script:
+    - if [ $CEPH_STORAGE_PORT_8000_TCP_ADDR ]; then export QARNOT_SDK_CSHARP_TESTS_STORAGE_IP=$CEPH_STORAGE_PORT_8000_TCP_ADDR; fi
+    - |
+      if [ $CEPH_STORAGE_PORT_8000_TCP_ADDR == "ceph-storage" ] # just in case the variable for the container IP address was not found (because generated variable name convention changed)
+      then
+        apt-get update
+        apt-get install -y iputils-ping
+        export QARNOT_SDK_CSHARP_TESTS_STORAGE_IP=$(ping $QARNOT_SDK_CSHARP_TESTS_STORAGE_IP -c 1 | grep -o -m 1 "[0-9].*\.[0-9]*\.[0-9]*\.[0-9]*") # retrieve ip address of cep container to avoid SignatureDoesNotMatch when using Radosgw.AdminAPI
+      fi
+    - "echo new QARNOT_SDK_CSHARP_TESTS_STORAGE_IP: $QARNOT_SDK_CSHARP_TESTS_STORAGE_IP"
+  script:
+    - dotnet test -c Debug --logger:"junit;LogFilePath=report.xml" QarnotSDK.IntegrationTests/QarnotSDK.IntegrationTests.csproj
+  after_script:
+    - export TEST_REPORT_FILE_PATH=$(find QarnotSDK.IntegrationTests -name "report.xml")
+    - echo "$TEST_REPORT_FILE_PATH"
+    - cp "$TEST_REPORT_FILE_PATH" report-sdk-csharp-integration-test.xml
+  artifacts:
+    when: always
+    expire_in: 1hour
+    paths:
+      - ./report-sdk-csharp-integration-test.xml
+    reports:
+      junit: ./report-sdk-csharp-integration-test.xml
+
+
+# Trigger samples if sdk changed
+
+trigger_samples:
+  stage: trigger
+  needs:
+    - job: build_release_sdk_csharp
+  rules:
+    - !reference [.samples_rules, rules]
+  variables:
+    TRIGGER_SOURCE: "sdk-csharp"
+    CSHARP_SDK_BRANCH_OR_COMMIT: "$CI_COMMIT_SHA"
+    SAMPLES_CONF_API_URL: $API_ENDPOINT
+    SAMPLES_CONF_TOKEN: $API_TOKEN
+    SAMPLES_CONF_STORAGE_URL: $STORAGE_ENDPOINT
+  trigger:
+    project: sdk/sdks-samples
+    branch: $SAMPLES_BRANCH
+    strategy: depend
 
 
 # --- Packaging --- #
@@ -91,6 +176,8 @@ publish_sdk_csharp:
 
 generate_doc_sdk_csharp:
   stage: package
+  needs:
+    - job: build_release_sdk_csharp
   script:
     - /bin/bash ./Documentation/build_documentation.sh
   artifacts:
