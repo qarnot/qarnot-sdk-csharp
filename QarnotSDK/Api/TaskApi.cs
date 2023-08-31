@@ -533,6 +533,8 @@ namespace QarnotSDK {
         public Privileges Privileges { get; set; }
         public RetrySettings RetrySettings { get; set; }
         public QSecretAccessRights SecretsAccessRights { get; set; }
+        public SchedulingType? SchedulingType { get; set; }
+        public string TargetedReservedMachineKey { get; set; }
 
         internal TaskApi() {
             Constants = new List<KeyValHelper>();

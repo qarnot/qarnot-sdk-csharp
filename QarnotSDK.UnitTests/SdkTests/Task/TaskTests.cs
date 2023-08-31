@@ -8,6 +8,7 @@ namespace QarnotSDK.UnitTests
     using System.Threading.Tasks;
 
     using Moq;
+    using Newtonsoft.Json.Linq;
     using NUnit.Framework;
 
     using QarnotSDK;
@@ -959,6 +960,58 @@ namespace QarnotSDK.UnitTests
             Assert.AreEqual(poolUuid, taskPool.Uuid.ToString());
             Assert.AreEqual(pool.Name, taskPool.Name);
             Assert.AreEqual(pool.Shortname, taskPool.Shortname);
+        }
+
+        [Test]
+        public async Task CheckTaskSchedulingTypeDeserializationFromJson()
+        {
+            string uuid = Guid.NewGuid().ToString();
+            QTask task = new (Connect, uuid);
+            Assert.IsNull(task.SchedulingType);
+            Assert.IsNull(task.TargetedReservedMachineKey);
+            await task.UpdateStatusAsync();
+            Assert.IsNotNull(task.SchedulingType);
+            Assert.AreEqual(SchedulingType.Reserved, task.SchedulingType);
+            Assert.AreEqual("some-reserved-machine", task.TargetedReservedMachineKey);
+        }
+
+        [TestCase(SchedulingType.Flex)]
+        [TestCase(SchedulingType.OnDemand)]
+        [TestCase(SchedulingType.Reserved)]
+        public async Task CheckTaskSchedulingTypeSerialization(SchedulingType schedulingType)
+        {
+            QTask task = new (Connect, "test-task-with-scheduling", "profile", 1, schedulingType: schedulingType);
+            Assert.IsNotNull(task.SchedulingType);
+            Assert.AreEqual(schedulingType, task.SchedulingType);
+
+            task.TargetedReservedMachineKey = "test-machine";
+
+            if (schedulingType != SchedulingType.Reserved)
+            {
+                var ex = Assert.ThrowsAsync<Exception>(async () => await task.SubmitAsync());
+                Assert.AreEqual("Cannot target a reserved machine without using a 'Reserved' scheduling type.", ex.Message);
+                task.TargetedReservedMachineKey = default;
+            }
+            await task.SubmitAsync();
+
+            var taskCreateRequest = HttpHandler.ParsedRequests.FirstOrDefault(req =>
+                req.Method.Contains("POST", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ApiUrl}/task", StringComparison.InvariantCultureIgnoreCase));
+
+            Assert.That(taskCreateRequest, Is.Not.Null);
+
+            var taskCreateString = taskCreateRequest.Content;
+            dynamic taskCreateJson = JObject.Parse(taskCreateString);
+
+            Console.WriteLine(taskCreateString);
+
+            Assert.IsNotNull(taskCreateJson.SchedulingType);
+            Assert.AreEqual(schedulingType.ToString(), taskCreateJson.SchedulingType.ToString());
+            if (schedulingType == SchedulingType.Reserved)
+            {
+                Assert.IsNotNull(taskCreateJson.TargetedReservedMachineKey);
+                Assert.AreEqual("test-machine", taskCreateJson.TargetedReservedMachineKey.ToString());
+            }
         }
     }
 

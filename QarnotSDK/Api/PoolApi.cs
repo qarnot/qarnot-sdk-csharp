@@ -439,6 +439,8 @@ namespace QarnotSDK {
         public RetrySettings DefaultRetrySettings { get; set; }
         public Scaling Scaling { get; set; }
         public QSecretAccessRights SecretsAccessRights { get; set; }
+        public SchedulingType? SchedulingType { get; set; }
+        public string TargetedReservedMachineKey { get; set; }
 
         internal PoolApi() {
             Constants = new List<KeyValHelper>();

@@ -580,6 +580,58 @@ namespace QarnotSDK.UnitTests
             Assert.AreEqual(12, pool.DefaultRetrySettings.MaxTotalRetries);
             Assert.AreEqual(12, pool.DefaultRetrySettings.MaxPerInstanceRetries);
         }
+
+        [Test]
+        public async Task CheckPoolSchedulingTypeDeserializationFromJson()
+        {
+            string uuid = Guid.NewGuid().ToString();
+            QPool pool = new (Connect, uuid);
+            Assert.IsNull(pool.SchedulingType);
+            Assert.IsNull(pool.TargetedReservedMachineKey);
+            await pool.UpdateStatusAsync();
+            Assert.IsNotNull(pool.SchedulingType);
+            Assert.AreEqual(SchedulingType.Reserved, pool.SchedulingType);
+            Assert.AreEqual("some-reserved-machine", pool.TargetedReservedMachineKey);
+        }
+
+        [TestCase(SchedulingType.Flex)]
+        [TestCase(SchedulingType.OnDemand)]
+        [TestCase(SchedulingType.Reserved)]
+        public async Task CheckPoolSchedulingTypeSerialization(SchedulingType schedulingType)
+        {
+            QPool pool = new (Connect, "test-pool-with-scheduling", "profile", 1, schedulingType: schedulingType);
+            Assert.IsNotNull(pool.SchedulingType);
+            Assert.AreEqual(schedulingType, pool.SchedulingType);
+
+            pool.TargetedReservedMachineKey = "test-machine";
+
+            if (schedulingType != SchedulingType.Reserved)
+            {
+                var ex = Assert.ThrowsAsync<Exception>(async () => await pool.StartAsync());
+                Assert.AreEqual("Cannot target a reserved machine without using a 'Reserved' scheduling type.", ex.Message);
+                pool.TargetedReservedMachineKey = default;
+            }
+            await pool.StartAsync();
+
+            var poolCreateRequest = HttpHandler.ParsedRequests.FirstOrDefault(req =>
+                req.Method.Contains("POST", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ApiUrl}/pool", StringComparison.InvariantCultureIgnoreCase));
+
+            Assert.That(poolCreateRequest, Is.Not.Null);
+
+            var poolCreateString = poolCreateRequest.Content;
+            dynamic poolCreateJson = JObject.Parse(poolCreateString);
+
+            Console.WriteLine(poolCreateString);
+
+            Assert.IsNotNull(poolCreateJson.SchedulingType);
+            Assert.AreEqual(schedulingType.ToString(), poolCreateJson.SchedulingType.ToString());
+            if (schedulingType == SchedulingType.Reserved)
+            {
+                Assert.IsNotNull(poolCreateJson.TargetedReservedMachineKey);
+                Assert.AreEqual("test-machine", poolCreateJson.TargetedReservedMachineKey.ToString());
+            }
+        }
     }
 
     [TestFixture]
