@@ -93,10 +93,16 @@ namespace QarnotSDK.UnitTests
                 {
                     ""discriminator"": ""GpuHardwareConstraint""
                 },
+                {
+                    ""discriminator"": ""SSDHardwareConstraint""
+                },
+                {
+                    ""discriminator"": ""NoSSDHardwareConstraint""
+                },
             ],
             ""offset"": 0,
             ""limit"": 50,
-            ""total"": 8
+            ""total"": 10
         }";
 
         public const string GetLimitedUserHardwareConstraints = @"{

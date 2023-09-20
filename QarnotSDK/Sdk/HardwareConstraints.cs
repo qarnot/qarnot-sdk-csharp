@@ -23,6 +23,8 @@ namespace QarnotSDK
         public const string MinimumRamHardwareConstraint = "MinimumRamHardwareConstraint";
         public const string MaximumRamHardwareConstraint = "MaximumRamHardwareConstraint";
         public const string GpuHardwareConstraint = "GpuHardwareConstraint";
+        public const string SSDHardwareConstraint = "SSDHardwareConstraint";
+        public const string NoSSDHardwareConstraint = "NoSSDHardwareConstraint";
         public const string CpuModelHardwareConstraint = "CpuModelHardwareConstraint";
         # pragma warning restore CS1591
     }
@@ -42,6 +44,9 @@ namespace QarnotSDK
         /// - MinimumRamHardwareConstraint
         /// - MaximumRamHardwareConstraint
         /// - GpuHardwareConstraint
+        /// - SSDHardwareConstraint
+        /// - NoSSDHardwareConstraint
+        /// - CpuModelHardwareConstraint
         /// </summary>
         public virtual string Discriminator { get; set; }
     }
@@ -175,6 +180,28 @@ namespace QarnotSDK
         /// Type of the Constraint.
         /// </summary>
         public override string Discriminator => HardwareConstraintDiscriminators.GpuHardwareConstraint;
+    }
+
+    /// <summary>
+    /// Constraint to limit the execution to hardwares with SSD
+    /// </summary>
+    public class SSDHardware : HardwareConstraint
+    {
+        /// <summary>
+        /// Type of the Constraint.
+        /// </summary>
+        public override string Discriminator => HardwareConstraintDiscriminators.SSDHardwareConstraint;
+    }
+
+    /// <summary>
+    /// Constraint to limit the execution to hardwares without SSD
+    /// </summary>
+    public class NoSSDHardware : HardwareConstraint
+    {
+        /// <summary>
+        /// Type of the Constraint.
+        /// </summary>
+        public override string Discriminator => HardwareConstraintDiscriminators.NoSSDHardwareConstraint;
     }
 
     /// <summary>

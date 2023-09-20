@@ -49,6 +49,10 @@ namespace QarnotSDK
                         return jo.ToObject<MaximumRamHardware>();
                     case HardwareConstraintDiscriminators.GpuHardwareConstraint:
                         return jo.ToObject<GpuHardware>();
+                    case HardwareConstraintDiscriminators.SSDHardwareConstraint:
+                        return jo.ToObject<SSDHardware>();
+                    case HardwareConstraintDiscriminators.NoSSDHardwareConstraint:
+                        return jo.ToObject<NoSSDHardware>();
                     case HardwareConstraintDiscriminators.CpuModelHardwareConstraint:
                         return jo.ToObject<CpuModelHardware>();
                     default: return default;
