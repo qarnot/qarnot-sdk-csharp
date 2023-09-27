@@ -69,8 +69,8 @@ namespace QarnotSDK.UnitTests
 
             await job0.SubmitAsync();
 
-            Assert.That(DateTime.Now, Is.AtLeast(min_time), "wait time is too short");
-            Assert.That(DateTime.Now, Is.AtMost(max_time), "wait time is too long");
+            Assert.GreaterOrEqual(DateTime.Now.Truncate(), min_time.Truncate(), "wait time is too short");
+            Assert.LessOrEqual(DateTime.Now.Truncate(), max_time.Truncate(), "wait time is too long");
 
             await job0.UpdateStatusAsync();
             await job0.TerminateAsync();
@@ -94,6 +94,17 @@ namespace QarnotSDK.UnitTests
         }
     }
 
+    public static class DateTimeExtensions
+    {
+        public static DateTime Truncate(this DateTime dateTime, TimeSpan timeSpan = default)
+        {
+            timeSpan = timeSpan == default ? TimeSpan.FromMilliseconds(1): timeSpan; // By default keep milliseconds precision
+            if (timeSpan == TimeSpan.Zero) return dateTime;
+            if (dateTime == DateTime.MinValue || dateTime == DateTime.MaxValue) return dateTime; // do not modify "guard" values
+            return dateTime.AddTicks(-(dateTime.Ticks % timeSpan.Ticks));
+        }
+    }
+
     public class UnitTestLinearRetryHandler
     {
         [SuppressMessage("Microsoft.Globalization", "CA1303:DoNotPassLiteralsAsLocalizedParameters", Justification = "UnitTest are not multilangues.")]
@@ -114,14 +125,9 @@ namespace QarnotSDK.UnitTests
             DateTime min_time = now.AddMilliseconds((double)(milliSecondWaitTime * nbrOfFail));
             DateTime max_time = now.AddMilliseconds((double)((milliSecondWaitTime * nbrOfFail) + 1000));
             await job0.SubmitAsync();
-            if (DateTime.Now < min_time)
-            {
-                throw new Exception($"wait job is to short... start: {now}, actual:{DateTime.Now} < {min_time}");
-            }
-            else if (DateTime.Now > max_time)
-            {
-                throw new Exception($"wait job is to long... start: {now}, actual:{DateTime.Now} > {max_time}");
-            }
+
+            Assert.GreaterOrEqual(DateTime.Now.Truncate(), min_time.Truncate(), "wait time is too short");
+            Assert.LessOrEqual(DateTime.Now.Truncate(), max_time.Truncate(), "wait time is too long");
 
             await job0.UpdateStatusAsync();
             await job0.TerminateAsync();
