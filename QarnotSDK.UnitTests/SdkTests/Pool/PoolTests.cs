@@ -6,6 +6,7 @@ namespace QarnotSDK.UnitTests
     using System.Threading.Tasks;
     using NUnit.Framework;
     using QarnotSDK;
+    using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
 
     [TestFixture]
@@ -631,6 +632,79 @@ namespace QarnotSDK.UnitTests
                 Assert.IsNotNull(poolCreateJson.TargetedReservedMachineKey);
                 Assert.AreEqual("test-machine", poolCreateJson.TargetedReservedMachineKey.ToString());
             }
+        }
+
+        [Test]
+        public async Task CheckPoolForcedNetworkRulesDeserializationFromJson()
+        {
+            string uuid = Guid.NewGuid().ToString();
+            QPool pool = new (Connect, uuid);
+            Assert.IsNull(pool.ForcedNetworkRules);
+            await pool.UpdateStatusAsync();
+            Assert.IsNotNull(pool.ForcedNetworkRules);
+            Assert.AreEqual(2, pool.ForcedNetworkRules.Count);
+            var firstRule = pool.ForcedNetworkRules[0];
+            Assert.AreEqual(true, firstRule.Inbound);
+            Assert.AreEqual("tcp", firstRule.Proto);
+            Assert.AreEqual("bound-to-be-alive", firstRule.To);
+            Assert.AreEqual("1234", firstRule.Port);
+            Assert.AreEqual("1000", firstRule.Priority);
+            Assert.AreEqual("Inbound test", firstRule.Description);
+            var secondRule = pool.ForcedNetworkRules[1];
+            Assert.AreEqual(false, secondRule.Inbound);
+            Assert.AreEqual("tcp", secondRule.Proto);
+            Assert.AreEqual("bound-to-the-devil", secondRule.PublicHost);
+            Assert.AreEqual("666", secondRule.PublicPort);
+            Assert.AreEqual("1000", secondRule.Priority);
+            Assert.AreEqual("Outbound test", secondRule.Description);
+        }
+
+        [Test]
+        public async Task CheckPoolForcedNetworkRulesSerialization()
+        {
+            QPool pool = new (Connect, "test-pool-with-forced-network-rules", "profile", 1);
+            Assert.IsNull(pool.ForcedNetworkRules);
+
+            var networkRules = new List<ForcedNetworkRule>()
+            {
+                new ForcedNetworkRule(true, "tcp", "bound-to-be-alive", "1234", priority: "1000", description: "Inbound test"),
+                new ForcedNetworkRule(false, "tcp", publicHost: "bound-to-the-devil", publicPort: "666", priority: "1000", description: "Outbound test"),
+            };
+            pool.ForcedNetworkRules = networkRules;
+            await pool.StartAsync();
+
+            var poolCreateRequest = HttpHandler.ParsedRequests.FirstOrDefault(req =>
+                req.Method.Contains("POST", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ApiUrl}/pool", StringComparison.InvariantCultureIgnoreCase));
+
+            Assert.That(poolCreateRequest, Is.Not.Null);
+
+            var poolCreateString = poolCreateRequest.Content;
+            var poolCreateJson = JsonConvert.DeserializeObject<dynamic>(poolCreateString);
+
+            Console.WriteLine(poolCreateString);
+
+            var forcedNetworkRules = poolCreateJson.ForcedNetworkRules;
+            Assert.IsNotNull(forcedNetworkRules);
+            Assert.AreEqual(2, forcedNetworkRules.Count);
+            var firstExpectedRule = networkRules[0];
+            var firstRule = forcedNetworkRules[0];
+            Console.WriteLine("firstRule -> {0}", firstRule);
+            Console.WriteLine("firstRule.GetType() -> {0}", firstRule.GetType());
+            Assert.AreEqual(firstExpectedRule.Inbound, (bool)firstRule["Inbound"]);
+            Assert.AreEqual(firstExpectedRule.Proto, (string)firstRule["Proto"]);
+            Assert.AreEqual(firstExpectedRule.To, (string)firstRule["To"]);
+            Assert.AreEqual(firstExpectedRule.Port, (string)firstRule["Port"]);
+            Assert.AreEqual(firstExpectedRule.Priority, (string)firstRule["Priority"]);
+            Assert.AreEqual(firstExpectedRule.Description, (string)firstRule["Description"]);
+            var secondExpectedRule = networkRules[1];
+            var secondRule = forcedNetworkRules[1];
+            Assert.AreEqual(secondExpectedRule.Inbound, (bool)secondRule["Inbound"]);
+            Assert.AreEqual(secondExpectedRule.Proto, (string)secondRule["Proto"]);
+            Assert.AreEqual(secondExpectedRule.PublicHost, (string)secondRule["PublicHost"]);
+            Assert.AreEqual(secondExpectedRule.PublicPort, (string)secondRule["PublicPort"]);
+            Assert.AreEqual(secondExpectedRule.Priority, (string)secondRule["Priority"]);
+            Assert.AreEqual(secondExpectedRule.Description, (string)secondRule["Description"]);
         }
     }
 

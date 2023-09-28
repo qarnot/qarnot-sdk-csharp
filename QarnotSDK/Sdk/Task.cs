@@ -775,6 +775,22 @@ namespace QarnotSDK {
         }
 
         /// <summary>
+        /// Network rules forced for the task.
+        /// </summary>
+        [InternalDataApiName(Name="ForcedNetworkRules")]
+        public virtual List<ForcedNetworkRule> ForcedNetworkRules
+        {
+            get
+            {
+                return _taskApi.ForcedNetworkRules;
+            }
+            set
+            {
+                _taskApi.ForcedNetworkRules = value;
+            }
+        }
+
+        /// <summary>
         /// Create a new task outside of a pool.
         /// </summary>
         /// <param name="connection">The inner connection object.</param>
