@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using QarnotSDK.Sdk;
 
 namespace QarnotSDK
 {
@@ -1054,6 +1055,15 @@ namespace QarnotSDK
                 if (failIfDoesntExist) throw ex;
             }
         }
+
+        /// <summary>
+        /// Get the pool carbon facts
+        /// </summary>
+        /// <returns>The carbon facts of the pool.</returns>
+        public virtual async Task<CarbonFacts> GetCarbonFactsAsync(string referenceDatacenter = null, CancellationToken ct = default) {
+            return await _api.CarbonClient.GetPoolCarbonFactsAsync(Uuid, referenceDatacenter, ct);
+        }
+
         #endregion
 
         #region helpers

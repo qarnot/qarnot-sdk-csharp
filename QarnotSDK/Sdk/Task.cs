@@ -5,6 +5,7 @@ using System.IO;
 using System.Threading;
 using System.Linq;
 using System;
+using QarnotSDK.Sdk;
 
 
 namespace QarnotSDK {
@@ -1397,6 +1398,15 @@ namespace QarnotSDK {
                 if (failIfDoesntExist) throw ex;
             }
         }
+
+        /// <summary>
+        /// Get the task carbon facts
+        /// </summary>
+        /// <returns>The carbon facts of the task.</returns>
+        public virtual async Task<CarbonFacts> GetCarbonFactsAsync(string referenceDatacenter = null, CancellationToken ct = default) {
+            return await _api.CarbonClient.GetTaskCarbonFactsAsync(Uuid, referenceDatacenter, ct);
+        }
+
         #endregion
 
         #region helpers

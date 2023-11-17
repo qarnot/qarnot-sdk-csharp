@@ -122,6 +122,11 @@ namespace QarnotSDK {
         public virtual Secrets Secrets { get; }
 
         /// <summary>
+        /// Allows to interact with the Qarnot Carbon API.
+        /// </summary>
+        public virtual CarbonCalculator CarbonClient { get; }
+
+        /// <summary>
         /// Sdk user agent: adding references to the current version to trace bugs and usages
         /// </summary>
         private static string SdkUserAgent { get {
@@ -208,6 +213,7 @@ namespace QarnotSDK {
             _retryHandler = httpClientComponents.RetryHandler;
 
             Secrets = new Secrets(_client);
+            CarbonClient = new CarbonCalculator(_client);
         }
 
         #region CreateX
