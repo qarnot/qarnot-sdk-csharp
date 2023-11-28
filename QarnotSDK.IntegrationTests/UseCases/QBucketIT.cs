@@ -30,8 +30,18 @@ namespace QarnotSDK.IntegrationTests
         [Timeout(5000)]
         public async Task CommonSetup()
         {
+            IntegrationTestContext.IgnoreIfNotRealStorage();
+
             Amazon.AWSConfigs.LoggingConfig.LogTo = Amazon.LoggingOptions.Console;
-            var cephClientOptions = new CephClientOptions("http://127.0.0.1:8000", "access", "secret");
+            var cephIP = Environment.GetEnvironmentVariable("QARNOT_SDK_CSHARP_TESTS_STORAGE_IP") ?? "http://127.0.0.1";
+            if (!cephIP.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
+            {
+                cephIP = string.Format("http://{0}", cephIP); // RadosGW client cannot parse IP or container name as URI so need to add the http prefix to the endpoint
+            }
+            var adminAccessKey = Environment.GetEnvironmentVariable("QARNOT_SDK_CSHARP_TESTS_STORAGE_ADMIN_ACCESS_KEY") ?? "access";
+            var adminSecretKey = Environment.GetEnvironmentVariable("QARNOT_SDK_CSHARP_TESTS_STORAGE_ADMIN_SECRET_KEY") ?? "secret";
+            var cephClientOptions = new CephClientOptions($"{cephIP}:8000", adminAccessKey, adminSecretKey);
+            TestContext.Progress.WriteLine("Ceph Config: endpoint = {0}, accessKey = {1}, secretKey = {2}", cephClientOptions.RadosGWEndpoint, cephClientOptions.RadosGWAdminAccessKey, cephClientOptions.RadosGWAdminSecretKey);
             var context = new IntegrationTestContext(cephClientOptions);
             await context.ResetStorageAsync();
 
@@ -40,7 +50,7 @@ namespace QarnotSDK.IntegrationTests
             var secretKey = "testSecret";
             await context.CreateStorageAccount("UserUuid", "tenant", "test-user", accessKey, secretKey);
 
-            //HttpHandler = new InterceptingFakeHttpHandler(); // used when debugging to intercept requests to api and storage
+            // HttpHandler = new InterceptingFakeHttpHandler(); // used when debugging to intercept requests to api and storage
             _storageClient = context.GetUserStorageClient(accessKey, secretKey, HttpHandler);
 
             _connection = new Connection(
@@ -100,9 +110,18 @@ namespace QarnotSDK.IntegrationTests
         [OneTimeTearDown]
         public void TearDown()
         {
-            var directory = Path.GetDirectoryName(InitFiles[0].name);
-            File.Delete(InitFiles[0].name);
-            Directory.Delete(directory);
+            if (InitFiles != default && InitFiles.Count > 0)
+            {
+                var directory = Path.GetDirectoryName(InitFiles[0].name);
+                if (File.Exists(InitFiles[0].name))
+                {
+                    File.Delete(InitFiles[0].name);
+                }
+                if (Directory.Exists(directory))
+                {
+                    Directory.Delete(directory);
+                }
+            }
         }
 
         [Test, NonParallelizable, Order(1)]

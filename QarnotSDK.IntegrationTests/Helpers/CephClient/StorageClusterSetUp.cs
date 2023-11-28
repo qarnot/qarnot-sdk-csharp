@@ -12,13 +12,12 @@ namespace QarnotSDK.IntegrationTests
         [OneTimeSetUp]
         public async Task SetUpStorageCluster()
         {
-            Environment.SetEnvironmentVariable("QARNOT_SDK_CSHARP_TEST_USE_REAL_REMOTE_STORAGE", "true");
-            var useRealStorageCluster = bool.Parse(Environment.GetEnvironmentVariable("QARNOT_SDK_CSHARP_TEST_USE_REAL_REMOTE_STORAGE") ?? "false");
-
-            if (useRealStorageCluster)
+            if (!Gitlabci.IsInGitlabCI() && IntegrationTestContext.IsUsingRealStorage()) // All code using Docker.Dotnet cannot be run in gitlab-ci because docker daemon is not available to make requests
             {
                 StorageClusterContainer = new StorageClusterContainer();
                 await StorageClusterContainer.StartAsync();
+                var cephContainerIP = await StorageClusterContainer.GetIPAddress();
+                Environment.SetEnvironmentVariable("QARNOT_SDK_CSHARP_TESTS_STORAGE_IP", cephContainerIP); // local container usually does not share same network as the tests so use IP address instead of container name
             }
         }
 

@@ -16,6 +16,7 @@ namespace QarnotSDK.IntegrationTests
         //private const string CephNanoLocalImageName = "ceph/daemon";
         private const string CephNanoLocalImageName = "ceph-nano";
         private const string CephNanoLocalImageTag = "latest";
+        private const string CephNanoFullImageName = $"{CephNanoLocalImageName}:{CephNanoLocalImageTag}";
         private const string StorageClusterContainerPort = "8000/tcp";
         private const string StorageClusterHostPort = "8000/tcp";
         private readonly DockerClient DockerClient;
@@ -43,19 +44,17 @@ namespace QarnotSDK.IntegrationTests
 
         private async Task<string> GenerateStorageClusterContainerAsync(CancellationToken ct)
         {
-            var dockerImageName =  $"{CephNanoLocalImageName}:{CephNanoLocalImageTag}";
             var images = await DockerClient.Images.ListImagesAsync(
                 new ImagesListParameters()
                 {
                     All = true,
                     Filters = new Dictionary<string, IDictionary<string, bool>>
-                        { ["reference"] = new Dictionary<string, bool> { [dockerImageName] = true } }
+                        { ["reference"] = new Dictionary<string, bool> { [CephNanoFullImageName] = true } }
                 },
                 ct);
 
             if (images.Count == 0)
             {
-
                 var msg = $"No image {CephNanoLocalImageName} found on host, please build it before launching test";
                 Console.Error.WriteLine(msg);
                 Environment.FailFast(msg);
@@ -65,7 +64,7 @@ namespace QarnotSDK.IntegrationTests
                 new CreateContainerParameters()
                 {
                     Name = "sdk-csharp-test-ceph-cluster",
-                    Image = $"{CephNanoLocalImageName}:{CephNanoLocalImageTag}",
+                    Image = CephNanoFullImageName,
                     ExposedPorts = new Dictionary<string, EmptyStruct>
                     {
                         { StorageClusterContainerPort, default }
@@ -76,18 +75,8 @@ namespace QarnotSDK.IntegrationTests
                         "CEPH_DEMO_ACCESS_KEY=${STORAGE_ADMIN_ACCESS:-access}",
                         "CEPH_DEMO_SECRET_KEY=${STORAGE_ADMIN_SECRET:-secret}"
                     },
-                    /*{
-                        "CEPH_DAEMON=RGW",
-                        "MON_IP=127.0.0.1",
-                        "CEPH_PUBLIC_NETWORK=0.0.0.0/0",
-                        "CEPH_DAEMON=DEMO",
-                        "RESTAPI_LOG_LEVEL=debug",
-                        "RGW_NAME=localhost",
-                        "CEPH_DEMO_UID=rgw"
-                    },*/
                     HostConfig = new HostConfig
                     {
-                        //NetworkMode = "host",
                         NetworkMode = "bridge",
                         PortBindings = new Dictionary<string, IList<PortBinding>>
                         {
@@ -101,39 +90,6 @@ namespace QarnotSDK.IntegrationTests
                                         HostPort = StorageClusterHostPort,
                                     },
                                 }
-                            },
-                            {
-                                "8080",
-                                new List<PortBinding>
-                                {
-                                    new PortBinding
-                                    {
-                                        HostIP = "127.0.0.1",
-                                        HostPort = "8080",
-                                    },
-                                }
-                            },
-                            {
-                                "5000",
-                                new List<PortBinding>
-                                {
-                                    new PortBinding
-                                    {
-                                        HostIP = "127.0.0.1",
-                                        HostPort = "5000",
-                                    },
-                                }
-                            },
-                            {
-                                "443",
-                                new List<PortBinding>
-                                {
-                                    new PortBinding
-                                    {
-                                        HostIP = "127.0.0.1",
-                                        HostPort = "5005",
-                                    },
-                                }
                             }
                         },
                     },
@@ -144,16 +100,38 @@ namespace QarnotSDK.IntegrationTests
 
         public async Task StartAsync(CancellationToken ct = default)
         {
-            StorageClusterContainerID = await GenerateStorageClusterContainerAsync(ct);
-            await DockerClient
-                .Containers
-                .StartContainerAsync(
-                    StorageClusterContainerID,
-                    new ContainerStartParameters(),
-                    ct);
+            var existingContainer = Environment.GetEnvironmentVariable("QARNOT_SDK_CSHARP_TESTS_STORAGE_IP");
+            if (existingContainer != default)
+            {
+                var cephContainers = await DockerClient.Containers.ListContainersAsync(new ContainersListParameters()
+                {
+                    Filters = new Dictionary<string, IDictionary<string, bool>>
+                    {
+                        ["name"] = new Dictionary<string, bool>
+                        {
+                            [existingContainer] = true
+                        }
+                    },
+                    All = true
+                },
+                ct);
+                var container = cephContainers.FirstOrDefault();
+                StorageClusterContainerID = container?.ID;
+            }
+
+            if (StorageClusterContainerID == default)
+            {
+                StorageClusterContainerID = await GenerateStorageClusterContainerAsync(ct);
+                await DockerClient
+                    .Containers
+                    .StartContainerAsync(
+                        StorageClusterContainerID,
+                        new ContainerStartParameters(),
+                        ct);
+            }
 
             string log = string.Empty;
-            var messageToWait = "Running on http://0.0.0.0:5000/";
+            var messageToWait = "Running on http://0.0.0.0"; // By default it is http://0.0.0.0:5000 but the default from docker.redmont image is http://0.0.0.0:5001
             while(!log.Contains(messageToWait, StringComparison.CurrentCultureIgnoreCase))
             {
                 await Task.Delay(4000, ct);
@@ -232,6 +210,12 @@ namespace QarnotSDK.IntegrationTests
                     ct);
 
             await Task.Delay(2000, ct);
+        }
+
+        public async Task<string> GetIPAddress(CancellationToken ct = default)
+        {
+            var inspectContainer = await DockerClient.Containers.InspectContainerAsync(StorageClusterContainerID, ct);
+            return inspectContainer.NetworkSettings.IPAddress;
         }
 
         public void Dispose()
