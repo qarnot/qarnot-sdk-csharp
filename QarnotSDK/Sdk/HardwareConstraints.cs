@@ -73,6 +73,12 @@ namespace QarnotSDK
         {
             CoreCount = coreCount;
         }
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj) => obj is MinimumCoreHardware x && x.GetHashCode() == GetHashCode();
+
+        /// <inheritdoc/>
+        public override int GetHashCode() => (Discriminator + CoreCount.ToString()).GetHashCode(); 
     }
 
     /// <summary>
@@ -97,6 +103,12 @@ namespace QarnotSDK
         {
             CoreCount = coreCount;
         }
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj) => obj is MaximumCoreHardware x && x.GetHashCode() == GetHashCode();
+
+        /// <inheritdoc/>
+        public override int GetHashCode() => (Discriminator + CoreCount.ToString()).GetHashCode(); 
     }
 
     /// <summary>
@@ -121,6 +133,12 @@ namespace QarnotSDK
         {
             MinimumMemoryGBCoreRatio = ramCoreRatio;
         }
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj) => obj is MinimumRamCoreRatioHardware x && x.GetHashCode() == GetHashCode();
+
+        /// <inheritdoc/>
+        public override int GetHashCode() => (Discriminator + MinimumMemoryGBCoreRatio.ToString()).GetHashCode(); 
     }
 
     /// <summary>
@@ -145,6 +163,12 @@ namespace QarnotSDK
         {
             MaximumMemoryGBCoreRatio = ramCoreRatio;
         }
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj) => obj is MaximumRamCoreRatioHardware x && x.GetHashCode() == GetHashCode();
+
+        /// <inheritdoc/>
+        public override int GetHashCode() => (Discriminator + MaximumMemoryGBCoreRatio.ToString()).GetHashCode(); 
     }
 
     /// <summary>
@@ -169,6 +193,12 @@ namespace QarnotSDK
         {
             SpecificationKey = hardwareKey;
         }
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj) => obj is SpecificHardware x && x.GetHashCode() == GetHashCode();
+
+        /// <inheritdoc/>
+        public override int GetHashCode() => (Discriminator + SpecificationKey.ToString()).GetHashCode(); 
     }
 
     /// <summary>
@@ -180,6 +210,12 @@ namespace QarnotSDK
         /// Type of the Constraint.
         /// </summary>
         public override string Discriminator => HardwareConstraintDiscriminators.GpuHardwareConstraint;
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj) => obj is GpuHardware x && x.GetHashCode() == GetHashCode();
+
+        /// <inheritdoc/>
+        public override int GetHashCode() => Discriminator.GetHashCode(); 
     }
 
     /// <summary>
@@ -191,6 +227,12 @@ namespace QarnotSDK
         /// Type of the Constraint.
         /// </summary>
         public override string Discriminator => HardwareConstraintDiscriminators.SSDHardwareConstraint;
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj) => obj is SSDHardware x && x.GetHashCode() == GetHashCode();
+
+        /// <inheritdoc/>
+        public override int GetHashCode() => Discriminator.GetHashCode(); 
     }
 
     /// <summary>
@@ -202,6 +244,12 @@ namespace QarnotSDK
         /// Type of the Constraint.
         /// </summary>
         public override string Discriminator => HardwareConstraintDiscriminators.NoSSDHardwareConstraint;
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj) => obj is NoSSDHardware x && x.GetHashCode() == GetHashCode();
+
+        /// <inheritdoc/>
+        public override int GetHashCode() => Discriminator.GetHashCode(); 
     }
 
     /// <summary>
@@ -226,6 +274,12 @@ namespace QarnotSDK
         {
             MinimumMemoryMB = ram;
         }
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj) => obj is MinimumRamHardware x && x.GetHashCode() == GetHashCode();
+
+        /// <inheritdoc/>
+        public override int GetHashCode() => (Discriminator + MinimumMemoryMB.ToString()).GetHashCode(); 
     }
 
     /// <summary>
@@ -250,6 +304,12 @@ namespace QarnotSDK
         {
             MaximumMemoryMB = ram;
         }
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj) => obj is MaximumRamHardware x && x.GetHashCode() == GetHashCode();
+
+        /// <inheritdoc/>
+        public override int GetHashCode() => (Discriminator + MaximumMemoryMB.ToString()).GetHashCode(); 
     }
 
     /// <summary>
@@ -275,5 +335,11 @@ namespace QarnotSDK
         {
             CpuModel = cpuModel;
         }
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj) => obj is CpuModelHardware x && x.GetHashCode() == GetHashCode();
+
+        /// <inheritdoc/>
+        public override int GetHashCode() => (Discriminator + CpuModel.ToString()).GetHashCode(); 
     }
 }
