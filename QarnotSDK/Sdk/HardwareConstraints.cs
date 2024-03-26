@@ -23,6 +23,7 @@ namespace QarnotSDK
         public const string MinimumRamHardwareConstraint = "MinimumRamHardwareConstraint";
         public const string MaximumRamHardwareConstraint = "MaximumRamHardwareConstraint";
         public const string GpuHardwareConstraint = "GpuHardwareConstraint";
+        public const string NoGpuHardwareConstraint = "NoGpuHardwareConstraint";
         public const string SSDHardwareConstraint = "SSDHardwareConstraint";
         public const string NoSSDHardwareConstraint = "NoSSDHardwareConstraint";
         public const string CpuModelHardwareConstraint = "CpuModelHardwareConstraint";
@@ -44,6 +45,7 @@ namespace QarnotSDK
         /// - MinimumRamHardwareConstraint
         /// - MaximumRamHardwareConstraint
         /// - GpuHardwareConstraint
+        /// - NoGpuHardwareConstraint
         /// - SSDHardwareConstraint
         /// - NoSSDHardwareConstraint
         /// - CpuModelHardwareConstraint
@@ -213,6 +215,23 @@ namespace QarnotSDK
 
         /// <inheritdoc/>
         public override bool Equals(object obj) => obj is GpuHardware x && x.GetHashCode() == GetHashCode();
+
+        /// <inheritdoc/>
+        public override int GetHashCode() => Discriminator.GetHashCode(); 
+    }
+
+    /// <summary>
+    /// Constraint to limit the execution to hardwares without GPU
+    /// </summary>
+    public class NoGpuHardware : HardwareConstraint
+    {
+        /// <summary>
+        /// Type of the Constraint.
+        /// </summary>
+        public override string Discriminator => HardwareConstraintDiscriminators.NoGpuHardwareConstraint;
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj) => obj is NoGpuHardware x && x.GetHashCode() == GetHashCode();
 
         /// <inheritdoc/>
         public override int GetHashCode() => Discriminator.GetHashCode(); 

@@ -94,6 +94,9 @@ namespace QarnotSDK.UnitTests
                     ""discriminator"": ""GpuHardwareConstraint""
                 },
                 {
+                    ""discriminator"": ""NoGpuHardwareConstraint""
+                },
+                {
                     ""discriminator"": ""SSDHardwareConstraint""
                 },
                 {
