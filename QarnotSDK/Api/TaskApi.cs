@@ -499,6 +499,7 @@ namespace QarnotSDK {
         public List<string> ResourceBuckets { get; set; }
         public List<ApiAdvancedResourceBucket> AdvancedResourceBuckets { get; set; }
         public string ResultBucket { get; set; }
+        public int? ResultsCacheTTLSec { get; set; }
         public string State { get; set; }
         public string PreviousState { get; set; }
         public DateTime StateTransitionTime { get; set; }
@@ -536,6 +537,7 @@ namespace QarnotSDK {
         public SchedulingType? SchedulingType { get; set; }
         public string TargetedReservedMachineKey { get; set; }
         public List<ForcedNetworkRule> ForcedNetworkRules { get; set; }
+        public List<ForcedConstant> ForcedConstants { get; set; }
 
         internal TaskApi() {
             Constants = new List<KeyValHelper>();

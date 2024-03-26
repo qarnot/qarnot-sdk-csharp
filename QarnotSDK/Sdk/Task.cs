@@ -5,6 +5,7 @@ using System.IO;
 using System.Threading;
 using System.Linq;
 using System;
+using QarnotSDK.Sdk;
 
 
 namespace QarnotSDK {
@@ -791,6 +792,22 @@ namespace QarnotSDK {
         }
 
         /// <summary>
+        /// Constant forced for the task.
+        /// </summary>
+        [InternalDataApiName(Name="ForcedConstants")]
+        public virtual List<ForcedConstant> ForcedConstants
+        {
+            get
+            {
+                return _taskApi.ForcedConstants;
+            }
+            set
+            {
+                _taskApi.ForcedConstants = value;
+            }
+        }
+
+        /// <summary>
         /// Create a new task outside of a pool.
         /// </summary>
         /// <param name="connection">The inner connection object.</param>
@@ -1179,6 +1196,7 @@ namespace QarnotSDK {
             if (_results != null) {
                 if (_results != null) {
                     _taskApi.ResultBucket = _results.Shortname;
+                    _taskApi.ResultsCacheTTLSec = _results?.CacheTTLSec;
                 } else {
                     throw new Exception("Unknown IQStorage implementation");
                 }
@@ -1380,6 +1398,15 @@ namespace QarnotSDK {
                 if (failIfDoesntExist) throw ex;
             }
         }
+
+        /// <summary>
+        /// Get the task carbon facts
+        /// </summary>
+        /// <returns>The carbon facts of the task.</returns>
+        public virtual async Task<CarbonFacts> GetCarbonFactsAsync(string referenceDatacenter = null, CancellationToken ct = default) {
+            return await _api.CarbonClient.GetTaskCarbonFactsAsync(Uuid, referenceDatacenter, ct);
+        }
+
         #endregion
 
         #region helpers

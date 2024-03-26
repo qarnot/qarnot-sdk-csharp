@@ -58,6 +58,7 @@ namespace QarnotSDK {
 
     /// <summary>
     /// Represents the pool elastic properties
+    /// Should not be use nowaday, use scaling configuration instead
     /// </summary>
     internal class QPoolElasticProperty {
 
@@ -425,6 +426,7 @@ namespace QarnotSDK {
         public Guid Uuid { get; set; }
         public string Shortname { get; set; }
         public QPoolStatus Status { get; set; }
+        [Obsolete("Use Scaling configuration instead.")]
         public QPoolElasticProperty ElasticProperty { get; set; }
         public PoolPreparationTask PreparationTask { get; set; }
         public bool AutoDeleteOnCompletion { get; set; }
@@ -442,6 +444,7 @@ namespace QarnotSDK {
         public SchedulingType? SchedulingType { get; set; }
         public string TargetedReservedMachineKey { get; set; }
         public List<ForcedNetworkRule> ForcedNetworkRules { get; set; }
+        public List<ForcedConstant> ForcedConstants { get; set; }
 
         internal PoolApi() {
             Constants = new List<KeyValHelper>();

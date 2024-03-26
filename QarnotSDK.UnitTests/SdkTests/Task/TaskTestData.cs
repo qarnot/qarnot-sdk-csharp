@@ -340,6 +340,18 @@ namespace QarnotSDK.UnitTests
             },
             ""schedulingType"": ""Reserved"",
             ""targetedReservedMachineKey"": ""some-reserved-machine"",
+            ""forcedConstants"": [
+                {
+                    ""constantName"": ""the-name-1"",
+                    ""forcedValue"": ""the-value-1"",
+                    ""forceExportInEnvironment"": true,
+                },
+                {
+                    ""constantName"": ""the-name-2"",
+                    ""forcedValue"": ""the-value-2"",
+                    ""access"": ""ReadOnly""
+                },
+            ],
             ""forcedNetworkRules"": [
                 {
                     ""Inbound"": true,

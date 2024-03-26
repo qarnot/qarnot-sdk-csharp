@@ -1087,6 +1087,75 @@ namespace QarnotSDK.UnitTests
             Assert.AreEqual(secondExpectedRule.Priority, (string)secondRule["Priority"]);
             Assert.AreEqual(secondExpectedRule.Description, (string)secondRule["Description"]);
         }
+
+        [Test]
+        public async Task CheckTaskForcedConstantsDeserializationFromJson()
+        {
+            string uuid = Guid.NewGuid().ToString();
+            QTask task = new (Connect, uuid);
+            Assert.IsNull(task.ForcedConstants);
+            await task.UpdateStatusAsync();
+            Assert.IsNotNull(task.ForcedConstants);
+            Assert.AreEqual(2, task.ForcedConstants.Count);
+            var firstConstant = task.ForcedConstants[0];
+            Assert.AreEqual("the-name-1", firstConstant.ConstantName);
+            Assert.AreEqual("the-value-1", firstConstant.ForcedValue);
+            Assert.AreEqual(true, firstConstant.ForceExportInEnvironment);
+            Assert.AreEqual(null, firstConstant.Access);
+
+            var secondConstant = task.ForcedConstants[1];
+            Assert.AreEqual("the-name-2", secondConstant.ConstantName);
+            Assert.AreEqual("the-value-2", secondConstant.ForcedValue);
+            Assert.AreEqual(null, secondConstant.ForceExportInEnvironment);
+            Assert.AreEqual(ForcedConstant.ForcedConstantAccess.ReadOnly, secondConstant.Access);
+        }
+
+        [Test]
+        public async Task CheckTaskForcedConstantsSerialization()
+        {
+            QTask task = new (Connect, "test-task-with-forced-network-rules", "profile", 1);
+            Assert.IsNull(task.ForcedConstants);
+
+            var forcedConstants = new List<ForcedConstant>()
+            {
+                new ForcedConstant("the-first-constant-1", "the-forced-value-1"),
+                new ForcedConstant("the-second-constant-2", "the-forced-value-2", true),
+                new ForcedConstant("the-third-constant-3", "the-forced-value-3", null, ForcedConstant.ForcedConstantAccess.ReadWrite),
+            };
+            task.ForcedConstants = forcedConstants;
+            await task.SubmitAsync();
+
+            var taskCreateRequest = HttpHandler.ParsedRequests.FirstOrDefault(req =>
+                req.Method.Contains("POST", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ApiUrl}/task", StringComparison.InvariantCultureIgnoreCase));
+
+            Assert.That(taskCreateRequest, Is.Not.Null);
+
+            var taskCreateString = taskCreateRequest.Content;
+
+            var taskCreateJson = JsonConvert.DeserializeObject<dynamic>(taskCreateString);
+
+            var retrievedForcedConstants = taskCreateJson.ForcedConstants;
+            Assert.IsNotNull(retrievedForcedConstants);
+            Assert.AreEqual(3, retrievedForcedConstants.Count);
+            var rule = retrievedForcedConstants[0];
+            Assert.AreEqual("the-first-constant-1" , (string) rule["ConstantName"]);
+            Assert.AreEqual("the-forced-value-1" , (string) rule["ForcedValue"]);
+            Assert.AreEqual(null, (bool?) rule["ForceExportInEnvironment"]);
+            Assert.AreEqual(null, (ForcedConstant.ForcedConstantAccess?) rule["Access"]);
+
+            rule = retrievedForcedConstants[1];
+            Assert.AreEqual("the-second-constant-2" , (string) rule["ConstantName"]);
+            Assert.AreEqual("the-forced-value-2" , (string) rule["ForcedValue"]);
+            Assert.AreEqual(true, (bool?) rule["ForceExportInEnvironment"]);
+            Assert.AreEqual(null, (ForcedConstant.ForcedConstantAccess?) rule["Access"]);
+
+            rule = retrievedForcedConstants[2];
+            Assert.AreEqual("the-third-constant-3" , (string) rule["ConstantName"]);
+            Assert.AreEqual("the-forced-value-3" , (string) rule["ForcedValue"]);
+            Assert.AreEqual(null, (bool?) rule["ForceExportInEnvironment"]);
+            Assert.AreEqual(ForcedConstant.ForcedConstantAccess.ReadWrite, (ForcedConstant.ForcedConstantAccess?) rule["Access"]);
+        }
     }
 
 
@@ -1197,7 +1266,18 @@ namespace QarnotSDK.UnitTests
             Assert.AreEqual(ttl, apiResource.CacheTTLSec);
         }
 
+        public async Task TestTaskPreSubmitAsync_With_ResultsCacheTTL_FillsUpApiTask()
+        {
+            int ttl = 1000;
+            QBucket bucket = new QBucket(Connect, "out-bucket", create: false);
+            QTask task = Connect.CreateTask("task-name", "task-profile", 1);
+            task.Results = bucket.WithCacheTTL(ttl);
 
+            await task.PreSubmitAsync(default);
+
+            Assert.AreEqual("out-bucket", task._taskApi.ResultBucket);
+            Assert.AreEqual(ttl, task._taskApi.ResultsCacheTTLSec);
+        }
 
         // NOTE: this test is there so that the SDK remains BC with older versions of rest-computing.
         // When all rest-computing have migrated, this test and the behavior it tests can be

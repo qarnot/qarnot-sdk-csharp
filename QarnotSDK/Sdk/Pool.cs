@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using QarnotSDK.Sdk;
 
 namespace QarnotSDK
 {
@@ -456,6 +457,7 @@ namespace QarnotSDK
         /// Allow the automatic resize of the pool
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.IsElastic")]
+        [Obsolete("Use Scaling configuration instead.")]
         public virtual bool IsElastic {
             get { return _poolApi?.ElasticProperty?.IsElastic ?? false; }
             set {
@@ -472,7 +474,7 @@ namespace QarnotSDK
         /// Minimum slot number for the pool in elastic mode
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.MinTotalSlots")]
-        [Obsolete("Use ElasticMinimumTotalSlots instead")]
+        [Obsolete("Has been replaced by ElasticMinimumTotalSlots in Elastic settings. But Elastic settings are now deprecated, use scaling configuration instead.", true)]
         public virtual uint ElasticMinimumTotalNodes {
             get => ElasticMinimumTotalSlots;
             set { ElasticMinimumTotalSlots = value; }
@@ -482,6 +484,7 @@ namespace QarnotSDK
         /// Minimum slot number for the pool in elastic mode
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.MinTotalSlots")]
+        [Obsolete("Use Scaling configuration instead.")]
         public virtual uint ElasticMinimumTotalSlots {
             get { return _poolApi?.ElasticProperty?.MinTotalSlots ?? 0; }
             set
@@ -499,7 +502,7 @@ namespace QarnotSDK
         /// Maximum slot number for the pool in elastic mode
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.MaxTotalSlots")]
-        [Obsolete("Use ElasticMaximumTotalSlots instead")]
+        [Obsolete("Has been replaced by ElasticMaximumTotalSlots in Elastic settings. But Elastic settings are now deprecated, use scaling configuration instead.", true)]
         public virtual uint ElasticMaximumTotalNodes {
             get => ElasticMaximumTotalSlots;
             set { ElasticMaximumTotalSlots = value; }
@@ -509,6 +512,7 @@ namespace QarnotSDK
         /// Maximum slot number for the pool in elastic mode
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.MaxTotalSlots")]
+        [Obsolete("Use Scaling configuration instead.")]
         public virtual uint ElasticMaximumTotalSlots {
             get { return _poolApi?.ElasticProperty?.MaxTotalSlots ?? 0; }
             set
@@ -526,7 +530,7 @@ namespace QarnotSDK
         /// Minimum idling slot number.
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.MinIdleSlots")]
-        [Obsolete("Use ElasticMinimumIdlingSlots instead")]
+        [Obsolete("Has been replaced by ElasticMinimumIdlingSlots in Elastic settings. But Elastic settings are now deprecated, use scaling configuration instead.", true)]
         public virtual uint ElasticMinimumIdlingNodes {
             get => ElasticMinimumIdlingSlots;
             set { ElasticMinimumIdlingSlots = value; }
@@ -536,6 +540,7 @@ namespace QarnotSDK
         /// Minimum idling slot number.
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.MinIdleSlots")]
+        [Obsolete("Use Scaling configuration instead.")]
         public virtual uint ElasticMinimumIdlingSlots {
             get { return _poolApi?.ElasticProperty?.MinIdleSlots ?? 0; }
             set
@@ -552,6 +557,7 @@ namespace QarnotSDK
         /// <summary>
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.ResizePeriod")]
+        [Obsolete("Use Scaling configuration instead.")]
         public virtual uint ElasticResizePeriod {
             get { return _poolApi?.ElasticProperty?.ResizePeriod ?? 0; }
             set
@@ -568,6 +574,7 @@ namespace QarnotSDK
         /// <summary>
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.RampResizeFactor")]
+        [Obsolete("Use Scaling configuration instead.")]
         public virtual float ElasticResizeFactor {
             get { return _poolApi?.ElasticProperty?.RampResizeFactor ?? 0; }
             set
@@ -584,6 +591,7 @@ namespace QarnotSDK
         /// <summary>
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.MinIdleTimeSeconds")]
+        [Obsolete("Use Scaling configuration instead.")]
         public virtual uint ElasticMinimumIdlingTime {
             get { return _poolApi?.ElasticProperty?.MinIdleTimeSeconds ?? 0; }
             set
@@ -682,6 +690,23 @@ namespace QarnotSDK
                 _poolApi.ForcedNetworkRules = value;
             }
         }
+
+        /// <summary>
+        /// Constant forced for the pool.
+        /// </summary>
+        [InternalDataApiName(Name="ForcedConstants")]
+        public virtual List<ForcedConstant> ForcedConstants
+        {
+            get
+            {
+                return _poolApi.ForcedConstants;
+            }
+            set
+            {
+                _poolApi.ForcedConstants = value;
+            }
+        }
+
         #endregion
 
         /// <summary>
@@ -1030,6 +1055,15 @@ namespace QarnotSDK
                 if (failIfDoesntExist) throw ex;
             }
         }
+
+        /// <summary>
+        /// Get the pool carbon facts
+        /// </summary>
+        /// <returns>The carbon facts of the pool.</returns>
+        public virtual async Task<CarbonFacts> GetCarbonFactsAsync(string referenceDatacenter = null, CancellationToken ct = default) {
+            return await _api.CarbonClient.GetPoolCarbonFactsAsync(Uuid, referenceDatacenter, ct);
+        }
+
         #endregion
 
         #region helpers

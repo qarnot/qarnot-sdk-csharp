@@ -599,10 +599,12 @@ namespace QarnotSDK.UnitTests
             Assert.AreEqual((hardwareConstraints[6] as MaximumRamHardware).MaximumMemoryMB, 32000);
             Assert.IsInstanceOf<GpuHardware>(hardwareConstraints[7]);
             Assert.AreEqual((hardwareConstraints[7] as GpuHardware).Discriminator, "GpuHardwareConstraint");
-            Assert.IsInstanceOf<SSDHardware>(hardwareConstraints[8]);
-            Assert.AreEqual((hardwareConstraints[8] as SSDHardware).Discriminator, "SSDHardwareConstraint");
-            Assert.IsInstanceOf<NoSSDHardware>(hardwareConstraints[9]);
-            Assert.AreEqual((hardwareConstraints[9] as NoSSDHardware).Discriminator, "NoSSDHardwareConstraint");
+            Assert.IsInstanceOf<NoGpuHardware>(hardwareConstraints[8]);
+            Assert.AreEqual((hardwareConstraints[8] as NoGpuHardware).Discriminator, "NoGpuHardwareConstraint");
+            Assert.IsInstanceOf<SSDHardware>(hardwareConstraints[9]);
+            Assert.AreEqual((hardwareConstraints[9] as SSDHardware).Discriminator, "SSDHardwareConstraint");
+            Assert.IsInstanceOf<NoSSDHardware>(hardwareConstraints[10]);
+            Assert.AreEqual((hardwareConstraints[10] as NoSSDHardware).Discriminator, "NoSSDHardwareConstraint");
         }
 
         [Test]
