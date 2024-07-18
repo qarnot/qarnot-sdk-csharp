@@ -456,6 +456,7 @@ namespace QarnotSDK
         /// Allow the automatic resize of the pool
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.IsElastic")]
+        [Obsolete("Use Scaling configuration instead.")]
         public virtual bool IsElastic {
             get { return _poolApi?.ElasticProperty?.IsElastic ?? false; }
             set {
@@ -472,7 +473,7 @@ namespace QarnotSDK
         /// Minimum slot number for the pool in elastic mode
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.MinTotalSlots")]
-        [Obsolete("Use ElasticMinimumTotalSlots instead")]
+        [Obsolete("Has been replaced by ElasticMinimumTotalSlots in Elastic settings. But Elastic settings are now deprecated, use scaling configuration instead.", true)]
         public virtual uint ElasticMinimumTotalNodes {
             get => ElasticMinimumTotalSlots;
             set { ElasticMinimumTotalSlots = value; }
@@ -482,6 +483,7 @@ namespace QarnotSDK
         /// Minimum slot number for the pool in elastic mode
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.MinTotalSlots")]
+        [Obsolete("Use Scaling configuration instead.")]
         public virtual uint ElasticMinimumTotalSlots {
             get { return _poolApi?.ElasticProperty?.MinTotalSlots ?? 0; }
             set
@@ -499,7 +501,7 @@ namespace QarnotSDK
         /// Maximum slot number for the pool in elastic mode
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.MaxTotalSlots")]
-        [Obsolete("Use ElasticMaximumTotalSlots instead")]
+        [Obsolete("Has been replaced by ElasticMaximumTotalSlots in Elastic settings. But Elastic settings are now deprecated, use scaling configuration instead.", true)]
         public virtual uint ElasticMaximumTotalNodes {
             get => ElasticMaximumTotalSlots;
             set { ElasticMaximumTotalSlots = value; }
@@ -509,6 +511,7 @@ namespace QarnotSDK
         /// Maximum slot number for the pool in elastic mode
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.MaxTotalSlots")]
+        [Obsolete("Use Scaling configuration instead.")]
         public virtual uint ElasticMaximumTotalSlots {
             get { return _poolApi?.ElasticProperty?.MaxTotalSlots ?? 0; }
             set
@@ -526,7 +529,7 @@ namespace QarnotSDK
         /// Minimum idling slot number.
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.MinIdleSlots")]
-        [Obsolete("Use ElasticMinimumIdlingSlots instead")]
+        [Obsolete("Has been replaced by ElasticMinimumIdlingSlots in Elastic settings. But Elastic settings are now deprecated, use scaling configuration instead.", true)]
         public virtual uint ElasticMinimumIdlingNodes {
             get => ElasticMinimumIdlingSlots;
             set { ElasticMinimumIdlingSlots = value; }
@@ -536,6 +539,7 @@ namespace QarnotSDK
         /// Minimum idling slot number.
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.MinIdleSlots")]
+        [Obsolete("Use Scaling configuration instead.")]
         public virtual uint ElasticMinimumIdlingSlots {
             get { return _poolApi?.ElasticProperty?.MinIdleSlots ?? 0; }
             set
@@ -552,6 +556,7 @@ namespace QarnotSDK
         /// <summary>
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.ResizePeriod")]
+        [Obsolete("Use Scaling configuration instead.")]
         public virtual uint ElasticResizePeriod {
             get { return _poolApi?.ElasticProperty?.ResizePeriod ?? 0; }
             set
@@ -568,6 +573,7 @@ namespace QarnotSDK
         /// <summary>
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.RampResizeFactor")]
+        [Obsolete("Use Scaling configuration instead.")]
         public virtual float ElasticResizeFactor {
             get { return _poolApi?.ElasticProperty?.RampResizeFactor ?? 0; }
             set
@@ -584,6 +590,7 @@ namespace QarnotSDK
         /// <summary>
         /// </summary>
         [InternalDataApiName(Name="ElasticProperty.MinIdleTimeSeconds")]
+        [Obsolete("Use Scaling configuration instead.")]
         public virtual uint ElasticMinimumIdlingTime {
             get { return _poolApi?.ElasticProperty?.MinIdleTimeSeconds ?? 0; }
             set

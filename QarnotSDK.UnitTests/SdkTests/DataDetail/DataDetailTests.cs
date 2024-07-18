@@ -275,20 +275,6 @@ namespace QarnotSDK.UnitTests
         }
 
         [Test]
-        public void GetAPIFilterPropertyNameForPoolElasticMinimumIdlingNodesReturnTheGoodStringValue()
-        {
-            var value = DataDetailHelper.GetAPIFilterPropertyName<QPool, uint>(t => t.ElasticMinimumIdlingNodes);
-            Assert.AreEqual(value, "ElasticProperty.MinIdleSlots");
-        }
-
-        [Test]
-        public void GetAPISelectPropertyNameForPoolElasticMinimumIdlingNodesReturnTheGoodStringValue()
-        {
-            var value = DataDetailHelper.GetAPISelectPropertyName<QPool, uint>(t => t.ElasticMinimumIdlingNodes);
-            Assert.AreEqual(value, "ElasticProperty.MinIdleSlots");
-        }
-
-        [Test]
         public void GetAPIFilterPropertyNameForPoolElasticMaximumTotalSlotsReturnTheGoodStringValue()
         {
             var value = DataDetailHelper.GetAPIFilterPropertyName<QPool, uint>(t => t.ElasticMaximumTotalSlots);
@@ -303,20 +289,6 @@ namespace QarnotSDK.UnitTests
         }
 
         [Test]
-        public void GetAPIFilterPropertyNameForPoolElasticMaximumTotalNodesReturnTheGoodStringValue()
-        {
-            var value = DataDetailHelper.GetAPIFilterPropertyName<QPool, uint>(t => t.ElasticMaximumTotalNodes);
-            Assert.AreEqual(value, "ElasticProperty.MaxTotalSlots");
-        }
-
-        [Test]
-        public void GetAPISelectPropertyNameForPoolElasticMaximumTotalNodesReturnTheGoodStringValue()
-        {
-            var value = DataDetailHelper.GetAPISelectPropertyName<QPool, uint>(t => t.ElasticMaximumTotalNodes);
-            Assert.AreEqual(value, "ElasticProperty.MaxTotalSlots");
-        }
-
-        [Test]
         public void GetAPIFilterPropertyNameForPoolElasticMinimumTotalSlotsReturnTheGoodStringValue()
         {
             var value = DataDetailHelper.GetAPIFilterPropertyName<QPool, uint>(t => t.ElasticMinimumTotalSlots);
@@ -327,20 +299,6 @@ namespace QarnotSDK.UnitTests
         public void GetAPISelectPropertyNameForPoolElasticMinimumTotalSlotsReturnTheGoodStringValue()
         {
             var value = DataDetailHelper.GetAPISelectPropertyName<QPool, uint>(t => t.ElasticMinimumTotalSlots);
-            Assert.AreEqual(value, "ElasticProperty.MinTotalSlots");
-        }
-
-        [Test]
-        public void GetAPIFilterPropertyNameForPoolElasticMinimumTotalNodesReturnTheGoodStringValue()
-        {
-            var value = DataDetailHelper.GetAPIFilterPropertyName<QPool, uint>(t => t.ElasticMinimumTotalNodes);
-            Assert.AreEqual(value, "ElasticProperty.MinTotalSlots");
-        }
-
-        [Test]
-        public void GetAPISelectPropertyNameForPoolElasticMinimumTotalNodesReturnTheGoodStringValue()
-        {
-            var value = DataDetailHelper.GetAPISelectPropertyName<QPool, uint>(t => t.ElasticMinimumTotalNodes);
             Assert.AreEqual(value, "ElasticProperty.MinTotalSlots");
         }
 
@@ -931,10 +889,7 @@ namespace QarnotSDK.UnitTests
                 .Include(t => t.Constants)
                 .Include(t => t.Constraints)
                 .Include(t => t.CreationDate)
-                .Include(t => t.ElasticMaximumTotalNodes)
-                .Include(t => t.ElasticMinimumIdlingNodes)
                 .Include(t => t.ElasticMinimumIdlingTime)
-                .Include(t => t.ElasticMinimumTotalNodes)
                 .Include(t => t.ElasticResizeFactor)
                 .Include(t => t.ElasticResizePeriod)
                 .Include(t => t.Errors)
@@ -948,7 +903,7 @@ namespace QarnotSDK.UnitTests
                 .Include(t => t.Tags)
                 .Include(t => t.Uuid);
             string tostring = select.ToString();
-            string waitstring = "<Fields: Name,Uuid,Constants,Constraints,CreationDate,ElasticProperty.MaxTotalSlots,ElasticProperty.MinIdleSlots,ElasticProperty.MinIdleTimeSeconds,ElasticProperty.MinTotalSlots,ElasticProperty.RampResizeFactor,ElasticProperty.ResizePeriod,Errors,ElasticProperty.IsElastic,InstanceCount,Profile,ResourceBuckets,Shortname,State,Status,Tags,Uuid>";
+            string waitstring = "<Fields: Name,Uuid,Constants,Constraints,CreationDate,ElasticProperty.MinIdleTimeSeconds,ElasticProperty.RampResizeFactor,ElasticProperty.ResizePeriod,Errors,ElasticProperty.IsElastic,InstanceCount,Profile,ResourceBuckets,Shortname,State,Status,Tags,Uuid>";
             Assert.AreEqual(tostring, waitstring);
             var select2 = QSelect<QTask>.Select()
                 .Include(t => t.Name)
