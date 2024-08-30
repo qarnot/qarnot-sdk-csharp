@@ -1197,7 +1197,18 @@ namespace QarnotSDK.UnitTests
             Assert.AreEqual(ttl, apiResource.CacheTTLSec);
         }
 
+        public async Task TestTaskPreSubmitAsync_With_ResultsCacheTTL_FillsUpApiTask()
+        {
+            int ttl = 1000;
+            QBucket bucket = new QBucket(Connect, "out-bucket", create: false);
+            QTask task = Connect.CreateTask("task-name", "task-profile", 1);
+            task.Results = bucket.WithCacheTTL(ttl);
 
+            await task.PreSubmitAsync(default);
+
+            Assert.AreEqual("out-bucket", task._taskApi.ResultBucket);
+            Assert.AreEqual(ttl, task._taskApi.ResultsCacheTTLSec);
+        }
 
         // NOTE: this test is there so that the SDK remains BC with older versions of rest-computing.
         // When all rest-computing have migrated, this test and the behavior it tests can be

@@ -1179,6 +1179,7 @@ namespace QarnotSDK {
             if (_results != null) {
                 if (_results != null) {
                     _taskApi.ResultBucket = _results.Shortname;
+                    _taskApi.ResultsCacheTTLSec = _results?.CacheTTLSec;
                 } else {
                     throw new Exception("Unknown IQStorage implementation");
                 }
