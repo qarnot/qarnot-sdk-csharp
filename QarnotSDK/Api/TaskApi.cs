@@ -537,6 +537,7 @@ namespace QarnotSDK {
         public SchedulingType? SchedulingType { get; set; }
         public string TargetedReservedMachineKey { get; set; }
         public List<ForcedNetworkRule> ForcedNetworkRules { get; set; }
+        public List<ForcedConstant> ForcedConstants { get; set; }
 
         internal TaskApi() {
             Constants = new List<KeyValHelper>();

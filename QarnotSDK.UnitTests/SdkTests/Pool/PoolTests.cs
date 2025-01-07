@@ -706,6 +706,78 @@ namespace QarnotSDK.UnitTests
             Assert.AreEqual(secondExpectedRule.Priority, (string)secondRule["Priority"]);
             Assert.AreEqual(secondExpectedRule.Description, (string)secondRule["Description"]);
         }
+
+        [Test]
+        public async Task CheckPoolForcedConstantsDeserializationFromJson()
+        {
+            string uuid = Guid.NewGuid().ToString();
+            QPool pool = new (Connect, uuid);
+            Assert.IsNull(pool.ForcedConstants);
+            await pool.UpdateStatusAsync();
+            Assert.IsNotNull(pool.ForcedConstants);
+            Assert.AreEqual(2, pool.ForcedConstants.Count);
+            var firstConstant = pool.ForcedConstants[0];
+            Assert.AreEqual("the-name-1", firstConstant.ConstantName);
+            Assert.AreEqual("the-value-1", firstConstant.ForcedValue);
+            Assert.AreEqual(true, firstConstant.ForceExportInEnvironment);
+            Assert.AreEqual(null, firstConstant.Access);
+
+
+            var secondConstant = pool.ForcedConstants[1];
+            Assert.AreEqual("the-name-2", secondConstant.ConstantName);
+            Assert.AreEqual("the-value-2", secondConstant.ForcedValue);
+            Assert.AreEqual(null, secondConstant.ForceExportInEnvironment);
+            Assert.AreEqual(ForcedConstant.ForcedConstantAccess.ReadOnly, secondConstant.Access);
+        }
+
+        [Test]
+        public async Task CheckPoolForcedConstantsSerialization()
+        {
+            QPool pool = new (Connect, "test-pool-with-forced-constants", "profile", 1);
+            Assert.IsNull(pool.ForcedNetworkRules);
+
+            var forcedConstants = new List<ForcedConstant>()
+            {
+                new ForcedConstant("the-first-constant-1", "the-forced-value-1"),
+                new ForcedConstant("the-second-constant-2", "the-forced-value-2", true),
+                new ForcedConstant("the-third-constant-3", "the-forced-value-3", null, ForcedConstant.ForcedConstantAccess.ReadWrite),
+            };
+            pool.ForcedConstants = forcedConstants;
+            await pool.StartAsync();
+
+            var poolCreateRequest = HttpHandler.ParsedRequests.FirstOrDefault(req =>
+                req.Method.Contains("POST", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ApiUrl}/pool", StringComparison.InvariantCultureIgnoreCase));
+
+            Assert.That(poolCreateRequest, Is.Not.Null);
+
+            var poolCreateString = poolCreateRequest.Content;
+            var poolCreateJson = JsonConvert.DeserializeObject<dynamic>(poolCreateString);
+
+            Console.WriteLine(poolCreateString);
+
+            var retrievedForcedConstants = poolCreateJson.ForcedConstants;
+
+            Assert.IsNotNull(retrievedForcedConstants);
+            Assert.AreEqual(3, retrievedForcedConstants.Count);
+            var rule = retrievedForcedConstants[0];
+            Assert.AreEqual("the-first-constant-1" , (string) rule["ConstantName"]);
+            Assert.AreEqual("the-forced-value-1" , (string) rule["ForcedValue"]);
+            Assert.AreEqual(null, (bool?) rule["ForceExportInEnvironment"]);
+            Assert.AreEqual(null, (ForcedConstant.ForcedConstantAccess?) rule["Access"]);
+
+            rule = retrievedForcedConstants[1];
+            Assert.AreEqual("the-second-constant-2" , (string) rule["ConstantName"]);
+            Assert.AreEqual("the-forced-value-2" , (string) rule["ForcedValue"]);
+            Assert.AreEqual(true, (bool?) rule["ForceExportInEnvironment"]);
+            Assert.AreEqual(null, (ForcedConstant.ForcedConstantAccess?) rule["Access"]);
+
+            rule = retrievedForcedConstants[2];
+            Assert.AreEqual("the-third-constant-3" , (string) rule["ConstantName"]);
+            Assert.AreEqual("the-forced-value-3" , (string) rule["ForcedValue"]);
+            Assert.AreEqual(null, (bool?) rule["ForceExportInEnvironment"]);
+            Assert.AreEqual(ForcedConstant.ForcedConstantAccess.ReadWrite, (ForcedConstant.ForcedConstantAccess?) rule["Access"]);
+        }
     }
 
     [TestFixture]

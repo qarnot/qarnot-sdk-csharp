@@ -689,6 +689,23 @@ namespace QarnotSDK
                 _poolApi.ForcedNetworkRules = value;
             }
         }
+
+        /// <summary>
+        /// Constant forced for the pool.
+        /// </summary>
+        [InternalDataApiName(Name="ForcedConstants")]
+        public virtual List<ForcedConstant> ForcedConstants
+        {
+            get
+            {
+                return _poolApi.ForcedConstants;
+            }
+            set
+            {
+                _poolApi.ForcedConstants = value;
+            }
+        }
+
         #endregion
 
         /// <summary>

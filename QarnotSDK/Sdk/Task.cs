@@ -791,6 +791,22 @@ namespace QarnotSDK {
         }
 
         /// <summary>
+        /// Constant forced for the task.
+        /// </summary>
+        [InternalDataApiName(Name="ForcedConstants")]
+        public virtual List<ForcedConstant> ForcedConstants
+        {
+            get
+            {
+                return _taskApi.ForcedConstants;
+            }
+            set
+            {
+                _taskApi.ForcedConstants = value;
+            }
+        }
+
+        /// <summary>
         /// Create a new task outside of a pool.
         /// </summary>
         /// <param name="connection">The inner connection object.</param>
