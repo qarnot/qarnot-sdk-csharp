@@ -880,5 +880,29 @@ namespace QarnotSDK.UnitTests
             $"\"waitForPoolResourcesSynchronization\": {(wait == null ? "null" : wait.Value ? "true" : "false")}"
                 +
         "}";
+
+        public const string TaskResponseBody_WithMaxTimeQueueSeconds = @"{
+            ""elasticProperty"": {},
+            ""constants"": [],
+            ""tags"": [],
+            ""errors"": [],
+            ""resourceBuckets"": [],
+            ""status"": {
+            },
+            ""uuid"": ""f78fdff8-7081-46e1-bb2f-d9cd4e185ece"",
+            ""name"": ""task_name"",
+            ""shortname"": ""f78fdff8-7081-46e1-bb2f-d9cd4e185ece"",
+            ""profile"": ""docker-batch"",
+            ""state"": ""Success"",
+            ""instanceCount"": 3,
+            ""creationDate"": ""2019-11-08T10:54:11Z"",
+            ""endDate"": ""0001-01-01T00:00:00Z"",
+            ""runningInstanceCount"": 3,
+            ""runningCoreCount"": 16,
+            ""executionTime"": ""00:00:25.1000003"",
+            ""wallTime"": ""00:02:12"",
+            ""maxTimeQueueSeconds"": 10,
+            ""credits"": 0.01
+        }";
     }
 }
