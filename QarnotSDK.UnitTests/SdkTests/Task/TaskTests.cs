@@ -1016,6 +1016,49 @@ namespace QarnotSDK.UnitTests
         }
 
         [Test]
+        public async Task CheckTaskMaxTimeInQueueSecondsDeserializationFromJson()
+        {
+            HttpHandler.ResponseBody = TaskTestsData.TaskResponseBody_WithMaxTimeQueueSeconds;
+            string uuid = Guid.NewGuid().ToString();
+            QTask task = new QTask(Connect, uuid);
+            await task.UpdateStatusAsync();
+            Assert.AreEqual(task.MaxTimeQueueSeconds, 10);
+        }
+
+        [TestCase(null)]
+        [TestCase(0)]
+        [TestCase(10)]
+        public async Task CheckTaskMaxTimeInQueueSecondsSereialization(int? testCase)
+        {
+            QTask task = new (Connect, "test-task-with-maxTimeInQueueSeconds", "profile", 1);
+            Assert.IsNull(task.MaxTimeQueueSeconds);
+            task.MaxTimeQueueSeconds = (uint?)testCase;
+
+            await task.SubmitAsync();
+
+            var taskCreateRequest = HttpHandler.ParsedRequests.FirstOrDefault(req =>
+                req.Method.Contains("POST", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ApiUrl}/task", StringComparison.InvariantCultureIgnoreCase));
+
+            Assert.That(taskCreateRequest, Is.Not.Null);
+
+            var taskCreateString = taskCreateRequest.Content;
+            dynamic taskCreateJson = JObject.Parse(taskCreateString);
+
+            Console.WriteLine(taskCreateString);
+
+            if (testCase == null)
+            {
+                Assert.IsEmpty(taskCreateJson.MaxTimeQueueSeconds);
+            }
+            else
+            {
+                Assert.IsNotNull(taskCreateJson.MaxTimeQueueSeconds);
+                Assert.AreEqual(testCase.ToString(), taskCreateJson.MaxTimeQueueSeconds.ToString());
+            }
+        }
+
+        [Test]
         public async Task CheckTaskForcedNetworkRulesDeserializationFromJson()
         {
             string uuid = Guid.NewGuid().ToString();

@@ -7,7 +7,6 @@ using System.Linq;
 using System;
 using QarnotSDK.Sdk;
 
-
 namespace QarnotSDK {
     /// <summary>
     /// Task states.
@@ -425,8 +424,8 @@ namespace QarnotSDK {
                 if (_advancedRange == null) return _taskApi.InstanceCount;
                 else return _advancedRange.Count;
             }
-
         }
+
         /// <summary>
         /// How many times this task can be retrieved if it is stopped while running.
         /// </summary>
@@ -438,6 +437,19 @@ namespace QarnotSDK {
             }
             set {
                 _taskApi.MaxRetriesPerInstance = value;
+            }
+        }
+
+        /// <summary>
+        /// Max time to wait before time out when there is not any place to execute the task (in seconds)
+        /// </summary>
+        [InternalDataApiName(Name = "MaxTimeQueueSeconds")]
+        public virtual uint? MaxTimeQueueSeconds {
+            get {
+                return _taskApi.MaxTimeQueueSeconds;
+            }
+            set {
+                _taskApi.MaxTimeQueueSeconds = value;
             }
         }
 

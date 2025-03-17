@@ -490,6 +490,7 @@ namespace QarnotSDK {
         public string PoolUuid { get; set; }
         public string JobUuid { get; set; }
         public uint MaxRetriesPerInstance { get; set; }
+        public uint? MaxTimeQueueSeconds {get; set; }
         public uint InstanceCount { get; set; }
         public uint? RunningInstanceCount { get; set; }
         public uint? RunningCoreCount { get; set; }

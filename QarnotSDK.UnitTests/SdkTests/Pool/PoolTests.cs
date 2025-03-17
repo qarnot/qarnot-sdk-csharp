@@ -1165,5 +1165,47 @@ namespace QarnotSDK.UnitTests
             Assert.That(secondPolicyJson.EnabledPeriods[0].Type.Value, Is.EqualTo("Always"));
         }
 
+        [Test]
+        public async Task CheckPoolMaxTimeInQueueSecondsDeserializationFromJson()
+        {
+            HttpHandler.ResponseBody = PoolTestsData.PoolResponseBody_WithMaxTimeQueueSeconds;
+            string uuid = Guid.NewGuid().ToString();
+            QPool pool = new QPool(Connect, uuid);
+            await pool.UpdateStatusAsync();
+            Assert.AreEqual(pool.MaxTimeQueueSeconds, 10);
+        }
+
+        [TestCase(null)]
+        [TestCase(0)]
+        [TestCase(10)]
+        public async Task CheckPoolMaxTimeInQueueSecondsSereialization(int? testCase)
+        {
+            QPool pool = new (Connect, "test-pool-with-maxTimeInQueueSeconds", "profile", 1);
+            Assert.IsNull(pool.MaxTimeQueueSeconds);
+            pool.MaxTimeQueueSeconds = (uint?)testCase;
+
+            await pool.StartAsync();
+
+            var poolCreateRequest = HttpHandler.ParsedRequests.FirstOrDefault(req =>
+                req.Method.Contains("POST", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ApiUrl}/pool", StringComparison.InvariantCultureIgnoreCase));
+
+            Assert.That(poolCreateRequest, Is.Not.Null);
+
+            var poolCreateString = poolCreateRequest.Content;
+            dynamic poolCreateJson = JObject.Parse(poolCreateString);
+
+            Console.WriteLine(poolCreateString);
+
+            if (testCase == null)
+            {
+                Assert.IsEmpty(poolCreateJson.MaxTimeQueueSeconds);
+            }
+            else
+            {
+                Assert.IsNotNull(poolCreateJson.MaxTimeQueueSeconds);
+                Assert.AreEqual(testCase.ToString(), poolCreateJson.MaxTimeQueueSeconds.ToString());
+            }
+        }
     }
 }
