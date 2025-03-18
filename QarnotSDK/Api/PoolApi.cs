@@ -407,6 +407,7 @@ namespace QarnotSDK {
         public uint InstanceCount { get; set; }
         public uint? RunningInstanceCount { get; set; }
         public uint? RunningCoreCount { get; set; }
+        public uint? MaxTimeQueueSeconds {get; set; }
         public TimeSpan? ExecutionTime { get; set; }
         public TimeSpan? WallTime { get; set; }
         public DateTime EndDate { get; set; }

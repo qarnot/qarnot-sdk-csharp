@@ -206,6 +206,18 @@ namespace QarnotSDK
         public virtual int TotalSlotCapacity { get { return _poolApi.TotalSlotCapacity; } }
 
         /// <summary>
+        /// Max time to wait before time out when there is not any place to execute the pool (in seconds)
+        /// </summary>
+        [InternalDataApiName(Name = "MaxTimeQueueSeconds")]
+        public virtual uint? MaxTimeQueueSeconds {
+            get {
+                return _poolApi.MaxTimeQueueSeconds;
+            }
+            set {
+                _poolApi.MaxTimeQueueSeconds = value;
+            }
+        }
+        /// <summary>
         /// The ratio of dispatched task instances on the slot capacity indicating
         /// how much a pool is currently being used.
         /// Available only after the submission.
