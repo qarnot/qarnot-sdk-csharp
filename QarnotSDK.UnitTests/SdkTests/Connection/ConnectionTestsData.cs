@@ -56,7 +56,63 @@ namespace QarnotSDK.UnitTests
             ""maxRunningPool"": 11,
             ""RunningInstanceCount"": 13,
             ""RunningCoreCount"": 14,
-            ""runningPoolCount"": 12
+            ""runningPoolCount"": 12,
+            ""computingQuotas"": {
+                ""user"": {
+                    ""flex"": {
+                        ""maxInstances"": 100,
+                        ""runningInstancesCount"": 101,
+                        ""maxCores"": 102,
+                        ""runningCoresCount"": 103,
+                    },
+                    ""onDemand"": {
+                        ""maxInstances"": 104,
+                        ""runningInstancesCount"": 105,
+                        ""maxCores"": 106,
+                        ""runningCoresCount"": 107,
+                    },
+                    ""reserved"": [
+                        {
+                            ""machineKey"": ""my-machine"",
+                            ""maxInstances"": 108,
+                            ""runningInstancesCount"": 109,
+                            ""maxCores"": 110,
+                            ""runningCoresCount"": 111
+                        }
+                    ]
+                },
+                ""organization"": {
+                    ""name"": ""E-Corp"",
+                    ""flex"": {
+                        ""maxInstances"": 112,
+                        ""maxCores"": 113,
+                        ""runningInstancesCount"": 114,
+                        ""runningCoresCount"": 115
+                    },
+                    ""onDemand"": {
+                        ""maxInstances"": 116,
+                        ""maxCores"": 117,
+                        ""runningInstancesCount"": 118,
+                        ""runningCoresCount"": 119
+                    },
+                    ""reserved"": [
+                        {
+                            ""machineKey"": ""amd-fx-8320"",
+                            ""maxInstances"": 120,
+                            ""maxCores"": 121,
+                            ""runningInstancesCount"": 122,
+                            ""runningCoresCount"": 123
+                        },
+                        {
+                            ""machineKey"": ""i7-3770k"",
+                            ""maxInstances"": 124,
+                            ""maxCores"": 125,
+                            ""runningInstancesCount"": 126,
+                            ""runningCoresCount"": 127
+                        }
+                    ]
+                }
+            }
         }";
 
         public const string GetUserHardwareConstraints = @"{
