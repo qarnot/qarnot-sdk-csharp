@@ -89,6 +89,10 @@ namespace QarnotSDK {
         /// </summary>
         public int RunningCoreCount { get; set; }
 
+        /// <summary>
+        /// Computing quotas of the user and their organization
+        /// </summary>
+        public ComputingQuotas ComputingQuotas { get; set; }
 
         internal UserInformation() {
         }

@@ -541,6 +541,111 @@ namespace QarnotSDK.UnitTests
             Assert.AreEqual(userInfo.RunningPoolCount, 12);
             Assert.AreEqual(userInfo.RunningInstanceCount, 13);
             Assert.AreEqual(userInfo.RunningCoreCount, 14);
+
+            var computingQuotas = new ComputingQuotas()
+            {
+                User = new()
+                {
+                    Flex = new()
+                    {
+                        MaxInstances = 100,
+                        RunningInstancesCount = 101,
+                        MaxCores = 102,
+                        RunningCoresCount = 103
+                    },
+                    OnDemand = new()
+                    {
+                        MaxInstances = 104,
+                        RunningInstancesCount = 105,
+                        MaxCores = 106,
+                        RunningCoresCount = 107
+                    },
+                    Reserved = new(){
+                        new UserReservedSchedulingQuota()
+                        {
+                            MachineKey = "my-machine",
+                            MaxInstances = 108,
+                            RunningInstancesCount = 109,
+                            MaxCores = 110,
+                            RunningCoresCount = 111
+                        }
+                    }
+                },
+                Organization = new()
+                {
+                    Name = "E-Corp",
+                    Flex = new()
+                    {
+                        MaxInstances = 112,
+                        MaxCores = 113,
+                        RunningInstancesCount = 114,
+                        RunningCoresCount = 115
+                    },
+                    OnDemand = new()
+                    {
+                        MaxInstances = 116,
+                        MaxCores = 117,
+                        RunningInstancesCount = 118,
+                        RunningCoresCount = 119
+                    },
+                    Reserved = new(){
+                        new OrganizationReservedSchedulingQuota()
+                        {
+                            MachineKey = "amd-fx-8320",
+                            MaxInstances = 120,
+                            MaxCores = 121,
+                            RunningInstancesCount = 122,
+                            RunningCoresCount = 123
+                        },
+                        new OrganizationReservedSchedulingQuota()
+                        {
+                            MachineKey = "i7-3770k",
+                            MaxInstances = 124,
+                            MaxCores = 125,
+                            RunningInstancesCount = 126,
+                            RunningCoresCount = 127
+                        },
+                    }
+                }
+            };
+
+            Assert.AreEqual(computingQuotas, userInfo.ComputingQuotas, "Computing quotas deserialization shoudl return same result");
+
+            var additionalReservedReservations = new List<UserReservedSchedulingQuota>()
+            {
+                new UserReservedSchedulingQuota()
+                {
+                    MachineKey = "my-machine",
+                    MaxInstances = 108,
+                    RunningInstancesCount = 109,
+                    MaxCores = 110,
+                    RunningCoresCount = 111
+                },
+                new UserReservedSchedulingQuota()
+                {
+                    MachineKey = "my-other-machine",
+                    MaxInstances = 138,
+                    RunningInstancesCount = 139,
+                    MaxCores = 130,
+                    RunningCoresCount = 131
+                }
+            };
+
+            Assert.AreNotEqual(additionalReservedReservations, userInfo.ComputingQuotas.User.Reserved, "different user reserved computing quotas should not be equal");
+
+            var organizationWithMissingReserved = new List<OrganizationReservedSchedulingQuota> ()
+            {
+                new OrganizationReservedSchedulingQuota()
+                {
+                    MachineKey = "amd-fx-8320",
+                               MaxInstances = 120,
+                               MaxCores = 121,
+                               RunningInstancesCount = 122,
+                               RunningCoresCount = 123
+                }
+            };
+            // Testing reserved Equal function
+            Assert.AreNotEqual(organizationWithMissingReserved, userInfo.ComputingQuotas.Organization.Reserved, "different organization reserved computing quotas should not be equal");
         }
 
         [Test]
