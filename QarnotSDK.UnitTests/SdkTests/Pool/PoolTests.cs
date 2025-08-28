@@ -589,10 +589,12 @@ namespace QarnotSDK.UnitTests
             QPool pool = new (Connect, uuid);
             Assert.IsNull(pool.SchedulingType);
             Assert.IsNull(pool.TargetedReservedMachineKey);
+            Assert.IsNull(pool.TargetedReservationName);
             await pool.UpdateStatusAsync();
             Assert.IsNotNull(pool.SchedulingType);
             Assert.AreEqual(SchedulingType.Reserved, pool.SchedulingType);
             Assert.AreEqual("some-reserved-machine", pool.TargetedReservedMachineKey);
+            Assert.AreEqual("some-reservation", pool.TargetedReservationName);
         }
 
         [TestCase(SchedulingType.Flex)]
@@ -605,12 +607,14 @@ namespace QarnotSDK.UnitTests
             Assert.AreEqual(schedulingType, pool.SchedulingType);
 
             pool.TargetedReservedMachineKey = "test-machine";
+            pool.TargetedReservationName = "test-reservation";
 
             if (schedulingType != SchedulingType.Reserved)
             {
                 var ex = Assert.ThrowsAsync<Exception>(async () => await pool.StartAsync());
-                Assert.AreEqual("Cannot target a reserved machine without using a 'Reserved' scheduling type.", ex.Message);
+                Assert.AreEqual("Cannot target a reservation or reserved machine without using a 'Reserved' scheduling type.", ex.Message);
                 pool.TargetedReservedMachineKey = default;
+                pool.TargetedReservationName = default;
             }
             await pool.StartAsync();
 
@@ -631,6 +635,8 @@ namespace QarnotSDK.UnitTests
             {
                 Assert.IsNotNull(poolCreateJson.TargetedReservedMachineKey);
                 Assert.AreEqual("test-machine", poolCreateJson.TargetedReservedMachineKey.ToString());
+                Assert.IsNotNull(poolCreateJson.TargetedReservationName);
+                Assert.AreEqual("test-reservation", poolCreateJson.TargetedReservationName.ToString());
             }
         }
 
@@ -777,6 +783,69 @@ namespace QarnotSDK.UnitTests
             Assert.AreEqual("the-forced-value-3" , (string) rule["ForcedValue"]);
             Assert.AreEqual(null, (bool?) rule["ForceExportInEnvironment"]);
             Assert.AreEqual(ForcedConstant.ForcedConstantAccess.ReadWrite, (ForcedConstant.ForcedConstantAccess?) rule["Access"]);
+        }
+
+        [Test]
+        public async Task CheckPoolMultiSlotsSettingsDeserializationFromJson_WithMultiSlotsSettings()
+        {
+            HttpHandler.ResponseBody = PoolTestsData.PoolResponseWithScalingFullBody;
+            string uuid = Guid.NewGuid().ToString();
+            QPool pool = new QPool(Connect, uuid);
+            await pool.UpdateStatusAsync();
+
+            var expectedMultiSlotsSettings = new MultiSlotsSettings(8);
+            TestContext.WriteLine(pool.MultiSlotsSettings);
+            Assert.That(pool.MultiSlotsSettings, Is.EqualTo(expectedMultiSlotsSettings));
+        }
+
+        [Test]
+        public async Task CheckPoolMultiSlotsSettingsDeserializationFromJson_WithoutMultiSlotsSettings()
+        {
+            HttpHandler.ResponseBody = PoolTestsData.PoolResponseFullBody;
+            string uuid = Guid.NewGuid().ToString();
+            QPool pool = new QPool(Connect, uuid);
+            await pool.UpdateStatusAsync();
+
+            Assert.That(pool.MultiSlotsSettings, Is.EqualTo(null));
+        }
+
+        [Test]
+        public async Task CheckPoolMultiSlotsSettingsSerialization_WithMultiSlotsSettings()
+        {
+            QPool pool = new (Connect, "test-pool-with-multi-slots-settings", "profile", 1, schedulingType: SchedulingType.Flex);
+
+            pool.MultiSlotsSettings = new(16);
+            await pool.StartAsync();
+
+            var poolCreateRequest = HttpHandler.ParsedRequests.FirstOrDefault(req =>
+                req.Method.Contains("POST", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ApiUrl}/pool", StringComparison.InvariantCultureIgnoreCase));
+
+            Assert.That(poolCreateRequest, Is.Not.Null);
+
+            var poolCreateString = poolCreateRequest.Content;
+            var poolCreateJson = JsonConvert.DeserializeObject<dynamic>(poolCreateString);
+
+            Assert.AreEqual(16, (uint) poolCreateJson.MultiSlotsSettings.SlotsPerNode);
+        }
+
+        [Test]
+        public async Task CheckPoolMultiSlotsSettingsSerialization_WithoutMultiSlotsSettings()
+        {
+            QPool pool = new (Connect, "test-pool-with-multi-slots-settings", "profile", 1, schedulingType: SchedulingType.Flex);
+
+            await pool.StartAsync();
+
+            var poolCreateRequest = HttpHandler.ParsedRequests.FirstOrDefault(req =>
+                req.Method.Contains("POST", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ApiUrl}/pool", StringComparison.InvariantCultureIgnoreCase));
+
+            Assert.That(poolCreateRequest, Is.Not.Null);
+
+            var poolCreateString = poolCreateRequest.Content;
+            var poolCreateJson = JsonConvert.DeserializeObject<dynamic>(poolCreateString);
+
+            Assert.AreEqual(null, (MultiSlotsSettings) poolCreateJson.MultiSlotsSettings);
         }
     }
 

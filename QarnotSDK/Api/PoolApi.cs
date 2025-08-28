@@ -441,9 +441,12 @@ namespace QarnotSDK {
         public Privileges Privileges { get; set; }
         public RetrySettings DefaultRetrySettings { get; set; }
         public Scaling Scaling { get; set; }
+        public MultiSlotsSettings MultiSlotsSettings { get; set; }
         public QSecretAccessRights SecretsAccessRights { get; set; }
         public SchedulingType? SchedulingType { get; set; }
+        [Obsolete("Use TargetedReservationName configuration instead.")]
         public string TargetedReservedMachineKey { get; set; }
+        public string TargetedReservationName { get; set; }
         public List<ForcedNetworkRule> ForcedNetworkRules { get; set; }
         public List<ForcedConstant> ForcedConstants { get; set; }
 
@@ -461,6 +464,7 @@ namespace QarnotSDK {
             DefaultRetrySettings = new RetrySettings();
             Scaling = null;
             SecretsAccessRights = new QSecretAccessRights();
+            MultiSlotsSettings = null;
         }
     }
 }

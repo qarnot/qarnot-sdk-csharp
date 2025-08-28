@@ -312,6 +312,7 @@ namespace QarnotSDK.UnitTests
             },
             ""schedulingType"": ""Reserved"",
             ""targetedReservedMachineKey"": ""some-reserved-machine"",
+            ""targetedReservationName"": ""some-reservation"",
             ""forcedConstants"": [
                 {
                     ""constantName"": ""the-name-1"",
@@ -1031,6 +1032,9 @@ namespace QarnotSDK.UnitTests
             ""defaultRetrySettings"": {
                 ""maxTotalRetries"": 12,
                 ""maxPerInstanceRetries"": 12
+            },
+            ""multiSlotsSettings"": {
+                ""slotsPerNode"": 8
             },
         }";
 

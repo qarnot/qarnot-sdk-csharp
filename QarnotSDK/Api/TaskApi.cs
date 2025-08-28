@@ -536,7 +536,9 @@ namespace QarnotSDK {
         public RetrySettings RetrySettings { get; set; }
         public QSecretAccessRights SecretsAccessRights { get; set; }
         public SchedulingType? SchedulingType { get; set; }
+        [Obsolete("Use TargetedReservationName configuration instead.")]
         public string TargetedReservedMachineKey { get; set; }
+        public string TargetedReservationName { get; set; }
         public List<ForcedNetworkRule> ForcedNetworkRules { get; set; }
         public List<ForcedConstant> ForcedConstants { get; set; }
 
