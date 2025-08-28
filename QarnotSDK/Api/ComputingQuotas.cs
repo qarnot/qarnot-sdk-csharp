@@ -100,16 +100,23 @@ namespace QarnotSDK {
         /// <value>my-reserved-machine</value>
         public string MachineKey { get; set; }
 
+        /// <summary>
+        /// Name of the reservation.
+        /// </summary>
+        /// <value>my-reserved-machine</value>
+        public string ReservationName { get; set; }
+
         internal UserReservedSchedulingQuota() {
         }
 
         /// <inheritdoc/>
         public override bool Equals(object obj) => base.Equals(obj)
             && obj is UserReservedSchedulingQuota q
+            && q.ReservationName == ReservationName
             && q.MachineKey == MachineKey;
 
         /// <summary>ToString</summary>
-        public override string ToString() => $"<MachineKey={MachineKey}, MaxInstances={MaxInstances}, MaxCores={MaxCores}, RunningInstancesCount={RunningInstancesCount}, RunningCoresCount={RunningCoresCount}>";
+        public override string ToString() => $"<ReservationName={ReservationName}, MachineKey={MachineKey}, MaxInstances={MaxInstances}, MaxCores={MaxCores}, RunningInstancesCount={RunningInstancesCount}, RunningCoresCount={RunningCoresCount}>";
     }
 
     /// <summary>
@@ -123,16 +130,23 @@ namespace QarnotSDK {
         /// <value>my-reserved-machine</value>
         public string MachineKey { get; set; }
 
+        /// <summary>
+        /// Name of the reservation.
+        /// </summary>
+        /// <value>my-reserved-machine</value>
+        public string ReservationName { get; set; }
+
         internal OrganizationReservedSchedulingQuota() {
         }
 
         /// <inheritdoc/>
         public override bool Equals(object obj) => base.Equals(obj)
             && obj is OrganizationReservedSchedulingQuota q
+            && q.ReservationName == ReservationName
             && q.MachineKey == MachineKey;
 
         /// <summary>ToString</summary>
-        public override string ToString() => $"<MachineKey={MachineKey}, MaxInstances={MaxInstances}, MaxCores={MaxCores}, RunningInstancesCount={RunningInstancesCount}, RunningCoresCount={RunningCoresCount}>";
+        public override string ToString() => $"<ReservationName={ReservationName}, MachineKey={MachineKey}, MaxInstances={MaxInstances}, MaxCores={MaxCores}, RunningInstancesCount={RunningInstancesCount}, RunningCoresCount={RunningCoresCount}>";
     }
 
 

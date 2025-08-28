@@ -589,10 +589,12 @@ namespace QarnotSDK.UnitTests
             QPool pool = new (Connect, uuid);
             Assert.IsNull(pool.SchedulingType);
             Assert.IsNull(pool.TargetedReservedMachineKey);
+            Assert.IsNull(pool.TargetedReservationName);
             await pool.UpdateStatusAsync();
             Assert.IsNotNull(pool.SchedulingType);
             Assert.AreEqual(SchedulingType.Reserved, pool.SchedulingType);
             Assert.AreEqual("some-reserved-machine", pool.TargetedReservedMachineKey);
+            Assert.AreEqual("some-reservation", pool.TargetedReservationName);
         }
 
         [TestCase(SchedulingType.Flex)]
@@ -605,12 +607,14 @@ namespace QarnotSDK.UnitTests
             Assert.AreEqual(schedulingType, pool.SchedulingType);
 
             pool.TargetedReservedMachineKey = "test-machine";
+            pool.TargetedReservationName = "test-reservation";
 
             if (schedulingType != SchedulingType.Reserved)
             {
                 var ex = Assert.ThrowsAsync<Exception>(async () => await pool.StartAsync());
-                Assert.AreEqual("Cannot target a reserved machine without using a 'Reserved' scheduling type.", ex.Message);
+                Assert.AreEqual("Cannot target a reservation or reserved machine without using a 'Reserved' scheduling type.", ex.Message);
                 pool.TargetedReservedMachineKey = default;
+                pool.TargetedReservationName = default;
             }
             await pool.StartAsync();
 
@@ -631,6 +635,8 @@ namespace QarnotSDK.UnitTests
             {
                 Assert.IsNotNull(poolCreateJson.TargetedReservedMachineKey);
                 Assert.AreEqual("test-machine", poolCreateJson.TargetedReservedMachineKey.ToString());
+                Assert.IsNotNull(poolCreateJson.TargetedReservationName);
+                Assert.AreEqual("test-reservation", poolCreateJson.TargetedReservationName.ToString());
             }
         }
 

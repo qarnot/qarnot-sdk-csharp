@@ -446,12 +446,13 @@ namespace QarnotSDK
 
 
         /// <summary>
-        /// The key of the reserved machine the pool should be dispatch on.
+        /// The key of the reserved machine the pool should be dispatched on.
         /// </summary>
         /// <remarks>
         /// To use with <see cref="SchedulingType.Reserved" /> SchedulingType
         /// </remarks>
         [InternalDataApiName(Name="TargetedReservedMachineKey", IsFilterable=false)]
+        [Obsolete("Use TargetedReservationName instead")]
         public string TargetedReservedMachineKey {
             get
             {
@@ -460,6 +461,25 @@ namespace QarnotSDK
             set
             {
                 _poolApi.TargetedReservedMachineKey = value;
+            }
+        }
+
+
+        /// <summary>
+        /// The name of the reservation to target the machines the pool should be dispatched on.
+        /// </summary>
+        /// <remarks>
+        /// To use with <see cref="SchedulingType.Reserved" /> SchedulingType
+        /// </remarks>
+        [InternalDataApiName(Name="TargetedReservationName", IsFilterable=false)]
+        public string TargetedReservationName {
+            get
+            {
+                return _poolApi?.TargetedReservationName;
+            }
+            set
+            {
+                _poolApi.TargetedReservationName = value;
             }
         }
 
@@ -911,8 +931,8 @@ namespace QarnotSDK
 
 
         internal void PreSubmit(string profile=null, uint initialNodeCount=0) {
-            if (_poolApi.TargetedReservedMachineKey != default(string) && _poolApi.SchedulingType != QarnotSDK.SchedulingType.Reserved) {
-                throw new Exception("Cannot target a reserved machine without using a 'Reserved' scheduling type.");
+            if ((_poolApi.TargetedReservedMachineKey != default(string) || _poolApi.TargetedReservationName != default) && _poolApi.SchedulingType != QarnotSDK.SchedulingType.Reserved) {
+                throw new Exception("Cannot target a reservation or reserved machine without using a 'Reserved' scheduling type.");
             }
             // build the constants
             _poolApi.Constants = new List<KeyValHelper>();

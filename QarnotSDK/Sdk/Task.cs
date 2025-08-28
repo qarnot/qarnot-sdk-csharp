@@ -770,13 +770,15 @@ namespace QarnotSDK {
 
 
         /// <summary>
-        /// The key of the reserved machine the task should be dispatch on.
+        /// The key of the reserved machine the task should be dispatched on.
         /// </summary>
         /// <remarks>
         /// To use with <see cref="SchedulingType.Reserved" /> SchedulingType
         /// </remarks>
-        [InternalDataApiName(Name="TargetedReservedMachineKey", IsFilterable=false)]
-        public string TargetedReservedMachineKey {
+        [InternalDataApiName(Name = "TargetedReservedMachineKey", IsFilterable = false)]
+        [Obsolete("Use TargetedReservationName instead")]
+        public string TargetedReservedMachineKey
+        {
             get
             {
                 return _taskApi?.TargetedReservedMachineKey;
@@ -784,6 +786,25 @@ namespace QarnotSDK {
             set
             {
                 _taskApi.TargetedReservedMachineKey = value;
+            }
+        }
+
+
+        /// <summary>
+        /// The name of the reservation to target the machines the task should be dispatched on.
+        /// </summary>
+        /// <remarks>
+        /// To use with <see cref="SchedulingType.Reserved" /> SchedulingType
+        /// </remarks>
+        [InternalDataApiName(Name="TargetedReservationName", IsFilterable=false)]
+        public string TargetedReservationName {
+            get
+            {
+                return _taskApi?.TargetedReservationName;
+            }
+            set
+            {
+                _taskApi.TargetedReservationName = value;
             }
         }
 
@@ -1200,8 +1221,8 @@ namespace QarnotSDK {
             if (_taskApi.JobUuid != default(string) && !_useStandaloneJob  && _taskApi.Profile != default(string)) {
                 throw new Exception("A task attached to a job with a pool can not have a profile.");
             }
-            if (_taskApi.TargetedReservedMachineKey != default(string) && _taskApi.SchedulingType != QarnotSDK.SchedulingType.Reserved) {
-                throw new Exception("Cannot target a reserved machine without using a 'Reserved' scheduling type.");
+            if ((_taskApi.TargetedReservedMachineKey != default(string) || _taskApi.TargetedReservationName != default) && _taskApi.SchedulingType != QarnotSDK.SchedulingType.Reserved) {
+                throw new Exception("Cannot target a reservation or reserved machine without using a 'Reserved' scheduling type.");
             }
 
             // Is a result bucket defined?

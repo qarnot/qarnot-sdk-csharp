@@ -970,10 +970,12 @@ namespace QarnotSDK.UnitTests
             QTask task = new (Connect, uuid);
             Assert.IsNull(task.SchedulingType);
             Assert.IsNull(task.TargetedReservedMachineKey);
+            Assert.IsNull(task.TargetedReservationName);
             await task.UpdateStatusAsync();
             Assert.IsNotNull(task.SchedulingType);
             Assert.AreEqual(SchedulingType.Reserved, task.SchedulingType);
             Assert.AreEqual("some-reserved-machine", task.TargetedReservedMachineKey);
+            Assert.AreEqual("some-reservation", task.TargetedReservationName);
         }
 
         [TestCase(SchedulingType.Flex)]
@@ -986,12 +988,14 @@ namespace QarnotSDK.UnitTests
             Assert.AreEqual(schedulingType, task.SchedulingType);
 
             task.TargetedReservedMachineKey = "test-machine";
+            task.TargetedReservationName = "test-reservation";
 
             if (schedulingType != SchedulingType.Reserved)
             {
                 var ex = Assert.ThrowsAsync<Exception>(async () => await task.SubmitAsync());
-                Assert.AreEqual("Cannot target a reserved machine without using a 'Reserved' scheduling type.", ex.Message);
+                Assert.AreEqual("Cannot target a reservation or reserved machine without using a 'Reserved' scheduling type.", ex.Message);
                 task.TargetedReservedMachineKey = default;
+                task.TargetedReservationName = default;
             }
             await task.SubmitAsync();
 
@@ -1012,6 +1016,8 @@ namespace QarnotSDK.UnitTests
             {
                 Assert.IsNotNull(taskCreateJson.TargetedReservedMachineKey);
                 Assert.AreEqual("test-machine", taskCreateJson.TargetedReservedMachineKey.ToString());
+                Assert.IsNotNull(taskCreateJson.TargetedReservationName);
+                Assert.AreEqual("test-reservation", taskCreateJson.TargetedReservationName.ToString());
             }
         }
 
