@@ -784,6 +784,69 @@ namespace QarnotSDK.UnitTests
             Assert.AreEqual(null, (bool?) rule["ForceExportInEnvironment"]);
             Assert.AreEqual(ForcedConstant.ForcedConstantAccess.ReadWrite, (ForcedConstant.ForcedConstantAccess?) rule["Access"]);
         }
+
+        [Test]
+        public async Task CheckPoolMultiSlotsSettingsDeserializationFromJson_WithMultiSlotsSettings()
+        {
+            HttpHandler.ResponseBody = PoolTestsData.PoolResponseWithScalingFullBody;
+            string uuid = Guid.NewGuid().ToString();
+            QPool pool = new QPool(Connect, uuid);
+            await pool.UpdateStatusAsync();
+
+            var expectedMultiSlotsSettings = new MultiSlotsSettings(8);
+            TestContext.WriteLine(pool.MultiSlotsSettings);
+            Assert.That(pool.MultiSlotsSettings, Is.EqualTo(expectedMultiSlotsSettings));
+        }
+
+        [Test]
+        public async Task CheckPoolMultiSlotsSettingsDeserializationFromJson_WithoutMultiSlotsSettings()
+        {
+            HttpHandler.ResponseBody = PoolTestsData.PoolResponseFullBody;
+            string uuid = Guid.NewGuid().ToString();
+            QPool pool = new QPool(Connect, uuid);
+            await pool.UpdateStatusAsync();
+
+            Assert.That(pool.MultiSlotsSettings, Is.EqualTo(null));
+        }
+
+        [Test]
+        public async Task CheckPoolMultiSlotsSettingsSerialization_WithMultiSlotsSettings()
+        {
+            QPool pool = new (Connect, "test-pool-with-multi-slots-settings", "profile", 1, schedulingType: SchedulingType.Flex);
+
+            pool.MultiSlotsSettings = new(16);
+            await pool.StartAsync();
+
+            var poolCreateRequest = HttpHandler.ParsedRequests.FirstOrDefault(req =>
+                req.Method.Contains("POST", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ApiUrl}/pool", StringComparison.InvariantCultureIgnoreCase));
+
+            Assert.That(poolCreateRequest, Is.Not.Null);
+
+            var poolCreateString = poolCreateRequest.Content;
+            var poolCreateJson = JsonConvert.DeserializeObject<dynamic>(poolCreateString);
+
+            Assert.AreEqual(16, (uint) poolCreateJson.MultiSlotsSettings.SlotsPerNode);
+        }
+
+        [Test]
+        public async Task CheckPoolMultiSlotsSettingsSerialization_WithoutMultiSlotsSettings()
+        {
+            QPool pool = new (Connect, "test-pool-with-multi-slots-settings", "profile", 1, schedulingType: SchedulingType.Flex);
+
+            await pool.StartAsync();
+
+            var poolCreateRequest = HttpHandler.ParsedRequests.FirstOrDefault(req =>
+                req.Method.Contains("POST", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ApiUrl}/pool", StringComparison.InvariantCultureIgnoreCase));
+
+            Assert.That(poolCreateRequest, Is.Not.Null);
+
+            var poolCreateString = poolCreateRequest.Content;
+            var poolCreateJson = JsonConvert.DeserializeObject<dynamic>(poolCreateString);
+
+            Assert.AreEqual(null, (MultiSlotsSettings) poolCreateJson.MultiSlotsSettings);
+        }
     }
 
     [TestFixture]

@@ -424,6 +424,20 @@ namespace QarnotSDK
             }
         }
 
+        /// <summary>
+        /// Multi slots settings for the pool
+        /// </summary>
+        [InternalDataApiName(Name="MultiSlotsSettings", IsFilterable=false)]
+        public MultiSlotsSettings MultiSlotsSettings {
+            get
+            {
+                return _poolApi?.MultiSlotsSettings;
+            }
+            set
+            {
+                _poolApi.MultiSlotsSettings = value;
+            }
+        }
 
         /// <summary>
         /// Scheduling type used for the dispatch of the pool.

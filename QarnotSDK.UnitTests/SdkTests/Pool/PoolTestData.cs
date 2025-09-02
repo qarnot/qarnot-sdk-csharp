@@ -1033,6 +1033,9 @@ namespace QarnotSDK.UnitTests
                 ""maxTotalRetries"": 12,
                 ""maxPerInstanceRetries"": 12
             },
+            ""multiSlotsSettings"": {
+                ""slotsPerNode"": 8
+            },
         }";
 
         public const string PoolResponseBody_WithMaxTimeQueueSeconds = @"{
