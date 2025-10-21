@@ -86,8 +86,13 @@ namespace QarnotSDK.UnitTests
             string uuid = Guid.NewGuid().ToString();
             QTask task = new QTask(Connect, uuid);
             await task.UpdateStatusAsync();
-            Assert.AreEqual(task.Status.RunningInstancesInfo.PerRunningInstanceInfo[0].VpnConnections[0].VpnName, "my-vpn");
-            Assert.AreEqual(task.Status.RunningInstancesInfo.PerRunningInstanceInfo[0].VpnConnections[0].NodeIPAddressCidr, "172.20.0.14/16");
+            Assert.AreEqual("my-vpn", task.Status.RunningInstancesInfo.PerRunningInstanceInfo[0].VpnConnections[0].VpnName);
+            Assert.AreEqual("172.20.0.14/16", task.Status.RunningInstancesInfo.PerRunningInstanceInfo[0].VpnConnections[0].NodeIPAddressCidr);
+            Assert.AreEqual("172.20.0.0/16", task.Status.RunningInstancesInfo.PerRunningInstanceInfo[0].VpnConnections[0].IPNetwork.ToString());
+            Assert.AreEqual("172.20.0.14", task.Status.RunningInstancesInfo.PerRunningInstanceInfo[0].VpnConnections[0].IPAddress.ToString());
+            Assert.AreEqual("172.20.0.14", task.Status.RunningInstancesInfo.PerRunningInstanceInfo[0].VpnConnections[0].IPAdress.ToString());
+            var taskString = JsonConvert.SerializeObject(task, Formatting.Indented);
+            StringAssert.Contains("172.20.0.14/16", taskString);
         }
 
         [Test]
