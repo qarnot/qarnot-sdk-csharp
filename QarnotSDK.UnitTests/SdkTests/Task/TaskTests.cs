@@ -13,7 +13,7 @@ namespace QarnotSDK.UnitTests
     using NUnit.Framework;
 
     using QarnotSDK;
-
+    using QarnotSDK.Sdk;
 
     [TestFixture]
     public class TaskTests
@@ -86,8 +86,13 @@ namespace QarnotSDK.UnitTests
             string uuid = Guid.NewGuid().ToString();
             QTask task = new QTask(Connect, uuid);
             await task.UpdateStatusAsync();
-            Assert.AreEqual(task.Status.RunningInstancesInfo.PerRunningInstanceInfo[0].VpnConnections[0].VpnName, "my-vpn");
-            Assert.AreEqual(task.Status.RunningInstancesInfo.PerRunningInstanceInfo[0].VpnConnections[0].NodeIPAddressCidr, "172.20.0.14/16");
+            Assert.AreEqual("my-vpn", task.Status.RunningInstancesInfo.PerRunningInstanceInfo[0].VpnConnections[0].VpnName);
+            Assert.AreEqual("172.20.0.14/16", task.Status.RunningInstancesInfo.PerRunningInstanceInfo[0].VpnConnections[0].NodeIPAddressCidr);
+            Assert.AreEqual("172.20.0.0/16", task.Status.RunningInstancesInfo.PerRunningInstanceInfo[0].VpnConnections[0].IPNetwork.ToString());
+            Assert.AreEqual("172.20.0.14", task.Status.RunningInstancesInfo.PerRunningInstanceInfo[0].VpnConnections[0].IPAddress.ToString());
+            Assert.AreEqual("172.20.0.14", task.Status.RunningInstancesInfo.PerRunningInstanceInfo[0].VpnConnections[0].IPAdress.ToString());
+            var taskString = JsonConvert.SerializeObject(task, Formatting.Indented);
+            StringAssert.Contains("172.20.0.14/16", taskString);
         }
 
         [Test]
@@ -323,8 +328,11 @@ namespace QarnotSDK.UnitTests
         {
             var id = Guid.NewGuid();
             QTask task = new QTask(Connect, id);
-            await task.SnapshotAsync();
+            var expectedSnapshotId = "snap_f78fdff8-7081-46e1-bb2f-d9cd4e185ece";
+            HttpHandler.ResponseBody = $"{{\"id\": \"{expectedSnapshotId}\"}}";
+            var snapshotResponse = await task.SnapshotAsync();
             TestRequestAssert("POST", $"tasks/{id}/snapshot");
+            Assert.AreEqual(expectedSnapshotId, snapshotResponse);
         }
 
         [Test]
@@ -338,8 +346,12 @@ namespace QarnotSDK.UnitTests
             task.SnapshotBucketPrefix = "Prefix";
             string body = "{\"Whitelist\":null,\"Blacklist\":null,\"Bucket\":null,\"BucketPrefix\":null}";
 
-            await task.SnapshotAsync();
+            var expectedSnapshotId = "snap_f78fdff8-7081-46e1-bb2f-d9cd4e185ece";
+            HttpHandler.ResponseBody = $"{{\"id\": \"{expectedSnapshotId}\"}}";
+            var snapshotResponse = await task.SnapshotAsync();
+
             TestBodyRequestAssert("POST", $"tasks/{id}/snapshot", body);
+            Assert.AreEqual(expectedSnapshotId, snapshotResponse);
         }
 
         [Test]
@@ -355,8 +367,12 @@ namespace QarnotSDK.UnitTests
         {
             var id = Guid.NewGuid();
             QTask task = new QTask(Connect, id);
-            await task.TriggerSnapshotAsync();
+            var expectedSnapshotId = "snap_f78fdff8-7081-46e1-bb2f-d9cd4e185ece";
+            HttpHandler.ResponseBody = $"{{\"id\": \"{expectedSnapshotId}\"}}";
+            var snapshotResponse = await task.TriggerSnapshotAsync();
+
             TestRequestAssert("POST", $"tasks/{id}/snapshot");
+            Assert.AreEqual(expectedSnapshotId, snapshotResponse);
         }
 
         [Test]
@@ -370,8 +386,12 @@ namespace QarnotSDK.UnitTests
             task.SnapshotBucketPrefix = "Prefix";
             string body = "{\"Whitelist\":null,\"Blacklist\":null,\"Bucket\":null,\"BucketPrefix\":null}";
 
-            await task.TriggerSnapshotAsync();
+            var expectedSnapshotId = "snap_f78fdff8-7081-46e1-bb2f-d9cd4e185ece";
+            HttpHandler.ResponseBody = $"{{\"id\": \"{expectedSnapshotId}\"}}";
+            var snapshotResponse = await task.TriggerSnapshotAsync();
+
             TestBodyRequestAssert("POST", $"tasks/{id}/snapshot", body);
+            Assert.AreEqual(expectedSnapshotId, snapshotResponse);
         }
 
         [Test]
@@ -385,8 +405,38 @@ namespace QarnotSDK.UnitTests
             task.SnapshotBucketPrefix = "Prefix";
             string body = "{\"Whitelist\":\"White2List\",\"Blacklist\":\"Black2List\",\"Bucket\":\"buc2ket\",\"BucketPrefix\":\"Pre2fix\"}";
 
-            await task.TriggerSnapshotAsync("White2List", "Black2List", new QBucket(Connect, "buc2ket", false), "Pre2fix");
+            var expectedSnapshotId = "snap_f78fdff8-7081-46e1-bb2f-d9cd4e185ece";
+            HttpHandler.ResponseBody = $"{{\"id\": \"{expectedSnapshotId}\"}}";
+            var snapshotResponse = await task.TriggerSnapshotAsync("White2List", "Black2List", new QBucket(Connect, "buc2ket", false), "Pre2fix");
+
             TestBodyRequestAssert("POST", $"tasks/{id}/snapshot", body);
+            Assert.AreEqual(expectedSnapshotId, snapshotResponse);
+        }
+
+        [Test]
+        public async Task GetSnapshotStatusAsyncShouldGetOnCorrectEndpoint_AndParseSnapshot()
+        {
+            var taskUuid = Guid.Parse("52c10b2d-0687-41e1-985e-7279f6dd543a");
+            QTask task = new QTask(Connect, taskUuid);
+            var snapshotId = "snap_52c10b2d-0687-41e1-985e-7279f6dd543a_20251228234559";
+            HttpHandler.ResponseBody = TaskTestsData.SnapshotResponseBody;
+            var snapshotResponse = await task.GetSnapshotStatusAsync(snapshotId);
+            TestRequestAssert("GET", $"tasks/{taskUuid}/snapshot/{snapshotId}");
+
+            Assert.IsNotNull(snapshotResponse, "Snapshot status should not be null");
+            Assert.IsAssignableFrom(typeof(Snapshot), snapshotResponse, "The response should be parsed to a snapshot");
+            Assert.AreEqual(snapshotId, snapshotResponse.Id, "SnapshotId should be correctly parsed");
+            Assert.AreEqual(taskUuid, snapshotResponse.TaskUuid, "TaskUuid should be correctly parsed");
+            Assert.AreEqual("2026-02-03T16:02:08.172", snapshotResponse.TriggerDate.ToString("yyyy-MM-ddTHH:mm:ss.fff"), "TriggerDate should be correctly parsed");
+            Assert.AreEqual("2026-02-03T17:02:08.172", snapshotResponse.LastUpdateDate.Value.ToString("yyyy-MM-ddTHH:mm:ss.fff"), "LastUpdateDate should be correctly parsed");
+            Assert.IsNotNull(snapshotResponse.SnapshotConfig, "SnapshotConfig should be correctly parsed");
+            Assert.AreEqual(".*white.*", snapshotResponse.SnapshotConfig.Whitelist, "SnapshotConfig's whitelist should be correctly parsed");
+            Assert.AreEqual(".*black.*", snapshotResponse.SnapshotConfig.Blacklist, "SnapshotConfig's blacklist should be correctly parsed");
+            Assert.AreEqual("customBucket", snapshotResponse.SnapshotConfig.Bucket, "SnapshotConfig's buket should be correctly parsed");
+            Assert.AreEqual("prefix-", snapshotResponse.SnapshotConfig.BucketPrefix, "SnapshotConfig's bucket prefix should be correctly parsed");
+            Assert.AreEqual(Sdk.SnapshotStatus.Success, snapshotResponse.Status, "Status should be correctly parsed");
+            Assert.AreEqual(100, snapshotResponse.SizeToUpload, "SizeToUpload should be correctly parsed");
+            Assert.AreEqual(50, snapshotResponse.TransferredSize, "TransferredSize should be correctly parsed");
         }
 
         [Test]

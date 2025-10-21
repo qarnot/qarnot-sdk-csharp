@@ -905,5 +905,22 @@ namespace QarnotSDK.UnitTests
             ""maxTimeQueueSeconds"": 10,
             ""credits"": 0.01
         }";
+
+        public const string SnapshotResponseBody = @"{
+            ""id"": ""snap_52c10b2d-0687-41e1-985e-7279f6dd543a_20251228234559"",
+            ""taskUuid"": ""52c10b2d-0687-41e1-985e-7279f6dd543a"",
+            ""triggerDate"": ""2026-02-03T16:02:08.172Z"",
+            ""lastUpdateDate"": ""2026-02-03T17:02:08.172Z"",
+            ""snapshotConfig"": {
+                ""whitelist"": "".*white.*"",
+                ""blacklist"": "".*black.*"",
+                ""bucket"": ""customBucket"",
+                ""bucketPrefix"": ""prefix-""
+            },
+            ""status"": ""success"",
+            ""sizeToUpload"": 100,
+            ""transferredSize"": 50
+            }
+            ";
     }
 }

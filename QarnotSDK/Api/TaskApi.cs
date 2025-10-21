@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace QarnotSDK {
 
     /// <summary>
-    /// Represents an error that occur during a task execution.
+    /// Represents a part of a bulk response when requesting multiple creation at the same time
     /// </summary>
     public class QBulkTaskResponse {
         /// <summary>
@@ -40,7 +41,7 @@ namespace QarnotSDK {
     }
 
     /// <summary>
-    /// Represents the Vpn Connection information used form the Connection.
+    /// Represents the Vpn Connection information used for the Connection.
     /// </summary>
     public class QTaskVpnConnection
     {
@@ -49,20 +50,44 @@ namespace QarnotSDK {
         /// example:  10.11.12.14/16
         /// </summary>
         public string NodeIPAddressCidr { get; set; }
+        
+        /// <summary>
+        /// System.Net.IPAddress vpn connection address.
+        /// </summary>
+        [JsonIgnore]
+        public System.Net.IPAddress IPAddress
+        {
+            get
+            {
+                string[] parts = NodeIPAddressCidr.Split('/');
+                if (parts.Length == 2 && System.Net.IPAddress.TryParse(parts[0], out var ip))
+                {
+                    return ip;
+                }
+                return null;
+            }
+        }
 
         /// <summary>
         /// System.Net.IPAddress vpn connection address.
         /// </summary>
-        public System.Net.IPAddress IPAdress
+        [Obsolete("legacy property with typo. Use IPAddress")]
+        [JsonIgnore]
+        public System.Net.IPAddress IPAdress => IPAddress;
+
+        /// <summary>
+        /// System.Net.IPNetwork vpn network.
+        /// </summary>
+        [JsonIgnore]
+        public System.Net.IPNetwork IPNetwork
         {
             get
             {
-                return System.Net.IPAddress.Parse(NodeIPAddressCidr);
-            }
-
-            set
-            {
-                NodeIPAddressCidr = value.ToString();
+                if (System.Net.IPNetwork.TryParse(NodeIPAddressCidr, out var ipnetwork))
+                {
+                    return ipnetwork;
+                }
+                return null;
             }
         }
 
