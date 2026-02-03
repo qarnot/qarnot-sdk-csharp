@@ -130,7 +130,7 @@
     <!-- 	CA1302: Do not hardcode locale specific strings	The System.Environment.SpecialFolder enumeration contains members that refer to special system folders. The locations of these folders can have different values on different operating systems; the user can change some of the locations; and the locations are localized. The Environment.GetFolderPath method returns the locations that are associated with the Environment.SpecialFolder enumeration, localized and appropriate for the currently running computer. -->
     <!-- <Rule Id="CA1302" Action="Default" /> -->
     <!-- 	CA1303: Do not pass literals as localized parameters	An externally visible method passes a string literal as a parameter to a .NET constructor or method, and that string should be localizable. -->
-    <!-- <Rule Id="CA1303" Action="Default" /> -->
+    <Rule Id="CA1303" Action="None" />
     <!-- 	CA1304: Specify CultureInfo	A method or constructor calls a member that has an overload that accepts a System.Globalization.CultureInfo parameter, and the method or constructor does not call the overload that takes the CultureInfo parameter. When a CultureInfo or System.IFormatProvider object is not supplied, the default value that is supplied by the overloaded member might not have the effect that you want in all locales. -->
     <!-- <Rule Id="CA1304" Action="Default" /> -->
     <!-- 	CA1305: Specify IFormatProvider	A method or constructor calls one or more members that have overloads that accept a System.IFormatProvider parameter, and the method or constructor does not call the overload that takes the IFormatProvider parameter. When a System.Globalization.CultureInfo or IFormatProvider object is not supplied, the default value that is supplied by the overloaded member might not have the effect that you want in all locales. -->
@@ -1160,7 +1160,7 @@
     	<!-- StoreFilesAsUtf8	The encoding of the file is not UTF-8 with byte order mark. -->
     <!-- <Rule Id="SA1412" Action="" /> -->
     	<!-- UseTrailingCommasInMultiLineInitializers	A multi-line initializer should use a comma on the last item. -->
-    <!-- <Rule Id="SA1413" Action="" /> -->
+    <Rule Id="SA1413" Action="None" />
     	<!-- TupleTypesInSignaturesShouldHaveElementNames	Tuple types appearing in member declarations should have explicitly named tuple elements. -->
     <!-- <Rule Id="SA1414" Action="" /> -->
     	<!-- ElementMustBeginWithUpperCaseLetter	The name of a C# element does not begin with an upper-case letter. -->
@@ -1312,13 +1312,13 @@
     	<!-- ReferToTupleElementsByName	An element of a tuple was referenced by its metadata name when an element name is available. -->
     <!-- <Rule Id="SA1142" Action="" /> -->
     <!-- KeywordsMustBeSpacedCorrectly	The spacing around a C# keyword is incorrect. -->
-    <!-- <Rule Id="SA1000" Action="" /> -->
+    <Rule Id="SA1000" Action="None" />
     <!-- CommasMustBeSpacedCorrectly	The spacing around a comma is incorrect, within a C# code file. -->
-    <!-- <Rule Id="SA1001" Action="" /> -->
+    <Rule Id="SA1001" Action="None" />
     <!-- SemicolonsMustBeSpacedCorrectly	The spacing around a semicolon is incorrect, within a C# code file. -->
     <!-- <Rule Id="SA1002" Action="" /> -->
     <!-- SymbolsMustBeSpacedCorrectly	The spacing around an operator symbol is incorrect, within a C# code file. -->
-    <!-- <Rule Id="SA1003" Action="" /> -->
+    <Rule Id="SA1003" Action="None" />
     <!-- DocumentationLinesMustBeginWithSingleSpace	A line within a documentation header above a C# element does not begin with a single space. -->
     <!-- <Rule Id="SA1004" Action="" /> -->
     <!-- SingleLineCommentsMustBeginWithSingleSpace	A single-line comment within a C# code file does not begin with a single space. -->
@@ -1330,7 +1330,7 @@
     <!-- OpeningParenthesisMustBeSpacedCorrectly	An opening parenthesis within a C# statement is not spaced correctly. -->
     <!-- <Rule Id="SA1008" Action="" /> -->
     <!-- ClosingParenthesisMustBeSpacedCorrectly	A closing parenthesis within a C# statement is not spaced correctly. -->
-    <!-- <Rule Id="SA1009" Action="" /> -->
+    <Rule Id="SA1009" Action="None" />
     <!-- OpeningSquareBracketsMustBeSpacedCorrectly	An opening square bracket within a C# statement is not spaced correctly. -->
     <!-- <Rule Id="SA1010" Action="" /> -->
     <!-- ClosingSquareBracketsMustBeSpacedCorrectly	A closing square bracket within a C# statement is not spaced correctly. -->
