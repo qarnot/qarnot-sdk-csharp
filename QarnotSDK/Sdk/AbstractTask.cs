@@ -105,13 +105,28 @@ namespace QarnotSDK {
 
         /// <summary>
         /// Request made on a running task to sync the result files in $DOCKER_WORKDIR on the compute node to the result bucket.
-        /// Note: There is no way to know when all the results are effectively transfered. This information is available by monitoring the
-        /// task ResultsCount or by checking the result bucket.
+        /// Note: To follow the transfer progress use the method GetSnapshotStatusAsync with the returned snapshot id.
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public virtual async Task SnapshotAsync(CancellationToken cancellationToken = default(CancellationToken)) {
-            await TriggerSnapshotAsync(cancellationToken: cancellationToken);
+        public virtual async Task<string> SnapshotAsync(CancellationToken cancellationToken = default(CancellationToken)) {
+            return await TriggerSnapshotAsync(cancellationToken: cancellationToken);
+        }
+
+
+        /// <summary>
+        /// Get the status of a specific instant snapshot
+        /// </summary>
+        /// <param name="snapshotId">Specify the snapshot Id.</param>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns></returns>
+        public virtual async Task<Sdk.Snapshot> GetSnapshotStatusAsync(string snapshotId, CancellationToken cancellationToken = default(CancellationToken)) {
+            using (var response = await _api._client.GetAsync(_uri + "/snapshot/" + snapshotId, cancellationToken))
+            {
+                await Utils.LookForErrorAndThrowAsync(_api._client, response, cancellationToken);
+                var snapshotResponse = await response.Content.ReadAsAsync<SnapshotApi>(Utils.GetCustomResponseFormatter(), cancellationToken);
+                return new Sdk.Snapshot(Connection, _uri, snapshotResponse);
+            }
         }
 
         /// <summary>
@@ -124,7 +139,7 @@ namespace QarnotSDK {
         /// <param name="bucketPrefix">Specify a custom prefix for this snapshot.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
-        public virtual async Task TriggerSnapshotAsync(string whitelist = null, string blacklist = null, QBucket bucket = null, string bucketPrefix = null, CancellationToken cancellationToken = default(CancellationToken)) {
+        public virtual async Task<string> TriggerSnapshotAsync(string whitelist = null, string blacklist = null, QBucket bucket = null, string bucketPrefix = null, Stream destinationStream = null, CancellationToken cancellationToken = default(CancellationToken)) {
             if (_api._shouldSanitizeBucketPaths)
             {
                 bucketPrefix = Utils.GetSanitizedBucketPath(bucketPrefix, _api._showBucketWarnings, false);
@@ -139,7 +154,15 @@ namespace QarnotSDK {
 
             if (_api.IsReadOnly) throw new Exception("Can't request a snapshot, this connection is configured in read-only mode");
             using (var response = await _api._client.PostAsJsonAsync<UniqueSnapshot>(_uri + "/snapshot", s, cancellationToken))
+            {
                 await Utils.LookForErrorAndThrowAsync(_api._client, response, cancellationToken);
+                if (destinationStream != null)
+                {
+                    await response.Content.CopyToAsync(destinationStream);
+                }
+                var snapshotResponse = await response.Content.ReadAsAsync<SnapshotApi>(Utils.GetCustomResponseFormatter(), cancellationToken);
+                return snapshotResponse.Id;
+            }
         }
 
         /// <summary>
@@ -168,7 +191,7 @@ namespace QarnotSDK {
             {
                 bucketPrefix = Utils.GetSanitizedBucketPath(bucketPrefix, _api._showBucketWarnings, false);
             }
-            var s = new PeriodicSnapshot()
+            var s = new PeriodicSnapshotConfiguration()
             {
                 Interval = Convert.ToInt32(interval),
                 Whitelist = whitelist,
@@ -178,7 +201,7 @@ namespace QarnotSDK {
             };
 
             if (_api.IsReadOnly) throw new Exception("Can't configure snapshots, this connection is configured in read-only mode");
-            using (var response = await _api._client.PostAsJsonAsync<PeriodicSnapshot>(_uri + "/snapshot/periodic", s, cancellationToken))
+            using (var response = await _api._client.PostAsJsonAsync<PeriodicSnapshotConfiguration>(_uri + "/snapshot/periodic", s, cancellationToken))
                 await Utils.LookForErrorAndThrowAsync(_api._client, response, cancellationToken);
         }
         #endregion
