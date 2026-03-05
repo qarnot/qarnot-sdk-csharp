@@ -1469,5 +1469,192 @@ namespace QarnotSDK.UnitTests
             Assert.That(secondBucket.ResourcesTransformation, Is.Null);
             Assert.That(secondBucket.CacheTTLSec, Is.Null);
         }
+
+        [Test]
+        public void SetTaskDependenciesWithAdvancedDependencyList_ByGuid()
+        {
+            var task = new QTask(Connect, "name", "profile", 1u);
+            var guid1 = Guid.NewGuid();
+            var guid2 = Guid.NewGuid();
+
+            task.SetTaskDependencies(
+                new AdvancedDependency(guid1, TaskFinalState.Success),
+                new AdvancedDependency(guid2, TaskFinalState.Failure, TaskFinalState.Cancelled));
+
+            Assert.That(task.DependsOn, Is.Empty);
+
+            var advancedDeps = task.Dependencies.AdvancedDependsOn;
+
+            Assert.That(advancedDeps, Has.Count.EqualTo(2));
+            Assert.That(advancedDeps[0].TaskUuid, Is.EqualTo(guid1));
+            Assert.That(advancedDeps[0].TaskFinalStateCondition, Is.EquivalentTo(new[] { TaskFinalState.Success }));
+            Assert.That(advancedDeps[1].TaskUuid, Is.EqualTo(guid2));
+            Assert.That(
+                advancedDeps[1].TaskFinalStateCondition,
+                Is.EquivalentTo(new[] { TaskFinalState.Failure, TaskFinalState.Cancelled }));
+        }
+
+
+        [Test]
+        public void SetTaskDependenciesWithAdvancedDependencyList_ByTask()
+        {
+            var task = new QTask(Connect, "name", "profile", 1u);
+            var depTask1 = new QTask(Connect, "depTask1", "profile", 1u);
+            var depTask2 = new QTask(Connect, "depTask2", "profile", 1u);
+
+            task.SetTaskDependencies(
+                new AdvancedDependency(depTask1, TaskFinalState.Success),
+                new AdvancedDependency(depTask2, TaskFinalState.Failure, TaskFinalState.Cancelled));
+
+            Assert.That(task.DependsOn, Is.Empty);
+
+            var advancedDeps = task.Dependencies.AdvancedDependsOn;
+
+            Assert.That(advancedDeps, Has.Count.EqualTo(2));
+            Assert.That(advancedDeps[0].TaskUuid, Is.EqualTo(depTask1.Uuid));
+            Assert.That(advancedDeps[0].TaskFinalStateCondition, Is.EquivalentTo(new[] { TaskFinalState.Success }));
+            Assert.That(advancedDeps[1].TaskUuid, Is.EqualTo(depTask2.Uuid));
+            Assert.That(
+                advancedDeps[1].TaskFinalStateCondition,
+                Is.EquivalentTo(new[] { TaskFinalState.Failure, TaskFinalState.Cancelled }));
+        }
+
+        [Test]
+        public void SetAdvancedDeps_ClearsPreviousSimpleDeps()
+        {
+            var task = new QTask(Connect, "name", "profile", 1u);
+            var guid1 = Guid.NewGuid();
+            var guid2 = Guid.NewGuid();
+            var guid3 = Guid.NewGuid();
+
+            // Start by setting simple deps
+
+            task.SetTaskDependencies(guid1, guid2);
+
+            Assert.That(task.DependsOn, Has.Count.EqualTo(2));
+
+            // Now override that with advanced deps, and check only those remain
+
+            task.SetTaskDependencies(new AdvancedDependency(guid3, TaskFinalState.Success));
+
+            Assert.That(task.DependsOn, Is.Empty);
+
+            var advancedDeps = task.Dependencies.AdvancedDependsOn;
+
+            Assert.That(advancedDeps, Has.Count.EqualTo(1));
+            Assert.That(advancedDeps[0].TaskUuid, Is.EqualTo(guid3));
+        }
+
+        [Test]
+        public void SetSimpleDeps_ClearsPreviousAdvancedDeps()
+        {
+            var task = new QTask(Connect, "name", "profile", 1u);
+            var guid1 = Guid.NewGuid();
+            var guid2 = Guid.NewGuid();
+
+            // Start by setting advanced deps
+
+            task.SetTaskDependencies(new AdvancedDependency(guid1, TaskFinalState.Success));
+
+            Assert.That(task.Dependencies.AdvancedDependsOn, Has.Count.EqualTo(1));
+
+            // Now override that with simple deps, and check only those remain
+
+            task.SetTaskDependencies(guid2);
+
+            Assert.That(task.DependsOn, Is.EquivalentTo(new[] { guid2 }));
+            Assert.That(task.Dependencies.AdvancedDependsOn, Is.Null.Or.Empty);
+        }
+
+
+        [Test]
+        // NOTE: not testing a super feature but may help us not to change that default behavior by mistake in the future
+        public void AdvancedDependency_WithNoConditionSpecified_MeansAnyState()
+        {
+            var guid = Guid.NewGuid();
+
+            var dep = new AdvancedDependency(guid);
+
+            Assert.That(dep.TaskUuid, Is.EqualTo(guid));
+            Assert.That(dep.TaskFinalStateCondition, Is.Null.Or.Empty);
+            Assert.That(dep.State, Is.Null);
+        }
+
+
+        [Test]
+        public void SetDependencies_UsingTasksObjects_UsesTheRightGuid()
+        {
+            var task1 = new QTask(Connect, "task1", "profile", 1u);
+            var task2 = new QTask(Connect, "task2", "profile", 1u);
+            var dependent = new QTask(Connect, "dependent", "profile", 1u);
+
+            dependent.SetTaskDependencies(task1, task2);
+
+            Assert.That(dependent.DependsOn, Is.EquivalentTo(new[] { task1.Uuid, task2.Uuid }));
+            Assert.That(dependent.Dependencies.AdvancedDependsOn, Is.Null.Or.Empty);
+        }
+
+        [Test]
+        public void PreSubmitAsync_Fails_IfAdvancedDepsAndNoJob()
+        {
+            var task = new QTask(Connect, "name", "profile", 1u);
+            var guid1 = Guid.NewGuid();
+
+            task.SetTaskDependencies(new AdvancedDependency(guid1, TaskFinalState.Success));
+
+            var ex = Assert.ThrowsAsync<Exception>(async () => await task.PreSubmitAsync(default));
+
+            Assert.IsNotNull(ex);
+            Assert.That(ex.Message, Does.Contain("job"));
+        }
+
+
+        [Test]
+        public async Task StateUpdateFromAPI_PopulatesTaskDependenciesState_ForAdvancedDependencies()
+        {
+            HttpHandler.ResponseBody = TaskTestsData.TaskWithAdvancedDependenciesResponseBody;
+
+            var task = new QTask(Connect, "name", "profile", 1u);
+            await task.UpdateStatusAsync();
+            var deps = task.Dependencies;
+
+            Assert.IsNotNull(deps);
+            Assert.That(deps.State, Is.EqualTo(DependencyState.Waiting));
+            Assert.That(deps.AdvancedDependsOn, Has.Count.EqualTo(2));
+
+            var dep1 = deps.AdvancedDependsOn[0];
+
+            Assert.That(dep1.TaskUuid, Is.EqualTo(Guid.Parse(TaskTestsData.AdvancedDependencyUuid1)));
+            Assert.That(dep1.TaskFinalStateCondition, Is.EquivalentTo(new[] { TaskFinalState.Success, TaskFinalState.Failure }));
+            Assert.That(dep1.ActualFinalState, Is.Null);
+            Assert.That(dep1.State, Is.EqualTo(DependencyState.Waiting));
+
+            var dep2 = deps.AdvancedDependsOn[1];
+
+            Assert.That(dep2.TaskUuid, Is.EqualTo(Guid.Parse(TaskTestsData.AdvancedDependencyUuid2)));
+            Assert.That(dep2.TaskFinalStateCondition, Is.Null.Or.Empty);
+            Assert.That(dep2.ActualFinalState, Is.EqualTo(TaskFinalState.Success));
+            Assert.That(dep2.State, Is.EqualTo(DependencyState.DependencyConditionsFulfilled));
+        }
+
+
+        [Test]
+        public async Task StateUpdateFromAPI_PopulatesTaskDependenciesState_ForSimpleDependencies()
+        {
+            HttpHandler.ResponseBody = TaskTestsData.TaskWithSimpleDependenciesResponseBody;
+
+            var task = new QTask(Connect, "name", "profile", 1u);
+
+            await task.UpdateStatusAsync();
+
+            var deps = task.Dependencies;
+
+            Assert.IsNotNull(deps);
+            Assert.That(deps.State, Is.EqualTo(DependencyState.DependencyConditionsFulfilled));
+            Assert.That(deps.DependsOn, Has.Count.EqualTo(2));
+            Assert.That(deps.DependsOn[0], Is.EqualTo(Guid.Parse(TaskTestsData.AdvancedDependencyUuid1)));
+            Assert.That(deps.DependsOn[1], Is.EqualTo(Guid.Parse(TaskTestsData.AdvancedDependencyUuid2)));
+            Assert.That(deps.AdvancedDependsOn, Is.Null.Or.Empty);
+        }
     }
 }

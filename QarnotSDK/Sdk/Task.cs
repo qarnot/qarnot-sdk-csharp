@@ -305,23 +305,46 @@ namespace QarnotSDK {
         }
 
         /// <summary>
-        /// The Task Dependencies
-	/// Guid list of tasks to wait before running
-        /// The task need to be in a job with depencendies activated
+        /// The Task Dependencies.
+        /// Guid list of tasks to wait before running.
+        /// The task needs to be in a job with dependencies activated.
+        /// Use <see cref="SetTaskDependencies(Guid[])"/> to set dependencies.
         /// </summary>
+        /// <remark>
+        /// This is just an access proxy for <see cref="QTaskDependencies.DependsOn"/> kept for backwards
+        /// compatibility. The entirety of dependencies description and state can be found in
+        /// <see cref="Dependencies"/>
+        /// </remark>
         [InternalDataApiName(Name="Dependencies.DependsOn")]
-        public virtual List<Guid> DependsOn {
+        public virtual List<Guid> DependsOn
+        {
             get
             {
                 if (_taskApi.Dependencies == null || _taskApi.Dependencies.DependsOn.IsNullOrEmpty())
+                {
                     return new List<Guid>();
+                }
                 return _taskApi.Dependencies.DependsOn.ToList();
             }
-            set
+        }
+
+        /// <summary>
+        /// All dependency information for this task, including both simple and advanced dependencies,
+        /// and their current resolution state.
+        /// </summary>
+        /// <remark>
+        /// null if no dependencies are set.
+        /// </remark>
+        [InternalDataApiName(Name = "Dependencies", IsFilterable = false, IsSelectable = false)]
+        public virtual QTaskDependencies Dependencies
+        {
+            get
             {
                 if (_taskApi.Dependencies == null)
-                    _taskApi.Dependencies = new Dependency();
-                _taskApi.Dependencies.DependsOn = value.ToList();
+                {
+                    return null;
+                }
+                return new QTaskDependencies(_taskApi.Dependencies);
             }
         }
 
@@ -994,27 +1017,58 @@ namespace QarnotSDK {
         #region public methods
 
         /// <summary>
-        /// Set the task depencencies.
-        /// The task need to be in a job with depencendies activated
+        /// Set the task dependencies using task UUIDs.
+        /// The task needs to be in a job with dependencies activated.
+        /// Clears any previously set simple or advanced dependencies.
         /// </summary>
-        /// <param name="guids">list of task guids this task depends on.</param>
-        public virtual void SetTaskDependencies(params Guid [] guids)
+        /// <param name="guids">List of task UUIDs this task depends on.</param>
+        public virtual void SetTaskDependencies(params Guid[] guids)
         {
             if (_taskApi.Dependencies == null)
                 _taskApi.Dependencies = new Dependency();
+
             _taskApi.Dependencies.DependsOn = guids.ToList();
+            _taskApi.Dependencies.AdvancedDependsOn = null;
         }
 
         /// <summary>
-        /// Set the task depencencies.
-        /// The task need to be in a job with depencendies activated
+        /// Set the task dependencies using task objects.
+        /// The task needs to be in a job with dependencies activated.
+        /// Clears any previously set simple or advanced dependencies.
         /// </summary>
-        /// <param name="tasks">list of task this task depends on.</param>
-        public virtual void SetTaskDependencies(params QTask [] tasks)
+        /// <param name="tasks">List of tasks this task depends on.</param>
+        public virtual void SetTaskDependencies(params QTask[] tasks)
+        {
+            SetTaskDependencies(tasks.Select(t => t.Uuid).ToArray());
+        }
+
+        /// <summary>
+        /// Set the task dependencies using advanced dependency objects with optional final state conditions.
+        /// The task needs to be in a job with dependencies activated.
+        /// Clears any previously set simple or advanced dependencies.
+        /// </summary>
+        /// <param name="dependencies">List of advanced dependencies.</param>
+        public virtual void SetTaskDependencies(params AdvancedDependency[] dependencies)
         {
             if (_taskApi.Dependencies == null)
                 _taskApi.Dependencies = new Dependency();
-            _taskApi.Dependencies.DependsOn = tasks.Select(t => t.Uuid).ToList();
+
+            _taskApi.Dependencies.DependsOn = new List<Guid>();
+            _taskApi.Dependencies.AdvancedDependsOn = ConvertToAdvancedDependencyApiList(dependencies);
+        }
+
+        private static List<AdvancedDependencyApi> ConvertToAdvancedDependencyApiList(
+            AdvancedDependency[] dependencies)
+        {
+            return dependencies
+                .Select(d => new AdvancedDependencyApi
+                {
+                    TaskUuid = d.TaskUuid,
+                    TaskFinalStateCondition = d.TaskFinalStateCondition?
+                        .Select(s => s.ToString())
+                        .ToList()
+                })
+                .ToList();
         }
 
         /// <summary>
@@ -1212,8 +1266,19 @@ namespace QarnotSDK {
             if (_taskApi.InstanceCount == 0 && String.IsNullOrEmpty(_taskApi.AdvancedRanges)) {
                 throw new Exception("An instance count or a range must be set to submit a task.");
             }
-            if (_taskApi.JobUuid == default(string) && _taskApi.Dependencies != null && !_taskApi.Dependencies.DependsOn.IsNullOrEmpty()) {
+            bool hasSimpleDeps = _taskApi.Dependencies?.DependsOn?.IsNullOrEmpty() == false;
+            bool hasAdvancedDeps = _taskApi.Dependencies?.AdvancedDependsOn?.IsNullOrEmpty() == false;
+
+            if (_taskApi.JobUuid == default(string) && (hasSimpleDeps || hasAdvancedDeps))
+            {
                 throw new Exception("A task not attached to a job can not use dependency.");
+            }
+
+            if (hasSimpleDeps && hasAdvancedDeps)
+            {
+                // NOTE: considering that the only way to set them is through SetTaskDependencies, and that they are mutually cleared,
+                // NOTE: this is not supposed to happen. Still, that's cheap to check so keep the double security.
+                throw new Exception("Cannot use both simple and advanced dependencies. Use either DependsOn or AdvancedDependsOn.");
             }
             if (_useStandaloneJob  && _taskApi.Profile == default(string)) {
                 throw new Exception("A task attached to a job without a pool should have a profile.");
