@@ -586,9 +586,20 @@ namespace QarnotSDK {
     internal class Dependency
     {
         public List<Guid> DependsOn { get; set; }
+        public List<AdvancedDependencyApi> AdvancedDependsOn { get; set; }
+        public string State { get; set; }
+
         internal Dependency()
         {
             DependsOn = new List<Guid>();
         }
+    }
+
+    internal class AdvancedDependencyApi
+    {
+        public Guid TaskUuid { get; set; }
+        public List<string> TaskFinalStateCondition { get; set; }
+        public string ActualFinalState { get; set; }
+        public string State { get; set; }
     }
 }

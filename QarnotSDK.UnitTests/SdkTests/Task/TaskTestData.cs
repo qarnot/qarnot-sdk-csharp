@@ -922,5 +922,60 @@ namespace QarnotSDK.UnitTests
             ""transferredSize"": 50
             }
             ";
+        public const string AdvancedDependencyUuid1 = "aaaaaaaa-0001-0001-0001-000000000001";
+        public const string AdvancedDependencyUuid2 = "aaaaaaaa-0002-0002-0002-000000000002";
+
+        public const string TaskWithAdvancedDependenciesResponseBody = @"{
+            ""uuid"": ""f78fdff8-7081-46e1-bb2f-d9cd4e185ece"",
+            ""name"": ""task_with_advanced_deps"",
+            ""shortname"": ""f78fdff8-7081-46e1-bb2f-d9cd4e185ece"",
+            ""profile"": ""docker-batch"",
+            ""state"": ""Submitted"",
+            ""instanceCount"": 1,
+            ""creationDate"": ""2026-03-05T12:00:00Z"",
+            ""endDate"": ""0001-01-01T00:00:00Z"",
+            ""constants"": [],
+            ""tags"": [],
+            ""errors"": [],
+            ""resourceBuckets"": [],
+            ""status"": {},
+            ""dependencies"": {
+                ""advancedDependsOn"": [
+                    {
+                        ""taskUuid"": ""aaaaaaaa-0001-0001-0001-000000000001"",
+                        ""taskFinalStateCondition"": [""success"", ""failure""],
+                        ""actualFinalState"": null,
+                        ""state"": ""waiting""
+                    },
+                    {
+                        ""taskUuid"": ""aaaaaaaa-0002-0002-0002-000000000002"",
+                        ""taskFinalStateCondition"": null,
+                        ""actualFinalState"": ""Success"",
+                        ""state"": ""dependencyConditionsFulfilled""
+                    }
+                ],
+                ""state"": ""waiting""
+            }
+        }";
+
+        public const string TaskWithSimpleDependenciesResponseBody = @"{
+            ""uuid"": ""f78fdff8-7081-46e1-bb2f-d9cd4e185ece"",
+            ""name"": ""task_with_simple_deps"",
+            ""shortname"": ""f78fdff8-7081-46e1-bb2f-d9cd4e185ece"",
+            ""profile"": ""docker-batch"",
+            ""state"": ""Submitted"",
+            ""instanceCount"": 1,
+            ""creationDate"": ""2026-03-05T12:00:00Z"",
+            ""endDate"": ""0001-01-01T00:00:00Z"",
+            ""constants"": [],
+            ""tags"": [],
+            ""errors"": [],
+            ""resourceBuckets"": [],
+            ""status"": {},
+            ""dependencies"": {
+                ""dependsOn"": [""aaaaaaaa-0001-0001-0001-000000000001"", ""aaaaaaaa-0002-0002-0002-000000000002""],
+                ""state"": ""dependencyConditionsFulfilled""
+            }
+        }";
     }
 }
