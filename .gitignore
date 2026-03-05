@@ -4,5 +4,6 @@ QarnotSDK/obj
 QarnotSDK/bin
 QarnotSDK.IntegrationTests/obj
 QarnotSDK.IntegrationTests/bin
+QarnotSDK.Playground/
 Documentation/Help
 .sonarqube
