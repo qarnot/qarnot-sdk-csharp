@@ -24,6 +24,17 @@ namespace QarnotSDK {
         /// </summary>
         public virtual string Profile { get { return _poolApi.Profile; } }
 
+        /// <summary>
+        /// UUID of the project this pool belongs to, or <see cref="Guid.Empty"/> if none is set.
+        /// </summary>
+        public virtual Guid ProjectUuid
+        {
+            get
+            {
+                return _poolApi.ProjectUuid.IsNullOrEmpty() ? Guid.Empty : new Guid(_poolApi.ProjectUuid);
+            }
+        }
+
 
         /// <summary>
         /// Retrieve the pool state (see QTaskStates).
