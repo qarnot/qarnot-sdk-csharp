@@ -366,6 +366,23 @@ namespace QarnotSDK {
         public virtual Guid PoolUuid { get { return _taskApi.PoolUuid.IsNullOrEmpty() ? Guid.Empty : new Guid(_taskApi.PoolUuid); } }
 
         /// <summary>
+        /// UUID of the project this task belongs to. Should be set before submission.
+        /// Should not be set when using a pool — the task will inherit the pool's project UUID.
+        /// </summary>
+        [InternalDataApiName(Name="ProjectUuid")]
+        public virtual Guid ProjectUuid
+        {
+            get
+            {
+                return _taskApi.ProjectUuid.IsNullOrEmpty() ? Guid.Empty : new Guid(_taskApi.ProjectUuid);
+            }
+            set
+            {
+                _taskApi.ProjectUuid = value == Guid.Empty ? null : value.ToString();
+            }
+        }
+
+        /// <summary>
         /// The pool where the task is running or null if the task doesn't belong to a pool.
         /// </summary>
         [InternalDataApiName(IsFilterable=false, IsSelectable=false)]

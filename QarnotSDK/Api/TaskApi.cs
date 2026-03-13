@@ -566,6 +566,7 @@ namespace QarnotSDK {
         public string TargetedReservationName { get; set; }
         public List<ForcedNetworkRule> ForcedNetworkRules { get; set; }
         public List<ForcedConstant> ForcedConstants { get; set; }
+        public string ProjectUuid { get; set; }
 
         internal TaskApi() {
             Constants = new List<KeyValHelper>();

@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Newtonsoft.Json;
 
 namespace QarnotSDK {
     /// <summary>
@@ -93,6 +95,43 @@ namespace QarnotSDK {
         /// Computing quotas of the user and their organization
         /// </summary>
         public ComputingQuotas ComputingQuotas { get; set; }
+
+        /// <summary>
+        /// Projects available to this user. Use <see cref="GetProjectByName"/> or
+        /// <see cref="GetProjectBySlug"/> for convenient lookup before assigning to a task or pool.
+        /// </summary>
+        [JsonIgnore]
+        public List<QProject> Projects
+        {
+            get
+            {
+                return _rawProjects?.Select(p => new QProject(p)).ToList()
+                    ?? new List<QProject>();
+            }
+        }
+
+        [JsonProperty("projects")]
+        internal List<ProjectApi> _rawProjects { get; set; }
+
+        /// <summary>
+        /// Returns the first project whose name matches <paramref name="name"/> (case-insensitive),
+        /// or null if not found.
+        /// </summary>
+        public QProject GetProjectByName(string name)
+        {
+            return Projects.FirstOrDefault(
+                p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
+        /// Returns the first project whose slug matches <paramref name="slug"/> (case-insensitive),
+        /// or null if not found.
+        /// </summary>
+        public QProject GetProjectBySlug(string slug)
+        {
+            return Projects.FirstOrDefault(
+                p => string.Equals(p.Slug, slug, StringComparison.OrdinalIgnoreCase));
+        }
 
         internal UserInformation() {
         }

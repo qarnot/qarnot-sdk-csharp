@@ -407,6 +407,22 @@ namespace QarnotSDK
             }
         }
 
+        /// <summary>
+        /// UUID of the project this pool belongs to. Should be set before submission.
+        /// </summary>
+        [InternalDataApiName(Name="ProjectUuid")]
+        public virtual Guid ProjectUuid
+        {
+            get
+            {
+                return _poolApi.ProjectUuid.IsNullOrEmpty() ? Guid.Empty : new Guid(_poolApi.ProjectUuid);
+            }
+            set
+            {
+                _poolApi.ProjectUuid = value == Guid.Empty ? null : value.ToString();
+            }
+        }
+
 
         /// <summary>
         /// Scaling specification for the pool. Mutually exclusive with other elastic properties

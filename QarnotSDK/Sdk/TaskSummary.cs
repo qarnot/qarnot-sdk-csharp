@@ -57,6 +57,17 @@ namespace QarnotSDK {
         } }
 
         /// <summary>
+        /// UUID of the project this task belongs to, or <see cref="Guid.Empty"/> if none is set.
+        /// </summary>
+        public virtual Guid ProjectUuid
+        {
+            get
+            {
+                return _taskApi.ProjectUuid.IsNullOrEmpty() ? Guid.Empty : new Guid(_taskApi.ProjectUuid);
+            }
+        }
+
+        /// <summary>
         /// True if the task is completed or false if the task is still running or deploying.
         /// </summary>
         public virtual bool Completed {
