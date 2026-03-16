@@ -1,6 +1,6 @@
-# CLAUDE.md
+# DESIGN.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file shows a general design of this code, and provides general guidance to AI code agents when working with code in this repository.
 
 ## Project overview
 
