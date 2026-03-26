@@ -127,6 +127,11 @@ namespace QarnotSDK {
         public virtual CarbonCalculator CarbonClient { get; }
 
         /// <summary>
+        /// Allows to interact with the Qarnot Budget API.
+        /// </summary>
+        public virtual CreditsClient CreditsClient { get; }
+
+        /// <summary>
         /// Sdk user agent: adding references to the current version to trace bugs and usages
         /// </summary>
         private static string SdkUserAgent { get {
@@ -214,6 +219,7 @@ namespace QarnotSDK {
 
             Secrets = new Secrets(_client);
             CarbonClient = new CarbonCalculator(_client);
+            CreditsClient = new CreditsClient(_client);
         }
 
         #region CreateX
