@@ -114,6 +114,16 @@ namespace QarnotSDK {
         internal List<ProjectApi> _rawProjects { get; set; }
 
         /// <summary>
+        /// Returns the first project whose uuid matches <paramref name="uuid"/>,
+        /// or null if not found.
+        /// </summary>
+        public QProject GetProjectByUuid(Guid uuid)
+        {
+            return Projects.FirstOrDefault(
+                p => p.Uuid == uuid);
+        }
+
+        /// <summary>
         /// Returns the first project whose name matches <paramref name="name"/> (case-insensitive),
         /// or null if not found.
         /// </summary>

@@ -64,6 +64,19 @@ namespace QarnotSDK.UnitTests.SdkTests.Carbon
         }
 
         [Test]
+        public void TestGetProjectByUuid()
+        {
+            var userInformation = JsonConvert.DeserializeObject<UserInformation>(ProjectTestData.UserInfoWithProjectsJson);
+
+            var foundProject = userInformation.GetProjectByUuid(new Guid(ProjectTestData.ProjectUuid));
+            var missingProject = userInformation.GetProjectByUuid(Guid.NewGuid());
+
+            Assert.That(foundProject, Is.Not.Null, "GetProjectByUuid should return the project when the uuid matches");
+            Assert.That(foundProject.Name, Is.EqualTo(ProjectTestData.ProjectName), "GetProjectByUuid should return the project with the matching uuid");
+            Assert.That(missingProject, Is.Null, "GetProjectByUuid should return null when no project matches the given uuid");
+        }
+
+        [Test]
         public void TestGetProjectByName()
         {
             var userInformation = JsonConvert.DeserializeObject<UserInformation>(ProjectTestData.UserInfoWithProjectsJson);
