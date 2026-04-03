@@ -32,6 +32,13 @@ namespace QarnotSDK
         /// </summary>
         public string Slug => _projectApi.Slug;
 
+        /// <summary>
+        /// State if this project is the default one of the organization
+        /// A default project is automatically selected at task or pool
+        /// creation if none is provided
+        /// </summary>
+        public bool IsDefault => _projectApi.IsDefault;
+
         internal QProject(ProjectApi projectApi)
         {
             _projectApi = projectApi;

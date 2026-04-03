@@ -61,6 +61,10 @@ namespace QarnotSDK.UnitTests.SdkTests.Carbon
             Assert.That(firstProject.Slug, Is.EqualTo(ProjectTestData.ProjectSlug), "Slug of the project should have the value of the slug json field");
             Assert.That(firstProject.Description, Is.EqualTo(ProjectTestData.ProjectDescription), "Description of the project should have the value of the description json field");
             Assert.That(firstProject.OrganizationUuid.ToString(), Is.EqualTo(ProjectTestData.OrganizationUuid), "OrganizationUuid of the project should have the value of the organizationUuid json field");
+            Assert.That(firstProject.IsDefault, Is.EqualTo(true), "Default state of the project should have been retrieved from the isDefault json field");
+
+            var secondProject = userInformation.Projects[1];
+            Assert.That(secondProject.IsDefault, Is.EqualTo(false), "Default state of the project should false by default");
         }
 
         [Test]
@@ -104,6 +108,18 @@ namespace QarnotSDK.UnitTests.SdkTests.Carbon
             Assert.That(foundProject.Uuid.ToString(), Is.EqualTo(ProjectTestData.ProjectUuid), "GetProjectBySlug should return the project with the matching slug");
             Assert.That(missingProject, Is.Null, "GetProjectBySlug should return null when no project matches the given slug");
             Assert.That(caseInsensitiveProject, Is.Not.Null, "GetProjectBySlug should match project slugs case-insensitively");
+        }
+
+        [Test]
+        public void TestGetDefaultProject()
+        {
+            var userInformation = JsonConvert.DeserializeObject<UserInformation>(ProjectTestData.UserInfoWithProjectsJson);
+
+            var foundProject = userInformation.GetDefaultProject();
+
+            Assert.That(foundProject, Is.Not.Null, "GetDefaultProject should return the default project");
+            Assert.That(foundProject.Uuid.ToString(), Is.EqualTo(ProjectTestData.ProjectUuid), "GetDefaultProject should return the correct default projec");
+            Assert.That(foundProject.Name, Is.EqualTo(ProjectTestData.ProjectName), "GetDefaultProject should return the correct default projec");
         }
 
         [Test]
