@@ -1299,5 +1299,14 @@ namespace QarnotSDK {
         }
 
         #endregion
+        
+
+        /// <summary>
+        /// Get the account credits
+        /// </summary>
+        /// <returns>The credits left in the account.</returns>
+        public virtual async Task<Credits> GetCreditsAsync(CancellationToken ct = default) {
+            return await CreditsClient.GetAccountCreditsAsync(ct);
+        }
     }
 }

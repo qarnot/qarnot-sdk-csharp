@@ -1522,6 +1522,14 @@ namespace QarnotSDK {
             return await _api.CarbonClient.GetTaskCarbonFactsAsync(Uuid, referenceDatacenter, ct);
         }
 
+        /// <summary>
+        /// Get the task consumed credits
+        /// </summary>
+        /// <returns>The credits consumed by the task.</returns>
+        public virtual async Task<Credits> GetConsumedCreditsAsync(CancellationToken ct = default) {
+            return await _api.CreditsClient.GetTaskCreditsAsync(Uuid, ct);
+        }
+
         #endregion
 
         #region helpers
