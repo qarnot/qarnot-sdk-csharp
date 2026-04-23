@@ -578,16 +578,23 @@ namespace QarnotSDK {
                     do {
                         s3ListResponse = await s3Client.ListObjectsAsync(s3ListRequest, cancellationToken);
 
-                        var s3DeleteRequest = new Amazon.S3.Model.DeleteObjectsRequest {
-                            BucketName = Shortname,
-                            Quiet = true,
-                            Objects = s3ListResponse.S3Objects.Select(obj => new Amazon.S3.Model.KeyVersion { Key = obj.Key }).ToList()
-                        };
+                        if (s3ListResponse.S3Objects.Any())
+                        {
+                            var s3DeleteRequest = new Amazon.S3.Model.DeleteObjectsRequest {
+                                BucketName = Shortname,
+                                Quiet = true,
+                                Objects = s3ListResponse.S3Objects.Select(obj => new Amazon.S3.Model.KeyVersion { Key = obj.Key }).ToList()
+                            };
 
-                        await s3Client.DeleteObjectsAsync(s3DeleteRequest, cancellationToken);
+                            await s3Client.DeleteObjectsAsync(s3DeleteRequest, cancellationToken);
 
-                        s3ListRequest.Marker = s3ListResponse.NextMarker;
-
+                            s3ListRequest.Marker = s3ListResponse.NextMarker;
+                        }
+                        else
+                        {
+                            // The list is empty, hence nothing needs doing. Even more so, we MUST NOT make the request, as trying to delete
+                            // an empty list is API violation, and we'll get back a BadRequest.
+                        }
                     } while (s3ListResponse.IsTruncated);
                 }
 
