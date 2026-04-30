@@ -12,7 +12,7 @@ variables:
   AVAILABLE_FRAMEWORKS: "net45;netstandard2.0"
   SAMPLES_BRANCH: "master"
   GITLAB_CI: "true"
-  #CI_DEBUG_SERVICES: "true" # to have logs of services in pipeline
+  CI_DEBUG_SERVICES: "false"  # set to true if you want logs of services (here that would be Ceph)
 
 # Other possible variables:
 # * for samples:
@@ -92,28 +92,33 @@ integration_tests_sdk_csharp:
   needs:
     - job: build_release_sdk_csharp
   services:
-    - name: docker.redmont.qarnot.net/ceph-nano
+    - name: docker.redmont.qarnot.net/ceph-s3-box:tentacle
       alias: ceph-storage
       variables:
-        CEPH_DEMO_UID: rgw
-        CEPH_DEMO_ACCESS_KEY: access
-        CEPH_DEMO_SECRET_KEY: secret
+        ACCESS_KEY: access
+        SECRET_KEY: secret
   variables:
     QARNOT_SDK_CSHARP_TESTS_USE_REAL_REMOTE_STORAGE: "true"
-    QARNOT_SDK_CSHARP_TESTS_STORAGE_IP: ceph-storage
-    QARNOT_SDK_CSHARP_TESTS_STORAGE_ADMIN_UID: rgw
     QARNOT_SDK_CSHARP_TESTS_STORAGE_ADMIN_ACCESS_KEY: access
     QARNOT_SDK_CSHARP_TESTS_STORAGE_ADMIN_SECRET_KEY: secret
   before_script:
-    - if [ $CEPH_STORAGE_PORT_8000_TCP_ADDR ]; then export QARNOT_SDK_CSHARP_TESTS_STORAGE_IP=$CEPH_STORAGE_PORT_8000_TCP_ADDR; fi
+    # Radosgw.AdminAPI signs S3 requests including the Host header; using a
+    # hostname instead of an IP causes SignatureDoesNotMatch. Resolve to IP.
+    - export QARNOT_SDK_CSHARP_TESTS_STORAGE_IP="$(getent hosts ceph-storage | awk '{print $1}')"
+    - echo "Ceph endpoint => ${QARNOT_SDK_CSHARP_TESTS_STORAGE_IP}:7480"
+    # ceph-s3-box takes ~2 minutes to initialise; poll RGW until it responds
     - |
-      if [ $CEPH_STORAGE_PORT_8000_TCP_ADDR == "ceph-storage" ] # just in case the variable for the container IP address was not found (because generated variable name convention changed)
-      then
-        apt-get update
-        apt-get install -y iputils-ping
-        export QARNOT_SDK_CSHARP_TESTS_STORAGE_IP=$(ping $QARNOT_SDK_CSHARP_TESTS_STORAGE_IP -c 1 | grep -o -m 1 "[0-9].*\.[0-9]*\.[0-9]*\.[0-9]*") # retrieve ip address of cep container to avoid SignatureDoesNotMatch when using Radosgw.AdminAPI
-      fi
-    - "echo new QARNOT_SDK_CSHARP_TESTS_STORAGE_IP: $QARNOT_SDK_CSHARP_TESTS_STORAGE_IP"
+      WAIT_SECS=0
+      until curl -s "http://${QARNOT_SDK_CSHARP_TESTS_STORAGE_IP}:7480/" > /dev/null 2>&1; do
+        if [ $WAIT_SECS -ge 300 ]; then
+          echo "ERROR: RGW did not become ready after 5 minutes"
+          exit 1
+        fi
+        sleep 10
+        WAIT_SECS=$((WAIT_SECS + 10))
+        echo "  still waiting... (${WAIT_SECS}s)"
+      done
+      echo "RGW ready after ${WAIT_SECS}s"
   script:
     - dotnet test -c Debug --logger:"junit;LogFilePath=report.xml" QarnotSDK.IntegrationTests/QarnotSDK.IntegrationTests.csproj
   after_script:

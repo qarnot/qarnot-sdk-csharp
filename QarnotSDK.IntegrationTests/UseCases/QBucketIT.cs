@@ -27,7 +27,7 @@ namespace QarnotSDK.IntegrationTests
         private InterceptingFakeHttpHandler HttpHandler { get; set; }
 
         [OneTimeSetUp]
-        [Timeout(5000)]
+        [Timeout(20000)]
         public async Task CommonSetup()
         {
             IntegrationTestContext.IgnoreIfNotRealStorage();
@@ -40,7 +40,8 @@ namespace QarnotSDK.IntegrationTests
             }
             var adminAccessKey = Environment.GetEnvironmentVariable("QARNOT_SDK_CSHARP_TESTS_STORAGE_ADMIN_ACCESS_KEY") ?? "access";
             var adminSecretKey = Environment.GetEnvironmentVariable("QARNOT_SDK_CSHARP_TESTS_STORAGE_ADMIN_SECRET_KEY") ?? "secret";
-            var cephClientOptions = new CephClientOptions($"{cephIP}:8000", adminAccessKey, adminSecretKey);
+            var cephPort = Environment.GetEnvironmentVariable("QARNOT_SDK_CSHARP_TESTS_STORAGE_PORT") ?? "7480";
+            var cephClientOptions = new CephClientOptions($"{cephIP}:{cephPort}", adminAccessKey, adminSecretKey);
             TestContext.Progress.WriteLine("Ceph Config: endpoint = {0}, accessKey = {1}, secretKey = {2}", cephClientOptions.RadosGWEndpoint, cephClientOptions.RadosGWAdminAccessKey, cephClientOptions.RadosGWAdminSecretKey);
             var context = new IntegrationTestContext(cephClientOptions);
             await context.ResetStorageAsync();
@@ -74,7 +75,7 @@ namespace QarnotSDK.IntegrationTests
             InitFiles = new ();
             var random = new Random();
             var suffix = random.Next();
-            InitBucketName = $"existingBucket{suffix}";
+            InitBucketName = $"existingbucket{suffix}";
             await _storageClient.PutBucketAsync(InitBucketName);
             var userBuckets = await _storageClient.ListBucketsAsync();
             BucketsInitCount = userBuckets.Buckets.Count;
@@ -125,7 +126,7 @@ namespace QarnotSDK.IntegrationTests
         }
 
         [Test, NonParallelizable, Order(1)]
-        [Timeout(5000)]
+        [Timeout(20000)]
         public async Task BucketShouldBeCreatedAtInitializationIfCreateIsTrue()
         {
             var bucketName = "testbucket";
@@ -141,7 +142,7 @@ namespace QarnotSDK.IntegrationTests
         }
 
         [Test, NonParallelizable, Order(1)]
-        [Timeout(5000)]
+        [Timeout(20000)]
         public async Task BucktCreationShouldNotThrowIfItAlreadyExists()
         {
             var bucketName = InitBucketName;
@@ -154,7 +155,7 @@ namespace QarnotSDK.IntegrationTests
         }
 
         [Test, NonParallelizable, Order(2)]
-        [Timeout(5000)]
+        [Timeout(20000)]
         public async Task BucketShouldNotBeCreatedAtInitializationIfCreateIsFalse()
         {
             var bucketName = "inexistent-bucket";
@@ -166,7 +167,7 @@ namespace QarnotSDK.IntegrationTests
         }
 
         [Test, NonParallelizable, Order(3)]
-        [Timeout(5000)]
+        [Timeout(20000)]
         public async Task UploadStreamShouldUploadStreamInStorageBucketFile()
         {
             var messageToUpload = "message to upload in bucket";
@@ -186,7 +187,7 @@ namespace QarnotSDK.IntegrationTests
         }
 
         [Test, NonParallelizable, Order(4)]
-        [Timeout(5000)]
+        [Timeout(20000)]
         public async Task DownloadStreamShouldRetrieveFileFromStorageBucket()
         {
             var bucket = new QBucket(_connection, InitBucketName, false);
@@ -201,7 +202,7 @@ namespace QarnotSDK.IntegrationTests
         }
 
         [Test, NonParallelizable, Order(5)]
-        [Timeout(5000)]
+        [Timeout(20000)]
         public async Task ListEntriesShouldListFilesAndFoldersInStorageBucket()
         {
             var bucket = new QBucket(_connection, InitBucketName, false);
@@ -236,7 +237,7 @@ namespace QarnotSDK.IntegrationTests
         }
 
         [Test, NonParallelizable, Order(6)]
-        [Timeout(5000)]
+        [Timeout(20000)]
         public async Task ListFilesShouldListFilesInStorageBucket()
         {
             var bucket = new QBucket(_connection, InitBucketName, false);
@@ -247,7 +248,7 @@ namespace QarnotSDK.IntegrationTests
         }
 
         [Test, NonParallelizable, Order(7)]
-        [Timeout(5000)]
+        [Timeout(20000)]
         public async Task DeleteEntryShouldDeleteFileFromStorageBucket()
         {
             var tmpEntry = "tmp";
@@ -265,7 +266,7 @@ namespace QarnotSDK.IntegrationTests
         }
 
         [Test, NonParallelizable, Order(8)]
-        [Timeout(5000)]
+        [Timeout(20000)]
         public async Task BucketShouldBeDeletedFromStorage()
         {
             var bucket = new QBucket(_connection, InitBucketName, false);

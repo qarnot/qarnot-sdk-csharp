@@ -14,7 +14,7 @@ namespace QarnotSDK.IntegrationTests
     {
         private readonly List<(string tenant, string uid)> StorageUsersToKeep = new ()
         {
-            ("rgw", "rgw"), // admin
+            (null, ".admin"), // ceph-s3-box admin
         };
 
         public CephClientOptions CephOptions { get; set; }
@@ -24,16 +24,16 @@ namespace QarnotSDK.IntegrationTests
         {
             CephOptions = options;
             CreateCephConnection(options);
-            var adminUserId = Environment.GetEnvironmentVariable("QARNOT_SDK_CSHARP_TESTS_STORAGE_ADMIN_UID") ?? "rgw";
-            StorageUsersToKeep.Add((null, adminUserId));
+            var adminUserId = Environment.GetEnvironmentVariable("QARNOT_SDK_CSHARP_TESTS_STORAGE_ADMIN_UID");
+            if (adminUserId != null)
+                StorageUsersToKeep.Add((null, adminUserId));
         }
 
         public async Task ResetStorageAsync()
         {
             try
             {
-                var useRemoteStorage = bool.Parse(
-                    Environment.GetEnvironmentVariable("QARNOT_SDK_CSHARP_TESTS_USE_REAL_REMOTE_STORAGE") ?? "false");
+                var useRemoteStorage = IsUsingRealStorage();
 
                 if (useRemoteStorage)
                 {
