@@ -119,11 +119,13 @@ namespace QarnotSDK {
         /// Number of files in this storage.
         /// Use Update or UpdateAsync to refresh.
         /// </summary>
+        [Obsolete("This information is not available for all storage backends. If this information is required, it should be built by iterating the content.")]
         public abstract int FileCount { get; }
         /// <summary>
         /// Size of this storage in bytes.
         /// Use Update or UpdateAsync to refresh.
         /// </summary>
+        [Obsolete("This information is not available for all storage backends. If this information is required, it should be built by iterating the content.")]
         public abstract long UsedSpaceBytes { get; }
         /// <summary>
         /// The storage creation date

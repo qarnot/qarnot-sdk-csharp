@@ -275,12 +275,14 @@ namespace QarnotSDK {
         /// Use Update or UpdateAsync to refresh.
         /// Note: only available for Qarnot's Buckets.
         /// </summary>
+        [Obsolete("This information is not available for all storage backends. If this information is required, it should be built by iterating the content.")]
         public override int FileCount { get { return _fileCount; } }
         /// <summary>
         /// Size of this bucket in bytes.
         /// Use Update or UpdateAsync to refresh.
         /// Note: only available for Qarnot's Buckets.
         /// </summary>
+        [Obsolete("This information is not available for all storage backends. If this information is required, it should be built by iterating the content.")]
         public override long UsedSpaceBytes { get { return _usedSpaceBytes; } }
         /// <summary>
         /// The bucket creation date
