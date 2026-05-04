@@ -114,6 +114,27 @@ namespace QarnotSDK {
         internal List<ProjectApi> _rawProjects { get; set; }
 
         /// <summary>
+        /// Returns the default project or null if not found.
+        /// The default project is the one automatically selected at task
+        /// or pool creation if none is provided
+        /// </summary>
+        public QProject GetDefaultProject()
+        {
+            return Projects.FirstOrDefault(
+                p => p.IsDefault);
+        }
+
+        /// <summary>
+        /// Returns the first project whose uuid matches <paramref name="uuid"/>,
+        /// or null if not found.
+        /// </summary>
+        public QProject GetProjectByUuid(Guid uuid)
+        {
+            return Projects.FirstOrDefault(
+                p => p.Uuid == uuid);
+        }
+
+        /// <summary>
         /// Returns the first project whose name matches <paramref name="name"/> (case-insensitive),
         /// or null if not found.
         /// </summary>

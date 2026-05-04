@@ -31,7 +31,7 @@ namespace QarnotSDK
     }
 
     /// <summary>
-    /// Base class of the Hardware contraints
+    /// Base class of the Hardware constraints
     /// </summary>
     public abstract class HardwareConstraint
     {
@@ -70,7 +70,7 @@ namespace QarnotSDK
         /// <summary>
         /// Set the minimum number of cores
         /// </summary>
-        /// <param name="coreCount">minimum number of core</param>
+        /// <param name="coreCount">minimum number of cores</param>
         public MinimumCoreHardware(int coreCount)
         {
             CoreCount = coreCount;
@@ -93,14 +93,14 @@ namespace QarnotSDK
         /// </summary>
         public override string Discriminator => HardwareConstraintDiscriminators.MaximumCoreHardwareConstraint;
         /// <summary>
-        /// Minimum number of cores
+        /// Maximum number of cores
         /// </summary>
         public int CoreCount { get; set; }
 
         /// <summary>
         /// Set the maximum number of cores
         /// </summary>
-        /// <param name="coreCount">maximum number of core</param>
+        /// <param name="coreCount">maximum number of cores</param>
         public MaximumCoreHardware(int coreCount)
         {
             CoreCount = coreCount;

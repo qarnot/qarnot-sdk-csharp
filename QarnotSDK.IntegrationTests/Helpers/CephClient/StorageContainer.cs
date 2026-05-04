@@ -1,9 +1,9 @@
 namespace QarnotSDK.IntegrationTests
 {
     using System;
-    using System.IO;
     using System.Linq;
     using System.Collections.Generic;
+    using System.Net.Http;
     using System.Threading.Tasks;
     using System.Threading;
     using Docker.DotNet;
@@ -13,17 +13,17 @@ namespace QarnotSDK.IntegrationTests
     public class StorageClusterContainer : IDisposable
     {
         private string StorageClusterContainerID;
-        //private const string CephNanoLocalImageName = "ceph/daemon";
-        private const string CephNanoLocalImageName = "ceph-nano";
-        private const string CephNanoLocalImageTag = "latest";
-        private const string CephNanoFullImageName = $"{CephNanoLocalImageName}:{CephNanoLocalImageTag}";
-        private const string StorageClusterContainerPort = "8000/tcp";
-        private const string StorageClusterHostPort = "8000/tcp";
+        private const string ImageName = "ceph-s3-box";
+        private const string DefaultRelease = "tentacle";
+        private const string ContainerPort = "7480/tcp";
+        private readonly string FullImageName;
         private readonly DockerClient DockerClient;
         private const string DockerSocketPath = "unix:///var/run/docker.sock";
 
         public StorageClusterContainer()
         {
+            var release = Environment.GetEnvironmentVariable("INTEGRATION_TEST_CEPH_RELEASE") ?? DefaultRelease;
+            FullImageName = $"{ImageName}:{release}";
 
             var dockerUser = Environment.GetEnvironmentVariable("INTEGRATION_TEST_DOCKER_USERNAME");
             var dockerPwd = Environment.GetEnvironmentVariable("INTEGRATION_TEST_DOCKER_PASSWORD");
@@ -39,7 +39,6 @@ namespace QarnotSDK.IntegrationTests
                 using var dockerConfig = new DockerClientConfiguration(new Uri(DockerSocketPath));
                 DockerClient = dockerConfig.CreateClient();
             }
-
         }
 
         private async Task<string> GenerateStorageClusterContainerAsync(CancellationToken ct)
@@ -49,31 +48,33 @@ namespace QarnotSDK.IntegrationTests
                 {
                     All = true,
                     Filters = new Dictionary<string, IDictionary<string, bool>>
-                        { ["reference"] = new Dictionary<string, bool> { [CephNanoFullImageName] = true } }
+                        { ["reference"] = new Dictionary<string, bool> { [FullImageName] = true } }
                 },
                 ct);
 
             if (images.Count == 0)
             {
-                var msg = $"No image {CephNanoLocalImageName} found on host, please build it before launching test";
+                var msg = $"No image {FullImageName} found on host, please run container/build.sh before launching tests";
                 Console.Error.WriteLine(msg);
                 Environment.FailFast(msg);
             }
 
+            var accessKey = Environment.GetEnvironmentVariable("QARNOT_SDK_CSHARP_TESTS_STORAGE_ADMIN_ACCESS_KEY") ?? "access";
+            var secretKey = Environment.GetEnvironmentVariable("QARNOT_SDK_CSHARP_TESTS_STORAGE_ADMIN_SECRET_KEY") ?? "secret";
+
             var storageContainer = await DockerClient.Containers.CreateContainerAsync(
                 new CreateContainerParameters()
                 {
-                    Name = "sdk-csharp-test-ceph-cluster",
-                    Image = CephNanoFullImageName,
+                    Name = $"sdk-csharp-test-ceph-cluster",
+                    Image = FullImageName,
                     ExposedPorts = new Dictionary<string, EmptyStruct>
                     {
-                        { StorageClusterContainerPort, default }
+                        { ContainerPort, default }
                     },
                     Env = new List<string>
                     {
-                        "CEPH_DEMO_UID=rgw",
-                        "CEPH_DEMO_ACCESS_KEY=${STORAGE_ADMIN_ACCESS:-access}",
-                        "CEPH_DEMO_SECRET_KEY=${STORAGE_ADMIN_SECRET:-secret}"
+                        $"ACCESS_KEY={accessKey}",
+                        $"SECRET_KEY={secretKey}",
                     },
                     HostConfig = new HostConfig
                     {
@@ -81,13 +82,13 @@ namespace QarnotSDK.IntegrationTests
                         PortBindings = new Dictionary<string, IList<PortBinding>>
                         {
                             {
-                                StorageClusterContainerPort,
+                                ContainerPort,
                                 new List<PortBinding>
                                 {
                                     new PortBinding
                                     {
                                         HostIP = "127.0.0.1",
-                                        HostPort = StorageClusterHostPort,
+                                        HostPort = ContainerPort,
                                     },
                                 }
                             }
@@ -130,86 +131,22 @@ namespace QarnotSDK.IntegrationTests
                         ct);
             }
 
-            string log = string.Empty;
-            var messageToWait = "Running on http://0.0.0.0"; // By default it is http://0.0.0.0:5000 but the default from docker.redmont image is http://0.0.0.0:5001
-            while(!log.Contains(messageToWait, StringComparison.CurrentCultureIgnoreCase))
+            // Poll the RGW S3 endpoint until it responds. Any HTTP response (including
+            // 403 AccessDenied for unsigned requests) means RadosGW is up and ready.
+            using var httpClient = new HttpClient() { Timeout = TimeSpan.FromSeconds(5) };
+            while (true)
             {
                 await Task.Delay(4000, ct);
-                using var multiplexedStream = await DockerClient
-                    .Containers
-                    .GetContainerLogsAsync(
-                        StorageClusterContainerID,
-                        true,
-                        new ContainerLogsParameters()
-                        {
-                            ShowStdout = true, ShowStderr = true, Tail = "50",
-                        },
-                        ct);
-
-                using var stdin = new MemoryStream();
-                using var stdout = new MemoryStream();
-                using var stderr = new MemoryStream();
-                await multiplexedStream.CopyOutputToAsync(stdin, stdout, stderr, ct);
-                stdout.Seek(0, SeekOrigin.Begin);
-                using var stdoutReader = new StreamReader(stdout);
-                log = await stdoutReader.ReadToEndAsync();
+                try
+                {
+                    await httpClient.GetAsync("http://127.0.0.1:7480/", ct);
+                    break;
+                }
+                catch (Exception)
+                {
+                    // RGW not ready yet, keep polling
+                }
             }
-
-            var createAdminUserExec = await DockerClient
-                .Exec
-                .ExecCreateContainerAsync(
-                    StorageClusterContainerID,
-                    new ContainerExecCreateParameters()
-                    {
-                        Cmd = new List<string>()
-                        {
-                            "/usr/bin/radosgw-admin",
-                            "user",
-                            "create",
-                            "--tenant=rgw",
-                            "--uid=rgw",
-                            "--display-name=rgw",
-                            "--admin",
-                            "--key-type=s3",
-                            "--secret-key=secret",
-                            "--access-key=access",
-                        }
-                    },
-                    ct);
-            using var _ = await DockerClient
-                .Exec
-                .StartWithConfigContainerExecAsync(
-                    createAdminUserExec.ID,
-                    new ContainerExecStartParameters(),
-                    ct);
-
-            await Task.Delay(4000, ct);
-
-            var giveUserAdminPermissionsExec = await DockerClient
-                .Exec
-                .ExecCreateContainerAsync(
-                    StorageClusterContainerID,
-                    new ContainerExecCreateParameters()
-                    {
-                        Cmd = new List<string>()
-                        {
-                            "/usr/bin/radosgw-admin",
-                            "caps",
-                            "add",
-                            "--uid=rgw",
-                            "--tenant=rgw",
-                            "--caps='users=*;buckets=*;usage=*'"
-                        }
-                    },
-                    ct);
-            using var __ = await DockerClient
-                .Exec
-                .StartWithConfigContainerExecAsync(
-                    giveUserAdminPermissionsExec.ID,
-                    new ContainerExecStartParameters(),
-                    ct);
-
-            await Task.Delay(2000, ct);
         }
 
         public async Task<string> GetIPAddress(CancellationToken ct = default)

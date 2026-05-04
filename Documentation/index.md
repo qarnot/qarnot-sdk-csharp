@@ -1,4 +1,4 @@
-# Welcome to the QarnotSDK c#
+# Welcome to the QarnotSDK C#
 ---
 
 QarnotSDK is a C# assembly designed to interact with Qarnot cloud computing service.

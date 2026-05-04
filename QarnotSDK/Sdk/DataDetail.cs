@@ -122,7 +122,7 @@ namespace QarnotSDK
 
     /// <summary>
     /// Select applied to the class T
-    /// Only the choosen propertier are going to be retrieved
+    /// Only the chosen properties are going to be retrieved
     /// </summary>
     /// <typeparam name="T">the class on which the selection apply</typeparam>
     public class QSelect<T>

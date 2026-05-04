@@ -17,7 +17,7 @@ namespace QarnotSDK
         /// pool is being submitted, and the information propagated back</remarks>
         public string ActivePolicyName { get; set; } = null;
 
-        /// <summary>Currencly active policy, as returned by the latest update from the API</summary>
+        /// <summary>Currently active policy, as returned by the latest update from the API</summary>
         /// <remarks>This may remain empty or outdated for a few tens of seconds after submission or update, while the
         /// pool is being submitted, and the information propagated back</remarks>
         public ScalingPolicy ActivePolicy { get {
@@ -34,7 +34,7 @@ namespace QarnotSDK
             Policies = policies;
         }
 
-        /// <summary>Equality implementaiton</summary>
+        /// <summary>Equality implementation</summary>
         public bool Equals(Scaling other)
         {
             if (other == null) {
@@ -105,7 +105,7 @@ namespace QarnotSDK
         public override string ToString() => $"<FixedScalingPolicy(Name={Name}, SlotsCount={SlotsCount})>";
 
 
-        /// <summary>Equality implementaiton</summary>
+        /// <summary>Equality implementation</summary>
         public override bool Equals(ScalingPolicy other)
         {
             if (other is FixedScalingPolicy otherFixed) {
@@ -143,8 +143,8 @@ namespace QarnotSDK
         public ulong MinIdleSlots { get; private set; } = 0;
 
         /// <summary>Number of seconds without executing a task after which a slot is considered idle</summary>
-        /// The shorter it is, the faster a pool will scale back down after a load spike. Setting it longer smoothes the
-        /// actual slots count and is useful if the load pattern is oscilating and minimum latency is desired.
+        /// The shorter it is, the faster a pool will scale back down after a load spike. Setting it longer smooths the
+        /// actual slots count and is useful if the load pattern is oscillating and minimum latency is desired.
         public ulong MinIdleTimeSeconds { get; private set; } = 90;
 
         /// <summary>Proportion relative to MaxTotalSlots of new slots that will be provisioned at once when scaling up</summary>
@@ -172,7 +172,7 @@ namespace QarnotSDK
         }
 
 
-        /// <summary>Equality implementaiton</summary>
+        /// <summary>Equality implementation</summary>
         public override bool Equals(ScalingPolicy other)
         {
             if (other is ManagedTasksQueueScalingPolicy otherManaged) {

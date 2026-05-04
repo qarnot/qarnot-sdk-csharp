@@ -51,7 +51,7 @@ namespace QarnotSDK {
     }
 
     /// <summary>
-    /// This class manges tasks life cycle: submission, monitor, delete.
+    /// This class manages tasks life cycle: submission, monitor, delete.
     /// </summary>
     public partial class QTask : AQTask {
 
@@ -1089,7 +1089,7 @@ namespace QarnotSDK {
         }
 
         /// <summary>
-        /// Set the a list of tags for the task.
+        /// Set a list of tags for the task.
         /// </summary>
         /// <param name="tags">Task tags.</param>
         public virtual void SetTags(params String [] tags) {
@@ -1522,6 +1522,14 @@ namespace QarnotSDK {
             return await _api.CarbonClient.GetTaskCarbonFactsAsync(Uuid, referenceDatacenter, ct);
         }
 
+        /// <summary>
+        /// Get the task consumed credits
+        /// </summary>
+        /// <returns>The credits consumed by the task.</returns>
+        public virtual async Task<Credits> GetConsumedCreditsAsync(CancellationToken ct = default) {
+            return await _api.CreditsClient.GetTaskCreditsAsync(Uuid, ct);
+        }
+
         #endregion
 
         #region helpers
@@ -1531,7 +1539,7 @@ namespace QarnotSDK {
         ///  defines a redirection to the ssh port 22. If you need inbound connections on a specific port, you can make a request to the support team.
         /// </summary>
         /// <param name="port">The port you want to access on the master compute node (instance 0).</param>
-        /// <returns>The host and port formated in a string "host:port".</returns>
+        /// <returns>The host and port formatted in a string "host:port".</returns>
         public virtual string GetPublicHostForApplicationPort(UInt16 port) {
             if (Status != null && Status.RunningInstancesInfo != null) {
                 var instances = Status.RunningInstancesInfo.PerRunningInstanceInfo;

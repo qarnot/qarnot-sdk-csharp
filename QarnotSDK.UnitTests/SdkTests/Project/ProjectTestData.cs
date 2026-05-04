@@ -13,7 +13,8 @@ namespace QarnotSDK.UnitTests
             ""name"": """ + ProjectName + @""",
             ""organizationUuid"": """ + OrganizationUuid + @""",
             ""description"": """ + ProjectDescription + @""",
-            ""slug"": """ + ProjectSlug + @"""
+            ""slug"": """ + ProjectSlug + @""",
+            ""isDefault"": true
         }";
 
         public const string UserInfoWithProjectsJson = @"{
@@ -33,7 +34,8 @@ namespace QarnotSDK.UnitTests
                     ""name"": """ + ProjectName + @""",
                     ""organizationUuid"": """ + OrganizationUuid + @""",
                     ""description"": """ + ProjectDescription + @""",
-                    ""slug"": """ + ProjectSlug + @"""
+                    ""slug"": """ + ProjectSlug + @""",
+                    ""isDefault"": true
                 },
                 {
                     ""uuid"": ""bbbbbbbb-cccc-dddd-eeee-ffffffffffff"",
