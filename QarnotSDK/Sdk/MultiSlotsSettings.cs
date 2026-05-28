@@ -18,7 +18,7 @@ namespace QarnotSDK
             SlotsPerNode = slotsPerNode;
         }
 
-        /// <summary>Equality implementaiton</summary>
+        /// <summary>Equality implementation</summary>
         public override bool Equals(object other)
         {
             if (other is MultiSlotsSettings otherMultiSlotsSettings)

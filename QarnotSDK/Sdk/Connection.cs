@@ -181,8 +181,8 @@ namespace QarnotSDK {
         /// <param name="httpClientHandler">An optional HttpClientHandler for the api, if you need to setup a proxy for example.</param>
         /// <param name="retryHandler">An optional IRetryHandler if you need to setup retry for transient error (default to exponential).</param>
         /// <param name="forceStoragePathStyle">An optional forceStoragePathStyle to force path style for request to storage.</param>
-        /// <param name="delegatingHandlers">A list of hander used by the api connection. Default will create a list with the QarnotSrvHandler.</param>
-        /// <param name="dnsSrvLoadBalancingCacheTime">the cache time in minutes before retrieve the values of the QarnotSrvHandler. Unless you have a strong reason, you should keep the default value.</param>
+        /// <param name="delegatingHandlers">A list of handlers used by the API connection. Default will create a list with the QarnotSrvHandler.</param>
+        /// <param name="dnsSrvLoadBalancingCacheTime">The cache time in minutes before retrieving the values of the QarnotSrvHandler. Unless you have a strong reason, you should keep the default value.</param>
         /// <param name="sanitizeBucketPaths">A flag to enable the sanitization of bucket paths (removing leading and duplicated slashes). Enabled by default</param>
         /// <param name="showBucketWarnings">A flag to choose to show or remove the warnings during bucket sanitization. Enabled by default</param>
         public Connection(
@@ -1034,7 +1034,7 @@ namespace QarnotSDK {
         }
 
         /// <summary>
-        /// Retrieve a task list by there name.
+        /// Retrieve a task list by their name.
         /// </summary>
         /// <param name="name">Name of the tasks to find.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
@@ -1052,7 +1052,7 @@ namespace QarnotSDK {
         /// <summary>
         /// Retrieve a task by its shortname.
         /// </summary>
-        /// <param name="shortname">shortname of the task to find, if the task shortname has not bean set, the shortname is equivalent to the uuid.</param>
+        /// <param name="shortname">Shortname of the task to find; if the task shortname has not been set, the shortname is equivalent to the UUID.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>The task object for that shortname or null if it hasn't been found.</returns>
         public virtual async Task<QTask> RetrieveTaskByShortnameAsync(string shortname, CancellationToken cancellationToken = default(CancellationToken)) {
@@ -1072,7 +1072,7 @@ namespace QarnotSDK {
         /// <summary>
         /// Retrieve a task summary by its shortname.
         /// </summary>
-        /// <param name="shortname">Shortname of the task summary to find, if the task shortname has not bean set, the shortname is equivalent to the uuid.</param>
+        /// <param name="shortname">Shortname of the task summary to find; if the task shortname has not been set, the shortname is equivalent to the UUID.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>The task summary object for that shortname or null if it hasn't been found.</returns>
         public virtual async Task<QTaskSummary> RetrieveTaskSummaryByShortnameAsync(string shortname, CancellationToken cancellationToken = default(CancellationToken)) {
@@ -1122,7 +1122,7 @@ namespace QarnotSDK {
         /// <summary>
         /// Retrieve a job by its shortname.
         /// </summary>
-        /// <param name="shortname">shortname of the job to find, or it's uuid if no shortname has bin set.</param>
+        /// <param name="shortname">Shortname of the job to find, or its UUID if no shortname has been set.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>The job object for that shortname or null if it hasn't been found.</returns>
         public virtual async Task<QJob> RetrieveJobByShortnameAsync(string shortname, CancellationToken cancellationToken = default(CancellationToken)) {
@@ -1198,7 +1198,7 @@ namespace QarnotSDK {
         /// <summary>
         /// Retrieve a pool by its shortname.
         /// </summary>
-        /// <param name="shortname">shortname of the pool to find. (if shortname is not set, the shortname is equivalant to the uuid).</param>
+        /// <param name="shortname">Shortname of the pool to find. (If shortname is not set, the shortname is equivalent to the UUID).</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>The pool object for that shortname or null if it hasn't been found.</returns>
         public virtual async Task<QPool> RetrievePoolByShortnameAsync(string shortname, CancellationToken cancellationToken = default(CancellationToken)) {
@@ -1218,7 +1218,7 @@ namespace QarnotSDK {
         /// <summary>
         /// Retrieve a pool summary by its shortname.
         /// </summary>
-        /// <param name="shortname">shortname of the pool summary to find. (if shortname is not set, the shortname is equivalant to the uuid).</param>
+        /// <param name="shortname">Shortname of the pool summary to find. (If shortname is not set, the shortname is equivalent to the UUID).</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns>The pool summary object for that shortname or null if it hasn't been found.</returns>
         public virtual async Task<QPoolSummary> RetrievePoolSummaryByShortnameAsync(string shortname, CancellationToken cancellationToken = default(CancellationToken)) {

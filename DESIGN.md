@@ -125,8 +125,8 @@ You'll follow mostly an Allman style:
 - braces are alone on a new line, at the indentation level of the above line
 - **DO NOT** omit braces for one-line bodies of loops or conditions
 - every function declaration with 3 arguments or more have their arguments wrapped and aligned. Same for call sites, unless arguments are very short (like 3 integers or something like that)
-- be agressive on extracting methods with meaningful names, even if they're called only once
-- also use enough intermediate variables and use explicit names. It's OK if the names are a bit long. Not ridiculously long, but don't shorten them agressively.
+- be aggressive on extracting methods with meaningful names, even if they're called only once
+- also use enough intermediate variables and use explicit names. It's OK if the names are a bit long. Not ridiculously long, but don't shorten them aggressively.
 
 As a general rule, let code breathe. Group lines that go together but feel free to insert a blank like to separate logical groups of lines.
 

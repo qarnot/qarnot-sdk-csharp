@@ -27,7 +27,7 @@ Create a new QTask object and submit it.
 
 All the Qarnot tasks run inside docker containers (linux or windows envs).
 
-A basic task will need a name, a profile (it define the task specificities), and a number of instance to be launch.
+A basic task will need a name, a profile (it defines the task specificities), and a number of instances to launch.
 The generic profile is `docker-batch`. This profile will launch a `ubuntu` docker image that need a shell command to execute.
 
 ```C#
@@ -47,7 +47,7 @@ namespace HelloWorldQarnot
             var myQarnotToken = "secret_token"; // Retrieve your token from https://account.qarnot.com
             var connection = new QarnotSDK.Connection(myQarnotToken);
             var task = connection.CreateTask("HelloWorldTask", "docker-batch", 4);
-            task.Constants.Add("DOCKER_CMD", "echo hello world from node ${INSTANCE_ID}!"); // The docker command to be launch
+            task.Constants.Add("DOCKER_CMD", "echo hello world from node ${INSTANCE_ID}!"); // The docker command to launch
             await task.RunAsync();
             Console.WriteLine(await task.StdoutAsync());
 
@@ -72,7 +72,7 @@ End of the run!
 The SDK C# documentation:
 https://computing.qarnot.com/documentation/sdk-csharp/
 
-The global Qarnot documentation and advance command examples:
+The global Qarnot documentation and advanced command examples:
 https://computing.qarnot.com/en/developers/overview/qarnot-computing-home
 
 Full payload examples:

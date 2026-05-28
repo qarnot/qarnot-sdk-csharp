@@ -403,7 +403,7 @@ namespace QarnotSDK {
 
         /// <summary>
         /// Delete this bucket.
-        /// Note: this method also remove all the objects inside this bucket.
+        /// Note: this method also removes all the objects inside this bucket.
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
@@ -531,7 +531,7 @@ namespace QarnotSDK {
             => await DownloadStreamAsync(remoteFile, pathDirectorySeparator: Path.DirectorySeparatorChar, cancellationToken: cancellationToken);
 
         /// <summary>
-        /// Get a stream on a file in this bucket.(should be disposed)
+        /// Get a stream on a file in this bucket (should be disposed).
         /// </summary>
         /// <param name="remoteFile">The source file name in this bucket.</param>
         /// <param name="pathDirectorySeparator">PathDirectorySeparator char that will change the remote file path to match the folder hierarchy ('/' on linux, '\' on windows).</param>
@@ -555,7 +555,7 @@ namespace QarnotSDK {
 
         /// <summary>
         /// Delete a file or folder in this bucket.
-        /// Note: this method also remove all the sub-objects inside the deleted folder.
+        /// Note: this method also removes all the sub-objects inside the deleted folder.
         /// </summary>
         /// <param name="remotePath">The entry to remove.</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>

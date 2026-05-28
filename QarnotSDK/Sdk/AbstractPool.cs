@@ -98,7 +98,7 @@ namespace QarnotSDK {
         ///  1 - Upload new files on your resource bucket,
         ///  2 - Call this method,
         ///  3 - The new files will appear on all the compute nodes in the $DOCKER_WORKDIR folder
-        /// Note: There is no way to know when the files are effectively transfered. This information is available on the compute node only.
+        /// Note: There is no way to know when the files are effectively transferred. This information is available on the compute node only.
         /// Note: The update is additive only: files deleted from the bucket will NOT be deleted from the pool's resources directory.
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>

@@ -181,7 +181,7 @@ namespace QarnotSDK {
         }
 
         /// <summary>
-        /// Set the a list of tags for the job.
+        /// Set a list of tags for the job.
         /// </summary>
         /// <param name="tags">Job tags.</param>
         public virtual void SetTags(params String[] tags)

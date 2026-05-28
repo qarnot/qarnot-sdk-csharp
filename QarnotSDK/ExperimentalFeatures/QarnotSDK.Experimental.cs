@@ -6,7 +6,7 @@ namespace QarnotSDK.Experimental {
     /// </summary>
     public class BasicTest {
         /// <summary>
-        /// Basic test class methode print the string given and return true
+        /// Basic test class method print the string given and return true
         /// </summary>
         public bool PrintTest(string test) {
             Console.WriteLine(test);
