@@ -1,5 +1,9 @@
 - name: Introduction
   href: intro.md
+- name: v7.0.0
+  href: v7.0.0.md
+- name: v6.4.0
+  href: v6.4.0.md
 - name: v6.3.0
   href: v6.3.0.md
 - name: v6.2.0

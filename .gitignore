@@ -1,9 +1,7 @@
 .vs/
 packages/
-QarnotSDK/obj
-QarnotSDK/bin
-QarnotSDK.IntegrationTests/obj
-QarnotSDK.IntegrationTests/bin
+**/obj
+**/bin
 QarnotSDK.Playground/
 Documentation/Help
 .sonarqube

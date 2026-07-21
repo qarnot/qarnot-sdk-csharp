@@ -18,6 +18,17 @@ namespace QarnotSDK
     /// </remarks>
     public class ForcedNetworkRule
     {
+        /// <param name="inbound">Whether inbound traffic.</param>
+        /// <param name="proto">tcp or udp.</param>
+        /// <param name="to">destination host.</param>
+        /// <param name="port">destination port.</param>
+        /// <param name="publicHost">forced public entrypoint host (for inbound).</param>
+        /// <param name="publicPort">forced public entrypoint port (for inbound).</param>
+        /// <param name="forwarder">forwarder name.</param>
+        /// <param name="priority">for non-inbound, where to place it. If unsure don't override.</param>
+        /// <param name="description">description for human readers.</param>
+        /// <param name="toQbox">if targetting qbox.</param>
+        /// <param name="toPayload">if targetting payload.</param>
         public ForcedNetworkRule(
             bool inbound,
             string proto,

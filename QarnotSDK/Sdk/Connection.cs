@@ -139,12 +139,10 @@ namespace QarnotSDK {
             }
         }
 
-#if (!NET45)
         /// <summary>
         /// An optional HttpClient factory for the S3 storage, if you need to setup a custom certificate or not check the certificate.
         /// </summary>
         public Amazon.Runtime.HttpClientFactory S3HttpClientFactory { get; set; } = null;
-#endif
 
         /// <summary>
         /// Construct a new Connection object using your token.
@@ -780,12 +778,10 @@ namespace QarnotSDK {
                 MaxErrorRetry = MaxStorageRetry
             };
 
-#if (!NET45)
             if (S3HttpClientFactory != null)
             {
                 s3Config.HttpClientFactory = S3HttpClientFactory;
             }
-#endif
 
             // Setup the proxy from the HttpClientHandler
             if (_httpClientHandler != null) {
@@ -913,6 +909,32 @@ namespace QarnotSDK {
             }
 
             return u;
+        }
+
+        /// <summary>
+        /// Retrieve the computing quotas usage of your user.
+        /// </summary>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>The user computing quotas usage.</returns>
+        public virtual async Task<ComputingQuotas.UserComputingQuotas> RetrieveUserComputingQuotasUsageAsync(CancellationToken cancellationToken = default(CancellationToken)) {
+            using (var response = await _client.GetAsync("quotas/computing-quotas/user", cancellationToken))
+            {
+                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
+                return await response.Content.ReadAsAsync<ComputingQuotas.UserComputingQuotas>(cancellationToken);
+            }
+        }
+
+        /// <summary>
+        /// Retrieve the computing quotas usage of your organization, including the per-user running usage breakdown if you have permission to see it.
+        /// </summary>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>The organization computing quotas usage, with per-user breakdown if you have permission (null if you don't).</returns>
+        public virtual async Task<ComputingQuotas.OrganizationComputingQuotasWithUserDetails> RetrieveOrganizationComputingQuotasUsageAsync(CancellationToken cancellationToken = default(CancellationToken)) {
+            using (var response = await _client.GetAsync("quotas/computing-quotas/organization", cancellationToken))
+            {
+                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
+                return await response.Content.ReadAsAsync<ComputingQuotas.OrganizationComputingQuotasWithUserDetails>(cancellationToken);
+            }
         }
 
         /// <summary>

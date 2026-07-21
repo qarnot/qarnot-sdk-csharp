@@ -42,6 +42,9 @@ namespace QarnotSDK {
             && q.RunningInstancesCount == RunningInstancesCount
             && q.RunningCoresCount == RunningCoresCount;
 
+        /// <inheritdoc/>
+        public override int GetHashCode() => HashCode.Combine(MaxInstances, MaxCores, RunningInstancesCount, RunningCoresCount);
+
         /// <summary>ToString</summary>
         public override string ToString() => $"<MaxInstances={MaxInstances}, MaxCores={MaxCores}, RunningInstancesCount={RunningInstancesCount}, RunningCoresCount={RunningCoresCount}>";
     }
@@ -85,6 +88,9 @@ namespace QarnotSDK {
             && q.RunningInstancesCount == RunningInstancesCount
             && q.RunningCoresCount == RunningCoresCount;
 
+        /// <inheritdoc/>
+        public override int GetHashCode() => HashCode.Combine(MaxInstances, MaxCores, RunningInstancesCount, RunningCoresCount);
+
         /// <summary>ToString</summary>
         public override string ToString() => $"<MaxInstances={MaxInstances}, MaxCores={MaxCores}, RunningInstancesCount={RunningInstancesCount}, RunningCoresCount={RunningCoresCount}>";
     }
@@ -114,6 +120,9 @@ namespace QarnotSDK {
             && obj is UserReservedSchedulingQuota q
             && q.ReservationName == ReservationName
             && q.MachineKey == MachineKey;
+
+        /// <inheritdoc/>
+        public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), ReservationName, MachineKey);
 
         /// <summary>ToString</summary>
         public override string ToString() => $"<ReservationName={ReservationName}, MachineKey={MachineKey}, MaxInstances={MaxInstances}, MaxCores={MaxCores}, RunningInstancesCount={RunningInstancesCount}, RunningCoresCount={RunningCoresCount}>";
@@ -145,8 +154,86 @@ namespace QarnotSDK {
             && q.ReservationName == ReservationName
             && q.MachineKey == MachineKey;
 
+        /// <inheritdoc/>
+        public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), ReservationName, MachineKey);
+
         /// <summary>ToString</summary>
         public override string ToString() => $"<ReservationName={ReservationName}, MachineKey={MachineKey}, MaxInstances={MaxInstances}, MaxCores={MaxCores}, RunningInstancesCount={RunningInstancesCount}, RunningCoresCount={RunningCoresCount}>";
+    }
+
+    /// <summary>
+    /// Running quota usage of a single user within an organization.
+    /// </summary>
+    public class UserInOrganizationRunningCounts
+    {
+        /// <summary>
+        /// Current number of running instances scheduled with a Flex scheduling type for the user.
+        /// </summary>
+        public int RunningFlexInstanceCount { get; set; }
+
+        /// <summary>
+        /// Current number of running cores scheduled with a Flex scheduling type for the user.
+        /// </summary>
+        public int RunningFlexCoreCount { get; set; }
+
+        /// <summary>
+        /// Current number of running instances scheduled with an OnDemand scheduling type for the user.
+        /// </summary>
+        public int RunningOnDemandInstanceCount { get; set; }
+
+        /// <summary>
+        /// Current number of running cores scheduled with an OnDemand scheduling type for the user.
+        /// </summary>
+        public int RunningOnDemandCoreCount { get; set; }
+
+        /// <summary>
+        /// Current number of running instances for the user on each reserved machine, keyed by the reserved machine key.
+        /// </summary>
+        public Dictionary<string, int> RunningReservedInstanceCount { get; set; }
+
+        /// <summary>
+        /// Current number of running cores for the user on each reserved machine, keyed by the reserved machine key.
+        /// </summary>
+        public Dictionary<string, int> RunningReservedCoreCount { get; set; }
+
+        /// <summary>
+        /// Current number of running (instances, cores) for the user on each reserved machine, keyed by the reserved machine key.
+        /// </summary>
+        public Dictionary<string, (int, int)> RunningReservedCounts =>
+            RunningReservedInstanceCount.ToDictionary(
+                kvp => kvp.Key,
+                kvp => (kvp.Value, RunningReservedCoreCount.GetValueOrDefault(kvp.Key))
+            );
+
+
+        internal UserInOrganizationRunningCounts() {
+        }
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj) => obj is UserInOrganizationRunningCounts c
+            && c.RunningFlexInstanceCount == RunningFlexInstanceCount
+            && c.RunningFlexCoreCount == RunningFlexCoreCount
+            && c.RunningOnDemandInstanceCount == RunningOnDemandInstanceCount
+            && c.RunningOnDemandCoreCount == RunningOnDemandCoreCount
+            && Utils.DictionaryEquals(RunningReservedInstanceCount, c.RunningReservedInstanceCount)
+            && Utils.DictionaryEquals(RunningReservedCoreCount, c.RunningReservedCoreCount);
+
+        /// <inheritdoc/>
+        public override int GetHashCode() => HashCode.Combine(
+            RunningFlexInstanceCount,
+            RunningFlexCoreCount,
+            RunningOnDemandInstanceCount,
+            RunningOnDemandCoreCount,
+            Utils.DictionaryHashCode(RunningReservedInstanceCount),
+            Utils.DictionaryHashCode(RunningReservedCoreCount));
+
+        /// <summary>ToString</summary>
+        public override string ToString()
+        {
+            string reservedInstances = RunningReservedInstanceCount != null ? $"{{{String.Join(",", RunningReservedInstanceCount)}}}" : "null";
+            string reservedCores = RunningReservedCoreCount != null ? $"{{{String.Join(",", RunningReservedCoreCount)}}}" : "null";
+            return $"<UserInOrganizationRunningCounts : RunningFlexInstanceCount={RunningFlexInstanceCount}, RunningFlexCoreCount={RunningFlexCoreCount}, RunningOnDemandInstanceCount={RunningOnDemandInstanceCount}, RunningOnDemandCoreCount={RunningOnDemandCoreCount}, RunningReservedInstanceCount={reservedInstances}, RunningReservedCoreCount={reservedCores}>";
+        }
     }
 
 
@@ -184,6 +271,9 @@ namespace QarnotSDK {
                 && UserSchedulingQuotas.Equals(OnDemand, ucq?.OnDemand)
                 && Enumerable.SequenceEqual(ucq?.Reserved?.OrderBy(q => q.MachineKey), Reserved?.OrderBy(q => q.MachineKey));
 
+            /// <inheritdoc/>
+            public override int GetHashCode() => HashCode.Combine(Flex, OnDemand, Utils.SequenceHashCode(Reserved?.OrderBy(q => q.MachineKey)));
+
             /// <summary>ToString</summary>
             public override string ToString()
             {
@@ -193,15 +283,10 @@ namespace QarnotSDK {
         }
 
         /// <summary>
-        /// Organization computing quota description
+        /// Common organization computing quota description, without organization or user identifying information.
         /// </summary>
-        public class OrganizationComputingQuotas
+        public abstract class OrganizationComputingQuotasBase
         {
-            /// <summary>
-            /// Name of the organization
-            /// </summary>
-            public string Name { get; set; }
-
             /// <summary>
             /// Computing quota description for instances with a Flex scheduling type.
             /// </summary>
@@ -217,20 +302,78 @@ namespace QarnotSDK {
             /// </summary>
             public List<OrganizationReservedSchedulingQuota> Reserved { get; set; }
 
-            internal OrganizationComputingQuotas() {
+            internal OrganizationComputingQuotasBase() {
             }
 
             /// <inheritdoc/>
-            public override bool Equals(object obj) => obj is OrganizationComputingQuotas ocq
+            public override bool Equals(object obj) => obj is OrganizationComputingQuotasBase ocq
                 && OrganizationSchedulingQuotas.Equals(Flex, ocq?.Flex)
                 && OrganizationSchedulingQuotas.Equals(OnDemand, ocq?.OnDemand)
                 && Enumerable.SequenceEqual(ocq?.Reserved?.OrderBy(q => q.MachineKey), Reserved?.OrderBy(q => q.MachineKey));
+
+            /// <inheritdoc/>
+            public override int GetHashCode() => HashCode.Combine(Flex, OnDemand, Utils.SequenceHashCode(Reserved?.OrderBy(q => q.MachineKey)));
 
             /// <summary>ToString</summary>
             public override string ToString()
             {
                 String reservedString = Reserved != null ? $"[{String.Join(",", Reserved)}]" : "null";
-                return $"<OrganizationComputingQuotas : Flex={Flex?.ToString()}, OnDemand={OnDemand?.ToString()}, Reserved={reservedString}>";
+                return $"Flex={Flex?.ToString()}, OnDemand={OnDemand?.ToString()}, Reserved={reservedString}";
+            }
+        }
+
+        /// <summary>
+        /// Organization computing quota description
+        /// </summary>
+        public class OrganizationComputingQuotas : OrganizationComputingQuotasBase
+        {
+            /// <summary>
+            /// Name of the organization
+            /// </summary>
+            public string Name { get; set; }
+
+            internal OrganizationComputingQuotas() {
+            }
+
+            /// <inheritdoc/>
+            public override bool Equals(object obj) => base.Equals(obj)
+                && obj is OrganizationComputingQuotas ocq
+                && ocq.Name == Name;
+
+            /// <inheritdoc/>
+            public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Name);
+
+            /// <summary>ToString</summary>
+            public override string ToString() => $"<OrganizationComputingQuotas : Name={Name}, {base.ToString()}>";
+        }
+
+        /// <summary>
+        /// Organization computing quota description, with an optional per-user running usage breakdown.
+        /// </summary>
+        public class OrganizationComputingQuotasWithUserDetails : OrganizationComputingQuotasBase
+        {
+            /// <summary>
+            /// Running quota usage of each user of the organization, keyed by the user's email.
+            /// Null when the requester is not allowed to read the organization quota details.
+            /// </summary>
+            public Dictionary<string, UserInOrganizationRunningCounts> RunningCountsPerUser { get; set; }
+
+            internal OrganizationComputingQuotasWithUserDetails() {
+            }
+
+            /// <inheritdoc/>
+            public override bool Equals(object obj) => base.Equals(obj)
+                && obj is OrganizationComputingQuotasWithUserDetails ocq
+                && Utils.DictionaryEquals(RunningCountsPerUser, ocq.RunningCountsPerUser);
+
+            /// <inheritdoc/>
+            public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Utils.DictionaryHashCode(RunningCountsPerUser));
+
+            /// <summary>ToString</summary>
+            public override string ToString()
+            {
+                string runningCounts = RunningCountsPerUser != null ? $"{{{String.Join(",", RunningCountsPerUser)}}}" : "null";
+                return $"<OrganizationComputingQuotasWithUserDetails : {base.ToString()}, RunningCountsPerUser={runningCounts}>";
             }
         }
 
@@ -251,6 +394,9 @@ namespace QarnotSDK {
         public override bool Equals(object obj) => obj is ComputingQuotas cq
             && UserComputingQuotas.Equals(User, cq?.User)
             && OrganizationComputingQuotas.Equals(Organization, cq?.Organization);
+
+        /// <inheritdoc/>
+        public override int GetHashCode() => HashCode.Combine(User, Organization);
 
         /// <summary>ToString</summary>
         public override string ToString() => $"<ComputingQuotas :\nUser={User?.ToString()}\nOrganization={Organization?.ToString()}>";

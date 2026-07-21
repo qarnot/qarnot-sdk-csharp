@@ -11,33 +11,6 @@ namespace QarnotSDK
     /// <summary>
     /// public CustomCertificateAutorisationClientHandler compatibility constructor
     /// </summary>
-#if (NET45)
-    // NETFRAMEWORK compatibility, remove this condition if the project pass to NETFRAMEWORK 4.7.1
-    public abstract class ACustomCAClientHandler : WebRequestHandler
-    {
-        /// <summary>
-        /// Add the ServerCertificateValidationCallback function
-        /// </summary>
-        protected void AddValidityFunction()
-        {
-            // NETFRAMEWORK compatibility, remove this condition if the project pass to NETFRAMEWORK 4.7.1
-            ClientCertificateOptions = ClientCertificateOption.Manual;
-            ServerCertificateValidationCallback = (sender, apiCertificate, chain, sslPolicyErrors) =>
-            {
-                return ValidateCertificateChain(new X509Certificate2(apiCertificate), chain);
-            };
-        }
-
-        /// <summary>
-        /// Validate certificate function
-        /// </summary>
-        /// <param name="apiCertificate">The final certificate</param>
-        /// <param name="chain">The certificate chain</param>
-        /// <returns>the chain is valid</returns>
-        public abstract bool ValidateCertificateChain(X509Certificate2 apiCertificate, X509Chain chain);
-
-    }
-#else
     public abstract class ACustomCAClientHandler : HttpClientHandler
     {
         /// <summary>
@@ -45,7 +18,6 @@ namespace QarnotSDK
         /// </summary>
         protected void AddValidityFunction()
         {
-            // NETFRAMEWORK compatibility, remove this condition if the project pass to NETFRAMEWORK 4.7.1
             ClientCertificateOptions = ClientCertificateOption.Manual;
             ServerCertificateCustomValidationCallback = (sender, apiCertificate, chain, sslPolicyErrors) =>
             {
@@ -62,7 +34,6 @@ namespace QarnotSDK
         public abstract bool ValidateCertificateChain(X509Certificate2 apiCertificate, X509Chain chain);
 
     }
-#endif
 
     /// <summary>
     /// public CustomCertificateAutorisationClientHandler constructor

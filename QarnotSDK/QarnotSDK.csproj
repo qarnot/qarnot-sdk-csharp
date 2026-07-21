@@ -2,17 +2,20 @@
   <PropertyGroup>
     <RootNamespace>QarnotSDK</RootNamespace>
     <AssemblyName>QarnotSDK</AssemblyName>
-    <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>14.0</LangVersion>
     <OutputType>Library</OutputType>
     <Authors>Qarnot computing</Authors>
     <Description>SDK allowing the use of the Qarnot platform.</Description>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsNotAsErrors>CS0612;CS0618;CS0619;CS0672;CS0809;CS8002</WarningsNotAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug</OutputPath>
-    <DefineConstants>DEBUG;NETSTANDARD;NETSTANDARD2_0</DefineConstants>
+    <DefineConstants>DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
@@ -26,35 +29,23 @@
     <ConsolePause>false</ConsolePause>
     <DocumentationFile>bin\Release\QarnotSDK.XML</DocumentationFile>
   </PropertyGroup>
-  <!-- Common Deps -->
+  <!-- Deps -->
   <ItemGroup>
     <PackageReference Include="AWSSDK.Core" Version="3.7.500.95" />
     <PackageReference Include="AWSSDK.S3" Version="3.7.511.5" />
-    <PackageReference Include="IPNetwork2" Version="2.6.427" AllowedVersion="[2.6.427,)" />
+    <PackageReference Include="IPNetwork2" Version="2.6.427" />
+    <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.7" />
     <PackageReference Include="GitVersion.MSBuild" Version="5.12.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="QarnotDnsSrvTools" Version="1.0.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-    <Reference Include="System.Web" />
-  </ItemGroup>
-  <!-- NET45 Deps -->
-  <ItemGroup Condition="'$(TargetFramework)' == 'net45'">
-    <PackageReference Include="IPNetwork2" Version="2.6.427" /> <!-- Last version compatible with net45-->
-    <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.3" />
-    <Reference Include="System.Net.Http.WebRequest" />
-    <Reference Include="System.Net.Http" />
-  </ItemGroup>
-  <!-- NETSTANDARD 2.0 Deps -->
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-    <PackageReference Include="IPNetwork2" Version="3.0.667" />
-    <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.7" />
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+    <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
   </ItemGroup>
   <!-- Config files -->
   <ItemGroup>
-    <None Include="app.config" />
-    <None Include="packages.config" />
     <None Include="QarnotSDK.nuspec" />
   </ItemGroup>
 </Project>

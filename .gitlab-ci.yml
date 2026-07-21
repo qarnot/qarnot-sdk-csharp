@@ -1,5 +1,5 @@
 image:
-  mcr.microsoft.com/dotnet/sdk:8.0
+  mcr.microsoft.com/dotnet/sdk:10.0
 
 stages:
   - build
@@ -9,7 +9,7 @@ stages:
 
 variables:
   MAKEFILE_PATH: $CI_PROJECT_DIR/build/Makefile
-  AVAILABLE_FRAMEWORKS: "net45;netstandard2.0"
+  AVAILABLE_FRAMEWORKS: "netstandard2.1"
   SAMPLES_BRANCH: "master"
   GITLAB_CI: "true"
   CI_DEBUG_SERVICES: "false"  # set to true if you want logs of services (here that would be Ceph)
