@@ -27,7 +27,7 @@ dotnet test -c Debug QarnotSDK.UnitTests/QarnotSDK.UnitTests.csproj --filter "Fu
 dotnet test -c Debug QarnotSDK.IntegrationTests/QarnotSDK.IntegrationTests.csproj
 ```
 
-CI image: `mcr.microsoft.com/dotnet/sdk:8.0`. CI is GitLab (`.gitlab-ci.yml`).
+CI image: `mcr.microsoft.com/dotnet/sdk:10.0`. CI is GitLab (`.gitlab-ci.yml`).
 
 ## Architecture
 
