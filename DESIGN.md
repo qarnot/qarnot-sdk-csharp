@@ -4,7 +4,7 @@ This file shows a general design of this code, and provides general guidance to 
 
 ## Project overview
 
-C# SDK for the Qarnot cloud computing platform. Published as a NuGet package (`QarnotSDK`). Targets `netstandard2.0`. Uses Newtonsoft.Json for serialization and AWS SDK for S3-compatible storage.
+C# SDK for the Qarnot cloud computing platform. Published as a NuGet package (`QarnotSDK`). Targets `netstandard2.1`. Uses Newtonsoft.Json for serialization and AWS SDK for S3-compatible storage.
 
 ## Build and test commands
 

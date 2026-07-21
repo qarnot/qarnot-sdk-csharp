@@ -13,7 +13,7 @@ namespace QarnotSDK
         /// </summary>
         public UnsafeClientHandler() : base()
         {
-            ServerCertificateCustomValidationCallback = delegate { return true; };
+            ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
         }
     }
 }

@@ -2,7 +2,7 @@
   <PropertyGroup>
     <RootNamespace>QarnotSDK</RootNamespace>
     <AssemblyName>QarnotSDK</AssemblyName>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <OutputType>Library</OutputType>
     <Authors>Qarnot computing</Authors>
     <Description>SDK allowing the use of the Qarnot platform.</Description>
