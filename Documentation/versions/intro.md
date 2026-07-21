@@ -6,6 +6,8 @@
 ## Version History
 
 Select a version below to see a description of its changes.
+* [Version 7.0.0](v7.0.0.md)
+* [Version 6.4.0](v6.4.0.md)
 * [Version 6.3.0](v6.3.0.md)
 * [Version 6.2.0](v6.2.0.md)
 * [Version 6.1.0](v6.1.0.md)

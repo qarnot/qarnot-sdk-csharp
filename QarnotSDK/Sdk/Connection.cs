@@ -139,12 +139,10 @@ namespace QarnotSDK {
             }
         }
 
-#if (!NET45)
         /// <summary>
         /// An optional HttpClient factory for the S3 storage, if you need to setup a custom certificate or not check the certificate.
         /// </summary>
         public Amazon.Runtime.HttpClientFactory S3HttpClientFactory { get; set; } = null;
-#endif
 
         /// <summary>
         /// Construct a new Connection object using your token.
@@ -780,12 +778,10 @@ namespace QarnotSDK {
                 MaxErrorRetry = MaxStorageRetry
             };
 
-#if (!NET45)
             if (S3HttpClientFactory != null)
             {
                 s3Config.HttpClientFactory = S3HttpClientFactory;
             }
-#endif
 
             // Setup the proxy from the HttpClientHandler
             if (_httpClientHandler != null) {

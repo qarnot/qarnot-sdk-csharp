@@ -1,6 +1,5 @@
 namespace QarnotSDK
 {
-    using System;
     using System.Net.Http;
 
     /// <summary>
@@ -11,9 +10,6 @@ namespace QarnotSDK
         /// <summary>
         /// UnsafeS3HttpClientFactory Constructor.
         /// </summary>
-#if (NET45)
-        [Obsolete("This function is not implemented in the .NET framework 4.5")]
-#endif
         public UnsafeS3HttpClientFactory()
         {}
 

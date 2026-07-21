@@ -1,6 +1,5 @@
 namespace QarnotSDK
 {
-    using System;
     using System.Collections.Generic;
     using System.Net.Http;
     using System.Security.Cryptography.X509Certificates;
@@ -17,9 +16,6 @@ namespace QarnotSDK
         /// Create a storage httpClient custom certificate check factory from certificate objects
         /// </summary>
         /// <param name="localCertificates">X509 certificates objects</param>
-#if (NET45)
-        [Obsolete("This function is not implemented in the .NET framework 4.5")]
-#endif
         public CustomCAS3HttpClientFactory(IEnumerable<X509Certificate2> localCertificates)
         {
             certificateList = localCertificates;
@@ -30,9 +26,6 @@ namespace QarnotSDK
         /// Create a storage httpClient custom certificate check factory from certificate path
         /// </summary>
         /// <param name="localCertPaths">Certificates paths.</param>
-#if (NET45)
-        [Obsolete("This function is not implemented in the .NET framework 4.5")]
-#endif
         public CustomCAS3HttpClientFactory(params string[] localCertPaths)
         {
             certificateList = null;
