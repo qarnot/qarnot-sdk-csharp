@@ -10,7 +10,7 @@ namespace QarnotSDK
     public enum SchedulingType
     {
         /// <summary>
-        /// Flex scheduling type which is the default scheduling, with low priority & low pricing
+        /// Flex scheduling type which is the default scheduling, with low priority and low pricing
         /// </summary>
         Flex,
 
