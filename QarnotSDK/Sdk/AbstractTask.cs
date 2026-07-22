@@ -137,6 +137,7 @@ namespace QarnotSDK {
         /// <param name="blacklist">Specify a custom blacklist for this snapshot.</param>
         /// <param name="bucket">Specify the name of a custom bucket this snapshot.</param>
         /// <param name="bucketPrefix">Specify a custom prefix for this snapshot.</param>
+        /// <param name="destinationStream">A stream to copy the response to</param>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>
         /// <returns></returns>
         public virtual async Task<string> TriggerSnapshotAsync(string whitelist = null, string blacklist = null, QBucket bucket = null, string bucketPrefix = null, Stream destinationStream = null, CancellationToken cancellationToken = default(CancellationToken)) {
