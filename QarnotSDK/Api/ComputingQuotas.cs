@@ -42,6 +42,9 @@ namespace QarnotSDK {
             && q.RunningInstancesCount == RunningInstancesCount
             && q.RunningCoresCount == RunningCoresCount;
 
+        /// <inheritdoc/>
+        public override int GetHashCode() => HashCode.Combine(MaxInstances, MaxCores, RunningInstancesCount, RunningCoresCount);
+
         /// <summary>ToString</summary>
         public override string ToString() => $"<MaxInstances={MaxInstances}, MaxCores={MaxCores}, RunningInstancesCount={RunningInstancesCount}, RunningCoresCount={RunningCoresCount}>";
     }
@@ -85,6 +88,9 @@ namespace QarnotSDK {
             && q.RunningInstancesCount == RunningInstancesCount
             && q.RunningCoresCount == RunningCoresCount;
 
+        /// <inheritdoc/>
+        public override int GetHashCode() => HashCode.Combine(MaxInstances, MaxCores, RunningInstancesCount, RunningCoresCount);
+
         /// <summary>ToString</summary>
         public override string ToString() => $"<MaxInstances={MaxInstances}, MaxCores={MaxCores}, RunningInstancesCount={RunningInstancesCount}, RunningCoresCount={RunningCoresCount}>";
     }
@@ -115,6 +121,9 @@ namespace QarnotSDK {
             && q.ReservationName == ReservationName
             && q.MachineKey == MachineKey;
 
+        /// <inheritdoc/>
+        public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), ReservationName, MachineKey);
+
         /// <summary>ToString</summary>
         public override string ToString() => $"<ReservationName={ReservationName}, MachineKey={MachineKey}, MaxInstances={MaxInstances}, MaxCores={MaxCores}, RunningInstancesCount={RunningInstancesCount}, RunningCoresCount={RunningCoresCount}>";
     }
@@ -144,6 +153,9 @@ namespace QarnotSDK {
             && obj is OrganizationReservedSchedulingQuota q
             && q.ReservationName == ReservationName
             && q.MachineKey == MachineKey;
+
+        /// <inheritdoc/>
+        public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), ReservationName, MachineKey);
 
         /// <summary>ToString</summary>
         public override string ToString() => $"<ReservationName={ReservationName}, MachineKey={MachineKey}, MaxInstances={MaxInstances}, MaxCores={MaxCores}, RunningInstancesCount={RunningInstancesCount}, RunningCoresCount={RunningCoresCount}>";
@@ -259,6 +271,9 @@ namespace QarnotSDK {
                 && UserSchedulingQuotas.Equals(OnDemand, ucq?.OnDemand)
                 && Enumerable.SequenceEqual(ucq?.Reserved?.OrderBy(q => q.MachineKey), Reserved?.OrderBy(q => q.MachineKey));
 
+            /// <inheritdoc/>
+            public override int GetHashCode() => HashCode.Combine(Flex, OnDemand, Reserved?.Count ?? 0);
+
             /// <summary>ToString</summary>
             public override string ToString()
             {
@@ -330,6 +345,9 @@ namespace QarnotSDK {
                 && obj is OrganizationComputingQuotas ocq
                 && ocq.Name == Name;
 
+            /// <inheritdoc/>
+            public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Name);
+
             /// <summary>ToString</summary>
             public override string ToString() => $"<OrganizationComputingQuotas : Name={Name}, {base.ToString()}>";
         }
@@ -381,6 +399,9 @@ namespace QarnotSDK {
         public override bool Equals(object obj) => obj is ComputingQuotas cq
             && UserComputingQuotas.Equals(User, cq?.User)
             && OrganizationComputingQuotas.Equals(Organization, cq?.Organization);
+
+        /// <inheritdoc/>
+        public override int GetHashCode() => HashCode.Combine(User, Organization);
 
         /// <summary>ToString</summary>
         public override string ToString() => $"<ComputingQuotas :\nUser={User?.ToString()}\nOrganization={Organization?.ToString()}>";
