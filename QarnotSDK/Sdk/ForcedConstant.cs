@@ -6,6 +6,10 @@ namespace QarnotSDK {
     /// </summary>
     public class ForcedConstant
     {
+        /// <param name="constantName">Name of the constant.</param>
+        /// <param name="forcedValue">Value to set as a forced override.</param>
+        /// <param name="forceExportInEnvironment">Whether to force constant export to the compute environment.</param>
+        /// <param name="access">Access (RO / RW) to override, or null to keep exiting value.</param>
         public ForcedConstant(
                 string constantName = null,
                 string forcedValue = null,
