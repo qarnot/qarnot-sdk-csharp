@@ -649,6 +649,126 @@ namespace QarnotSDK.UnitTests
         }
 
         [Test]
+        public async Task RetrieveUserComputingQuotasUsageAsyncShouldGetOnCorrectEndpoint()
+        {
+            HttpHandler.ResponseBody = ConnectionTestsData.GetUserComputingQuotasUsage;
+
+            await Api.RetrieveUserComputingQuotasUsageAsync();
+
+            Assert.True(HttpHandler.ParsedRequests.Any(req =>
+                req.Method.Contains("GET", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ComputeUrl}/quotas/computing-quotas/user", StringComparison.InvariantCultureIgnoreCase)));
+        }
+
+        [Test]
+        public async Task RetrieveUserComputingQuotasUsageAsyncCheckReturnBodyInfos()
+        {
+            HttpHandler.ResponseBody = ConnectionTestsData.GetUserComputingQuotasUsage;
+
+            ComputingQuotas.UserComputingQuotas quotas = await Api.RetrieveUserComputingQuotasUsageAsync();
+
+            var expected = new ComputingQuotas.UserComputingQuotas()
+            {
+                Flex = new()
+                {
+                    MaxInstances = 200,
+                    MaxCores = 201,
+                    RunningInstancesCount = 202,
+                    RunningCoresCount = 203
+                },
+                OnDemand = new()
+                {
+                    MaxInstances = 204,
+                    MaxCores = 205,
+                    RunningInstancesCount = 206,
+                    RunningCoresCount = 207
+                },
+                Reserved = new()
+                {
+                    new UserReservedSchedulingQuota()
+                    {
+                        MachineKey = "user-machine",
+                        ReservationName = "user-reservation",
+                        MaxInstances = 208,
+                        MaxCores = 209,
+                        RunningInstancesCount = 210,
+                        RunningCoresCount = 211
+                    }
+                }
+            };
+
+            Assert.AreEqual(expected, quotas, "user computing quotas usage deserialization should return same result");
+        }
+
+        [Test]
+        public async Task RetrieveOrganizationComputingQuotasUsageAsyncShouldGetOnCorrectEndpoint()
+        {
+            HttpHandler.ResponseBody = ConnectionTestsData.GetOrganizationComputingQuotasUsage;
+
+            await Api.RetrieveOrganizationComputingQuotasUsageAsync();
+
+            Assert.True(HttpHandler.ParsedRequests.Any(req =>
+                req.Method.Contains("GET", StringComparison.InvariantCultureIgnoreCase) &&
+                req.Uri.Contains($"{ComputeUrl}/quotas/computing-quotas/organization", StringComparison.InvariantCultureIgnoreCase)));
+        }
+
+        [Test]
+        public async Task RetrieveOrganizationComputingQuotasUsageAsyncCheckReturnBodyInfos()
+        {
+            HttpHandler.ResponseBody = ConnectionTestsData.GetOrganizationComputingQuotasUsage;
+
+            ComputingQuotas.OrganizationComputingQuotasWithUserDetails quotas = await Api.RetrieveOrganizationComputingQuotasUsageAsync();
+
+            var expected = new ComputingQuotas.OrganizationComputingQuotasWithUserDetails()
+            {
+                Flex = new()
+                {
+                    MaxInstances = 300,
+                    MaxCores = 301,
+                    RunningInstancesCount = 302,
+                    RunningCoresCount = 303
+                },
+                OnDemand = new()
+                {
+                    MaxInstances = 304,
+                    MaxCores = 305,
+                    RunningInstancesCount = 306,
+                    RunningCoresCount = 307
+                },
+                Reserved = new()
+                {
+                    new OrganizationReservedSchedulingQuota()
+                    {
+                        MachineKey = "org-machine",
+                        ReservationName = "org-reservation",
+                        MaxInstances = 308,
+                        MaxCores = 309,
+                        RunningInstancesCount = 310,
+                        RunningCoresCount = 311
+                    }
+                },
+                RunningCountsPerUser = new()
+                {
+                    ["user@mail.com"] = new()
+                    {
+                        RunningFlexInstanceCount = 1,
+                        RunningFlexCoreCount = 2,
+                        RunningOnDemandInstanceCount = 3,
+                        RunningOnDemandCoreCount = 4,
+                        RunningReservedInstanceCount = new() { ["org-machine"] = 5 },
+                        RunningReservedCoreCount = new() { ["org-machine"] = 6 }
+                    }
+                }
+            };
+
+            Assert.AreEqual(expected, quotas, "organization computing quotas usage deserialization should return same result");
+
+            // The organization usage endpoint returns no name.
+            Assert.IsInstanceOf<ComputingQuotas.OrganizationComputingQuotasBase>(quotas);
+            Assert.IsFalse(quotas is ComputingQuotas.OrganizationComputingQuotas, "usage variant should not be the named organization type");
+        }
+
+        [Test]
         public async Task RetrieveUserHardwareConstraintsAsyncShouldGetOnCorrectEndpoint()
         {
             HttpHandler.ResponseBody = ConnectionTestsData.GetUserHardwareConstraints;

@@ -124,6 +124,21 @@ namespace QarnotSDK {
             return path.Trim();
         }
 
+        /// <summary>
+        /// Compare two dictionaries for value equality (same keys, and values equal according to the default equality comparer).
+        /// </summary>
+        internal static bool DictionaryEquals<TKey, TValue>(Dictionary<TKey, TValue> a, Dictionary<TKey, TValue> b)
+        {
+            if (ReferenceEquals(a, b)) return true;
+            if (a == null || b == null) return false;
+            if (a.Count != b.Count) return false;
+            foreach (var kv in a)
+            {
+                if (!b.TryGetValue(kv.Key, out var v) || !EqualityComparer<TValue>.Default.Equals(kv.Value, v)) return false;
+            }
+            return true;
+        }
+
         internal static IEnumerable<MediaTypeFormatter> GetCustomResponseFormatter()
         {
             return new JsonMediaTypeFormatter[]

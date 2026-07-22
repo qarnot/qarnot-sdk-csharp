@@ -912,6 +912,32 @@ namespace QarnotSDK {
         }
 
         /// <summary>
+        /// Retrieve the computing quotas usage of your user.
+        /// </summary>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>The user computing quotas usage.</returns>
+        public virtual async Task<ComputingQuotas.UserComputingQuotas> RetrieveUserComputingQuotasUsageAsync(CancellationToken cancellationToken = default(CancellationToken)) {
+            using (var response = await _client.GetAsync("quotas/computing-quotas/user", cancellationToken))
+            {
+                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
+                return await response.Content.ReadAsAsync<ComputingQuotas.UserComputingQuotas>(cancellationToken);
+            }
+        }
+
+        /// <summary>
+        /// Retrieve the computing quotas usage of your organization, including the per-user running usage breakdown if you have permission to see it.
+        /// </summary>
+        /// <param name="cancellationToken">Optional token to cancel the request.</param>
+        /// <returns>The organization computing quotas usage, with per-user breakdown if you have permission (null if you don't).</returns>
+        public virtual async Task<ComputingQuotas.OrganizationComputingQuotasWithUserDetails> RetrieveOrganizationComputingQuotasUsageAsync(CancellationToken cancellationToken = default(CancellationToken)) {
+            using (var response = await _client.GetAsync("quotas/computing-quotas/organization", cancellationToken))
+            {
+                await Utils.LookForErrorAndThrowAsync(_client, response, cancellationToken);
+                return await response.Content.ReadAsAsync<ComputingQuotas.OrganizationComputingQuotasWithUserDetails>(cancellationToken);
+            }
+        }
+
+        /// <summary>
         /// Retrieve the list of profiles available for your account.
         /// </summary>
         /// <param name="cancellationToken">Optional token to cancel the request.</param>

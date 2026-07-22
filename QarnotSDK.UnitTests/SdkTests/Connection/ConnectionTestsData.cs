@@ -115,6 +115,66 @@ namespace QarnotSDK.UnitTests
             }
         }";
 
+        public const string GetUserComputingQuotasUsage = @"{
+            ""flex"": {
+                ""maxInstances"": 200,
+                ""maxCores"": 201,
+                ""runningInstancesCount"": 202,
+                ""runningCoresCount"": 203
+            },
+            ""onDemand"": {
+                ""maxInstances"": 204,
+                ""maxCores"": 205,
+                ""runningInstancesCount"": 206,
+                ""runningCoresCount"": 207
+            },
+            ""reserved"": [
+                {
+                    ""machineKey"": ""user-machine"",
+                    ""reservationName"": ""user-reservation"",
+                    ""maxInstances"": 208,
+                    ""maxCores"": 209,
+                    ""runningInstancesCount"": 210,
+                    ""runningCoresCount"": 211
+                }
+            ]
+        }";
+
+        public const string GetOrganizationComputingQuotasUsage = @"{
+            ""flex"": {
+                ""maxInstances"": 300,
+                ""maxCores"": 301,
+                ""runningInstancesCount"": 302,
+                ""runningCoresCount"": 303
+            },
+            ""onDemand"": {
+                ""maxInstances"": 304,
+                ""maxCores"": 305,
+                ""runningInstancesCount"": 306,
+                ""runningCoresCount"": 307
+            },
+            ""reserved"": [
+                {
+                    ""machineKey"": ""org-machine"",
+                    ""reservationName"": ""org-reservation"",
+                    ""maxInstances"": 308,
+                    ""maxCores"": 309,
+                    ""runningInstancesCount"": 310,
+                    ""runningCoresCount"": 311
+                }
+            ],
+            ""runningCountsPerUser"": {
+                ""user@mail.com"": {
+                    ""runningFlexInstanceCount"": 1,
+                    ""runningFlexCoreCount"": 2,
+                    ""runningOnDemandInstanceCount"": 3,
+                    ""runningOnDemandCoreCount"": 4,
+                    ""runningReservedInstanceCount"": { ""org-machine"": 5 },
+                    ""runningReservedCoreCount"": { ""org-machine"": 6 }
+                }
+            }
+        }";
+
         public const string GetUserHardwareConstraints = @"{
             ""data"":
             [
