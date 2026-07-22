@@ -7,6 +7,8 @@
     <OutputType>Library</OutputType>
     <Authors>Qarnot computing</Authors>
     <Description>SDK allowing the use of the Qarnot platform.</Description>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsNotAsErrors>CS0612;CS0618;CS0619;CS0672;CS0809</WarningsNotAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
