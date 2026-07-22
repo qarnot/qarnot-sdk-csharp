@@ -139,6 +139,36 @@ namespace QarnotSDK {
             return true;
         }
 
+        /// <summary>
+        /// Compute an order-independent hash code for a dictionary (XOR is commutative and associative so enumeration order
+        /// does not matter), consistent with <see cref="DictionaryEquals{TKey, TValue}"/>.
+        /// </summary>
+        internal static int DictionaryHashCode<TKey, TValue>(Dictionary<TKey, TValue> dict)
+        {
+            if (dict == null) return 0;
+            int hash = dict.Count;
+            foreach (var kv in dict)
+            {
+                hash ^= HashCode.Combine(kv.Key, kv.Value);
+            }
+            return hash;
+        }
+
+        /// <summary>
+        /// Compute an order-dependent hash code for a sequence, consistent with an <c>Enumerable.SequenceEqual</c>
+        /// comparison performed on the same sequence (e.g. after an identical <c>OrderBy</c>).
+        /// </summary>
+        internal static int SequenceHashCode<T>(IEnumerable<T> seq)
+        {
+            if (seq == null) return 0;
+            int hash = 17;
+            foreach (var item in seq)
+            {
+                hash = HashCode.Combine(hash, item);
+            }
+            return hash;
+        }
+
         internal static IEnumerable<MediaTypeFormatter> GetCustomResponseFormatter()
         {
             return new JsonMediaTypeFormatter[]

@@ -224,8 +224,8 @@ namespace QarnotSDK {
             RunningFlexCoreCount,
             RunningOnDemandInstanceCount,
             RunningOnDemandCoreCount,
-            RunningReservedInstanceCount?.Count ?? 0,
-            RunningReservedCoreCount?.Count ?? 0);
+            Utils.DictionaryHashCode(RunningReservedInstanceCount),
+            Utils.DictionaryHashCode(RunningReservedCoreCount));
 
         /// <summary>ToString</summary>
         public override string ToString()
@@ -272,7 +272,7 @@ namespace QarnotSDK {
                 && Enumerable.SequenceEqual(ucq?.Reserved?.OrderBy(q => q.MachineKey), Reserved?.OrderBy(q => q.MachineKey));
 
             /// <inheritdoc/>
-            public override int GetHashCode() => HashCode.Combine(Flex, OnDemand, Reserved?.Count ?? 0);
+            public override int GetHashCode() => HashCode.Combine(Flex, OnDemand, Utils.SequenceHashCode(Reserved?.OrderBy(q => q.MachineKey)));
 
             /// <summary>ToString</summary>
             public override string ToString()
@@ -312,12 +312,7 @@ namespace QarnotSDK {
                 && Enumerable.SequenceEqual(ocq?.Reserved?.OrderBy(q => q.MachineKey), Reserved?.OrderBy(q => q.MachineKey));
 
             /// <inheritdoc/>
-            public override int GetHashCode() => HashCode.Combine(
-                Flex?.MaxInstances ?? 0,
-                Flex?.MaxCores ?? 0,
-                OnDemand?.MaxInstances ?? 0,
-                OnDemand?.MaxCores ?? 0,
-                Reserved?.Count ?? 0);
+            public override int GetHashCode() => HashCode.Combine(Flex, OnDemand, Utils.SequenceHashCode(Reserved?.OrderBy(q => q.MachineKey)));
 
             /// <summary>ToString</summary>
             public override string ToString()
@@ -372,7 +367,7 @@ namespace QarnotSDK {
                 && Utils.DictionaryEquals(RunningCountsPerUser, ocq.RunningCountsPerUser);
 
             /// <inheritdoc/>
-            public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), RunningCountsPerUser?.Count ?? 0);
+            public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Utils.DictionaryHashCode(RunningCountsPerUser));
 
             /// <summary>ToString</summary>
             public override string ToString()
