@@ -39,7 +39,6 @@
     </PackageReference>
     <PackageReference Include="QarnotDnsSrvTools" Version="1.0.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-    <Reference Include="System.Web" />
   </ItemGroup>
   <!-- Config files -->
   <ItemGroup>
