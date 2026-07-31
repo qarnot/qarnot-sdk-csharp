@@ -4,9 +4,41 @@ using System.Linq;
 namespace QarnotSDK {
 
     /// <summary>
+    /// Current running usage, in instances and in cores.
+    /// </summary>
+    public class RunningCounts
+    {
+        /// <summary>
+        /// Current number of running instances. Never negative.
+        /// </summary>
+        /// <example>1</example>
+        public int RunningInstancesCount { get; set; }
+
+        /// <summary>
+        /// Current number of running cores. Never negative.
+        /// </summary>
+        /// <example>8</example>
+        public int RunningCoresCount { get; set; }
+
+        internal RunningCounts() {
+        }
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj) => obj is RunningCounts c
+            && c.RunningInstancesCount == RunningInstancesCount
+            && c.RunningCoresCount == RunningCoresCount;
+
+        /// <inheritdoc/>
+        public override int GetHashCode() => HashCode.Combine(RunningInstancesCount, RunningCoresCount);
+
+        /// <summary>ToString</summary>
+        public override string ToString() => $"<RunningInstancesCount={RunningInstancesCount}, RunningCoresCount={RunningCoresCount}>";
+    }
+
+    /// <summary>
     /// User computing quota description
     /// </summary>
-    public class UserSchedulingQuotas
+    public class UserSchedulingQuotas : RunningCounts
     {
         /// <summary>
         /// Maximum number of instances of the given scheduling type that the user can run simultaneously.
@@ -20,30 +52,17 @@ namespace QarnotSDK {
         /// <example>512</example>
         public int MaxCores { get; set; }
 
-        /// <summary>
-        /// Current number of running instances scheduled for the given scheduling type for the user.
-        /// </summary>
-        /// <example>1</example>
-        public int RunningInstancesCount { get; set; }
-
-        /// <summary>
-        /// Current number of running cores scheduled for the given scheduling type for the user.
-        /// </summary>
-        /// <example>1</example>
-        public int RunningCoresCount { get; set; }
-
         internal UserSchedulingQuotas() {
         }
 
         /// <inheritdoc/>
-        public override bool Equals(object obj) => obj is UserSchedulingQuotas q
+        public override bool Equals(object obj) => base.Equals(obj)
+            && obj is UserSchedulingQuotas q
             && q.MaxInstances == MaxInstances
-            && q.MaxCores == MaxCores
-            && q.RunningInstancesCount == RunningInstancesCount
-            && q.RunningCoresCount == RunningCoresCount;
+            && q.MaxCores == MaxCores;
 
         /// <inheritdoc/>
-        public override int GetHashCode() => HashCode.Combine(MaxInstances, MaxCores, RunningInstancesCount, RunningCoresCount);
+        public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), MaxInstances, MaxCores);
 
         /// <summary>ToString</summary>
         public override string ToString() => $"<MaxInstances={MaxInstances}, MaxCores={MaxCores}, RunningInstancesCount={RunningInstancesCount}, RunningCoresCount={RunningCoresCount}>";
@@ -52,7 +71,7 @@ namespace QarnotSDK {
     /// <summary>
     /// Organization computing quota description
     /// </summary>
-    public class OrganizationSchedulingQuotas
+    public class OrganizationSchedulingQuotas : RunningCounts
     {
         /// <summary>
         /// Maximum number of instances of the given scheduling type that the users in the organization can run simultaneously.
@@ -66,30 +85,17 @@ namespace QarnotSDK {
         /// <example>512</example>
         public int MaxCores { get; set; }
 
-        /// <summary>
-        /// Current number of running instances scheduled for the given scheduling type within an organization.
-        /// </summary>
-        /// <example>1</example>
-        public int RunningInstancesCount { get; set; }
-
-        /// <summary>
-        /// Current number of running cores scheduled for the given scheduling type within an organization.
-        /// </summary>
-        /// <example>1</example>
-        public int RunningCoresCount { get; set; }
-
         internal OrganizationSchedulingQuotas() {
         }
 
         /// <inheritdoc/>
-        public override bool Equals(object obj) => obj is OrganizationSchedulingQuotas q
+        public override bool Equals(object obj) => base.Equals(obj)
+            && obj is OrganizationSchedulingQuotas q
             && q.MaxInstances == MaxInstances
-            && q.MaxCores == MaxCores
-            && q.RunningInstancesCount == RunningInstancesCount
-            && q.RunningCoresCount == RunningCoresCount;
+            && q.MaxCores == MaxCores;
 
         /// <inheritdoc/>
-        public override int GetHashCode() => HashCode.Combine(MaxInstances, MaxCores, RunningInstancesCount, RunningCoresCount);
+        public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), MaxInstances, MaxCores);
 
         /// <summary>ToString</summary>
         public override string ToString() => $"<MaxInstances={MaxInstances}, MaxCores={MaxCores}, RunningInstancesCount={RunningInstancesCount}, RunningCoresCount={RunningCoresCount}>";
@@ -162,77 +168,74 @@ namespace QarnotSDK {
     }
 
     /// <summary>
-    /// Running quota usage of a single user within an organization.
+    /// Organization computing quota description for a scheduling type, with the breakdown of the current running
+    /// usage among the users of the organization.
     /// </summary>
-    public class UserInOrganizationRunningCounts
+    public class OrganizationSchedulingQuotasWithUserDetails : OrganizationSchedulingQuotas
     {
         /// <summary>
-        /// Current number of running instances scheduled with a Flex scheduling type for the user.
+        /// Current running usage of this scheduling type by each user of the organization, keyed by the user's
+        /// email. Only reports the users who count in the organization's quota, and only those with something
+        /// running with this scheduling type: a user with nothing running here is absent, so the same user may
+        /// well appear in one scheduling type and not in another.
+        ///
+        /// Null when the requester is not allowed to read the organization quota details, whereas an empty
+        /// dictionary means that no user of the organization has anything running with this scheduling type.
         /// </summary>
-        public int RunningFlexInstanceCount { get; set; }
+        public Dictionary<string, RunningCounts> RunningCountsPerUser { get; set; }
 
-        /// <summary>
-        /// Current number of running cores scheduled with a Flex scheduling type for the user.
-        /// </summary>
-        public int RunningFlexCoreCount { get; set; }
-
-        /// <summary>
-        /// Current number of running instances scheduled with an OnDemand scheduling type for the user.
-        /// </summary>
-        public int RunningOnDemandInstanceCount { get; set; }
-
-        /// <summary>
-        /// Current number of running cores scheduled with an OnDemand scheduling type for the user.
-        /// </summary>
-        public int RunningOnDemandCoreCount { get; set; }
-
-        /// <summary>
-        /// Current number of running instances for the user on each reserved machine, keyed by the reserved machine key.
-        /// </summary>
-        public Dictionary<string, int> RunningReservedInstanceCount { get; set; }
-
-        /// <summary>
-        /// Current number of running cores for the user on each reserved machine, keyed by the reserved machine key.
-        /// </summary>
-        public Dictionary<string, int> RunningReservedCoreCount { get; set; }
-
-        /// <summary>
-        /// Current number of running (instances, cores) for the user on each reserved machine, keyed by the reserved machine key.
-        /// </summary>
-        public Dictionary<string, (int, int)> RunningReservedCounts =>
-            RunningReservedInstanceCount.ToDictionary(
-                kvp => kvp.Key,
-                kvp => (kvp.Value, RunningReservedCoreCount.GetValueOrDefault(kvp.Key))
-            );
-
-
-        internal UserInOrganizationRunningCounts() {
+        internal OrganizationSchedulingQuotasWithUserDetails() {
         }
 
         /// <inheritdoc/>
-        public override bool Equals(object obj) => obj is UserInOrganizationRunningCounts c
-            && c.RunningFlexInstanceCount == RunningFlexInstanceCount
-            && c.RunningFlexCoreCount == RunningFlexCoreCount
-            && c.RunningOnDemandInstanceCount == RunningOnDemandInstanceCount
-            && c.RunningOnDemandCoreCount == RunningOnDemandCoreCount
-            && Utils.DictionaryEquals(RunningReservedInstanceCount, c.RunningReservedInstanceCount)
-            && Utils.DictionaryEquals(RunningReservedCoreCount, c.RunningReservedCoreCount);
+        public override bool Equals(object obj) => base.Equals(obj)
+            && obj is OrganizationSchedulingQuotasWithUserDetails q
+            && Utils.DictionaryEquals(RunningCountsPerUser, q.RunningCountsPerUser);
 
         /// <inheritdoc/>
-        public override int GetHashCode() => HashCode.Combine(
-            RunningFlexInstanceCount,
-            RunningFlexCoreCount,
-            RunningOnDemandInstanceCount,
-            RunningOnDemandCoreCount,
-            Utils.DictionaryHashCode(RunningReservedInstanceCount),
-            Utils.DictionaryHashCode(RunningReservedCoreCount));
+        public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Utils.DictionaryHashCode(RunningCountsPerUser));
 
         /// <summary>ToString</summary>
         public override string ToString()
         {
-            string reservedInstances = RunningReservedInstanceCount != null ? $"{{{String.Join(",", RunningReservedInstanceCount)}}}" : "null";
-            string reservedCores = RunningReservedCoreCount != null ? $"{{{String.Join(",", RunningReservedCoreCount)}}}" : "null";
-            return $"<UserInOrganizationRunningCounts : RunningFlexInstanceCount={RunningFlexInstanceCount}, RunningFlexCoreCount={RunningFlexCoreCount}, RunningOnDemandInstanceCount={RunningOnDemandInstanceCount}, RunningOnDemandCoreCount={RunningOnDemandCoreCount}, RunningReservedInstanceCount={reservedInstances}, RunningReservedCoreCount={reservedCores}>";
+            string runningCounts = RunningCountsPerUser != null ? $"{{{String.Join(",", RunningCountsPerUser)}}}" : "null";
+            return $"<MaxInstances={MaxInstances}, MaxCores={MaxCores}, RunningInstancesCount={RunningInstancesCount}, RunningCoresCount={RunningCoresCount}, RunningCountsPerUser={runningCounts}>";
+        }
+    }
+
+    /// <summary>
+    /// Computing quota for a specific reserved machine of the organization, with the breakdown of the current
+    /// running usage among the users of the organization.
+    /// </summary>
+    public class OrganizationReservedSchedulingQuotaWithUserDetails : OrganizationReservedSchedulingQuota
+    {
+        /// <summary>
+        /// Current running usage of this reservation by each user of the organization, keyed by the user's email.
+        /// Only reports the users who count in the organization's quota, and only those with something running on
+        /// this reservation: a user with nothing running here is absent, so the same user may well appear on one
+        /// reservation and not on another.
+        ///
+        /// Null when the requester is not allowed to read the organization quota details, whereas an empty
+        /// dictionary means that no user of the organization has anything running on this reservation.
+        /// </summary>
+        public Dictionary<string, RunningCounts> RunningCountsPerUser { get; set; }
+
+        internal OrganizationReservedSchedulingQuotaWithUserDetails() {
+        }
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj) => base.Equals(obj)
+            && obj is OrganizationReservedSchedulingQuotaWithUserDetails q
+            && Utils.DictionaryEquals(RunningCountsPerUser, q.RunningCountsPerUser);
+
+        /// <inheritdoc/>
+        public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Utils.DictionaryHashCode(RunningCountsPerUser));
+
+        /// <summary>ToString</summary>
+        public override string ToString()
+        {
+            string runningCounts = RunningCountsPerUser != null ? $"{{{String.Join(",", RunningCountsPerUser)}}}" : "null";
+            return $"<ReservationName={ReservationName}, MachineKey={MachineKey}, MaxInstances={MaxInstances}, MaxCores={MaxCores}, RunningInstancesCount={RunningInstancesCount}, RunningCoresCount={RunningCoresCount}, RunningCountsPerUser={runningCounts}>";
         }
     }
 
@@ -269,7 +272,7 @@ namespace QarnotSDK {
             public override bool Equals(object obj) => obj is UserComputingQuotas ucq
                 && UserSchedulingQuotas.Equals(Flex, ucq?.Flex)
                 && UserSchedulingQuotas.Equals(OnDemand, ucq?.OnDemand)
-                && Enumerable.SequenceEqual(ucq?.Reserved?.OrderBy(q => q.MachineKey), Reserved?.OrderBy(q => q.MachineKey));
+                && Utils.SequenceEquals(ucq?.Reserved?.OrderBy(q => q.MachineKey), Reserved?.OrderBy(q => q.MachineKey));
 
             /// <inheritdoc/>
             public override int GetHashCode() => HashCode.Combine(Flex, OnDemand, Utils.SequenceHashCode(Reserved?.OrderBy(q => q.MachineKey)));
@@ -309,7 +312,7 @@ namespace QarnotSDK {
             public override bool Equals(object obj) => obj is OrganizationComputingQuotasBase ocq
                 && OrganizationSchedulingQuotas.Equals(Flex, ocq?.Flex)
                 && OrganizationSchedulingQuotas.Equals(OnDemand, ocq?.OnDemand)
-                && Enumerable.SequenceEqual(ocq?.Reserved?.OrderBy(q => q.MachineKey), Reserved?.OrderBy(q => q.MachineKey));
+                && Utils.SequenceEquals(ocq?.Reserved?.OrderBy(q => q.MachineKey), Reserved?.OrderBy(q => q.MachineKey));
 
             /// <inheritdoc/>
             public override int GetHashCode() => HashCode.Combine(Flex, OnDemand, Utils.SequenceHashCode(Reserved?.OrderBy(q => q.MachineKey)));
@@ -348,32 +351,43 @@ namespace QarnotSDK {
         }
 
         /// <summary>
-        /// Organization computing quota description, with an optional per-user running usage breakdown.
+        /// Organization computing quota description, where each scheduling type and each reservation comes with an
+        /// optional breakdown of its current running usage among the users of the organization.
         /// </summary>
-        public class OrganizationComputingQuotasWithUserDetails : OrganizationComputingQuotasBase
+        public class OrganizationComputingQuotasWithUserDetails
         {
             /// <summary>
-            /// Running quota usage of each user of the organization, keyed by the user's email.
-            /// Null when the requester is not allowed to read the organization quota details.
+            /// Computing quota description for instances with a Flex scheduling type.
             /// </summary>
-            public Dictionary<string, UserInOrganizationRunningCounts> RunningCountsPerUser { get; set; }
+            public OrganizationSchedulingQuotasWithUserDetails Flex { get; set; }
+
+            /// <summary>
+            /// Computing quota description for instances with a OnDemand scheduling type.
+            /// </summary>
+            public OrganizationSchedulingQuotasWithUserDetails OnDemand { get; set; }
+
+            /// <summary>
+            /// List of quotas for each of the organization's reserved machines.
+            /// </summary>
+            public List<OrganizationReservedSchedulingQuotaWithUserDetails> Reserved { get; set; }
 
             internal OrganizationComputingQuotasWithUserDetails() {
             }
 
             /// <inheritdoc/>
-            public override bool Equals(object obj) => base.Equals(obj)
-                && obj is OrganizationComputingQuotasWithUserDetails ocq
-                && Utils.DictionaryEquals(RunningCountsPerUser, ocq.RunningCountsPerUser);
+            public override bool Equals(object obj) => obj is OrganizationComputingQuotasWithUserDetails ocq
+                && OrganizationSchedulingQuotasWithUserDetails.Equals(Flex, ocq.Flex)
+                && OrganizationSchedulingQuotasWithUserDetails.Equals(OnDemand, ocq.OnDemand)
+                && Utils.SequenceEquals(ocq.Reserved?.OrderBy(q => q.MachineKey), Reserved?.OrderBy(q => q.MachineKey));
 
             /// <inheritdoc/>
-            public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Utils.DictionaryHashCode(RunningCountsPerUser));
+            public override int GetHashCode() => HashCode.Combine(Flex, OnDemand, Utils.SequenceHashCode(Reserved?.OrderBy(q => q.MachineKey)));
 
             /// <summary>ToString</summary>
             public override string ToString()
             {
-                string runningCounts = RunningCountsPerUser != null ? $"{{{String.Join(",", RunningCountsPerUser)}}}" : "null";
-                return $"<OrganizationComputingQuotasWithUserDetails : {base.ToString()}, RunningCountsPerUser={runningCounts}>";
+                String reservedString = Reserved != null ? $"[{String.Join(",", Reserved)}]" : "null";
+                return $"<OrganizationComputingQuotasWithUserDetails : Flex={Flex?.ToString()}, OnDemand={OnDemand?.ToString()}, Reserved={reservedString}>";
             }
         }
 

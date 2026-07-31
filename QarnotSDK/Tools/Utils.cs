@@ -155,6 +155,17 @@ namespace QarnotSDK {
         }
 
         /// <summary>
+        /// Compare two sequences for element-wise equality, treating a null sequence as unequal to a non-null one
+        /// instead of throwing (unlike a bare <c>Enumerable.SequenceEqual</c>).
+        /// </summary>
+        internal static bool SequenceEquals<T>(IEnumerable<T> a, IEnumerable<T> b)
+        {
+            if (ReferenceEquals(a, b)) return true;
+            if (a == null || b == null) return false;
+            return Enumerable.SequenceEqual(a, b);
+        }
+
+        /// <summary>
         /// Compute an order-dependent hash code for a sequence, consistent with an <c>Enumerable.SequenceEqual</c>
         /// comparison performed on the same sequence (e.g. after an identical <c>OrderBy</c>).
         /// </summary>
