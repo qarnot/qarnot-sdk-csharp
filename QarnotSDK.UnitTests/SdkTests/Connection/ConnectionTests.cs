@@ -726,46 +726,130 @@ namespace QarnotSDK.UnitTests
                     MaxInstances = 300,
                     MaxCores = 301,
                     RunningInstancesCount = 302,
-                    RunningCoresCount = 303
+                    RunningCoresCount = 303,
+                    RunningCountsPerUser = new()
+                    {
+                        ["user@mail.com"] = new()
+                        {
+                            RunningInstancesCount = 1,
+                            RunningCoresCount = 2
+                        },
+                        ["other@mail.com"] = new()
+                        {
+                            RunningInstancesCount = 7,
+                            RunningCoresCount = 8
+                        }
+                    }
                 },
                 OnDemand = new()
                 {
                     MaxInstances = 304,
                     MaxCores = 305,
                     RunningInstancesCount = 306,
-                    RunningCoresCount = 307
+                    RunningCoresCount = 307,
+                    RunningCountsPerUser = new()
+                    {
+                        ["user@mail.com"] = new()
+                        {
+                            RunningInstancesCount = 3,
+                            RunningCoresCount = 4
+                        }
+                    }
                 },
                 Reserved = new()
                 {
-                    new OrganizationReservedSchedulingQuota()
+                    new OrganizationReservedSchedulingQuotaWithUserDetails()
                     {
                         MachineKey = "org-machine",
                         ReservationName = "org-reservation",
                         MaxInstances = 308,
                         MaxCores = 309,
                         RunningInstancesCount = 310,
-                        RunningCoresCount = 311
-                    }
-                },
-                RunningCountsPerUser = new()
-                {
-                    ["user@mail.com"] = new()
-                    {
-                        RunningFlexInstanceCount = 1,
-                        RunningFlexCoreCount = 2,
-                        RunningOnDemandInstanceCount = 3,
-                        RunningOnDemandCoreCount = 4,
-                        RunningReservedInstanceCount = new() { ["org-machine"] = 5 },
-                        RunningReservedCoreCount = new() { ["org-machine"] = 6 }
+                        RunningCoresCount = 311,
+                        RunningCountsPerUser = new()
+                        {
+                            ["user@mail.com"] = new()
+                            {
+                                RunningInstancesCount = 5,
+                                RunningCoresCount = 6
+                            }
+                        }
                     }
                 }
             };
 
             Assert.AreEqual(expected, quotas, "organization computing quotas usage deserialization should return same result");
 
-            // The organization usage endpoint returns no name.
-            Assert.IsInstanceOf<ComputingQuotas.OrganizationComputingQuotasBase>(quotas);
-            Assert.IsFalse(quotas is ComputingQuotas.OrganizationComputingQuotas, "usage variant should not be the named organization type");
+            // The organization usage endpoint returns no name, but wider quotas carrying the per-user breakdown.
+            Assert.IsInstanceOf<OrganizationSchedulingQuotasWithUserDetails>(quotas.Flex);
+            Assert.IsInstanceOf<OrganizationReservedSchedulingQuotaWithUserDetails>(quotas.Reserved[0]);
+        }
+
+        [Test]
+        public async Task RetrieveOrganizationComputingQuotasUsageAsyncHandlesNullRunningCountsPerUser()
+        {
+            HttpHandler.ResponseBody = ConnectionTestsData.GetOrganizationComputingQuotasUsageWithoutUserDetails;
+
+            ComputingQuotas.OrganizationComputingQuotasWithUserDetails quotas = await Api.RetrieveOrganizationComputingQuotasUsageAsync();
+
+            // A lack of permission is a property of the whole response: every breakdown is null at once.
+            Assert.IsNull(quotas.Flex.RunningCountsPerUser, "a null runningCountsPerUser means the requester has no permission to read it");
+            Assert.IsNull(quotas.OnDemand.RunningCountsPerUser);
+            Assert.IsNull(quotas.Reserved[0].RunningCountsPerUser);
+
+            // The rest of the payload must still be readable, and comparing it must not throw.
+            Assert.AreEqual(302, quotas.Flex.RunningInstancesCount);
+            Assert.AreEqual("org-reservation", quotas.Reserved[0].ReservationName);
+            Assert.AreEqual(quotas, quotas);
+            Assert.AreEqual(quotas.GetHashCode(), quotas.GetHashCode());
+        }
+
+        [Test]
+        public async Task RetrieveOrganizationComputingQuotasUsageAsyncHandlesEmptyRunningCountsPerUserAndNullReserved()
+        {
+            HttpHandler.ResponseBody = ConnectionTestsData.GetOrganizationComputingQuotasUsageWithNoRunningUsers;
+
+            ComputingQuotas.OrganizationComputingQuotasWithUserDetails quotas = await Api.RetrieveOrganizationComputingQuotasUsageAsync();
+
+            Assert.IsNotNull(quotas.Flex.RunningCountsPerUser, "an empty runningCountsPerUser means nothing is running, not a lack of permission");
+            Assert.IsEmpty(quotas.Flex.RunningCountsPerUser);
+            Assert.IsEmpty(quotas.OnDemand.RunningCountsPerUser);
+            Assert.IsNull(quotas.Reserved, "the organization has no reservation");
+
+            // A null Reserved list used to make Equals throw an ArgumentNullException.
+            Assert.AreEqual(quotas, quotas);
+            Assert.AreEqual(quotas.GetHashCode(), quotas.GetHashCode());
+        }
+
+        [Test]
+        public async Task RetrieveOrganizationComputingQuotasUsageAsyncReservationCarriesItsOwnRunningCountsPerUser()
+        {
+            HttpHandler.ResponseBody = ConnectionTestsData.GetOrganizationComputingQuotasUsage;
+
+            ComputingQuotas.OrganizationComputingQuotasWithUserDetails quotas = await Api.RetrieveOrganizationComputingQuotasUsageAsync();
+
+            // A reservation's own identity and its per-user running counts are read off the same object, with no
+            // lookup against another list.
+            OrganizationReservedSchedulingQuotaWithUserDetails reservation = quotas.Reserved.Single();
+
+            Assert.AreEqual("org-reservation", reservation.ReservationName);
+            Assert.AreEqual("org-machine", reservation.MachineKey);
+            Assert.AreEqual(5, reservation.RunningCountsPerUser["user@mail.com"].RunningInstancesCount);
+            Assert.AreEqual(6, reservation.RunningCountsPerUser["user@mail.com"].RunningCoresCount);
+        }
+
+        [Test]
+        public async Task RetrieveOrganizationComputingQuotasUsageAsyncRunningCountsPerUserAreSparse()
+        {
+            HttpHandler.ResponseBody = ConnectionTestsData.GetOrganizationComputingQuotasUsage;
+
+            ComputingQuotas.OrganizationComputingQuotasWithUserDetails quotas = await Api.RetrieveOrganizationComputingQuotasUsageAsync();
+
+            // A user is only reported in the categories they have something running in.
+            Assert.AreEqual(7, quotas.Flex.RunningCountsPerUser["other@mail.com"].RunningInstancesCount);
+            Assert.AreEqual(8, quotas.Flex.RunningCountsPerUser["other@mail.com"].RunningCoresCount);
+            Assert.IsFalse(quotas.OnDemand.RunningCountsPerUser.ContainsKey("other@mail.com"));
+            Assert.IsFalse(quotas.Reserved.Single().RunningCountsPerUser.ContainsKey("other@mail.com"));
         }
 
         [Test]

@@ -140,18 +140,39 @@ namespace QarnotSDK.UnitTests
             ]
         }";
 
+        /// <summary>
+        /// Organization quota usage with a per-user breakdown of each scheduling type and each reservation.
+        /// <c>other@mail.com</c> only appears under <c>flex</c>: a user with nothing running in a given category is
+        /// absent from that category's breakdown.
+        /// </summary>
         public const string GetOrganizationComputingQuotasUsage = @"{
             ""flex"": {
                 ""maxInstances"": 300,
                 ""maxCores"": 301,
                 ""runningInstancesCount"": 302,
-                ""runningCoresCount"": 303
+                ""runningCoresCount"": 303,
+                ""runningCountsPerUser"": {
+                    ""user@mail.com"": {
+                        ""runningInstancesCount"": 1,
+                        ""runningCoresCount"": 2
+                    },
+                    ""other@mail.com"": {
+                        ""runningInstancesCount"": 7,
+                        ""runningCoresCount"": 8
+                    }
+                }
             },
             ""onDemand"": {
                 ""maxInstances"": 304,
                 ""maxCores"": 305,
                 ""runningInstancesCount"": 306,
-                ""runningCoresCount"": 307
+                ""runningCoresCount"": 307,
+                ""runningCountsPerUser"": {
+                    ""user@mail.com"": {
+                        ""runningInstancesCount"": 3,
+                        ""runningCoresCount"": 4
+                    }
+                }
             },
             ""reserved"": [
                 {
@@ -160,19 +181,69 @@ namespace QarnotSDK.UnitTests
                     ""maxInstances"": 308,
                     ""maxCores"": 309,
                     ""runningInstancesCount"": 310,
-                    ""runningCoresCount"": 311
+                    ""runningCoresCount"": 311,
+                    ""runningCountsPerUser"": {
+                        ""user@mail.com"": {
+                            ""runningInstancesCount"": 5,
+                            ""runningCoresCount"": 6
+                        }
+                    }
                 }
-            ],
-            ""runningCountsPerUser"": {
-                ""user@mail.com"": {
-                    ""runningFlexInstanceCount"": 1,
-                    ""runningFlexCoreCount"": 2,
-                    ""runningOnDemandInstanceCount"": 3,
-                    ""runningOnDemandCoreCount"": 4,
-                    ""runningReservedInstanceCount"": { ""org-machine"": 5 },
-                    ""runningReservedCoreCount"": { ""org-machine"": 6 }
+            ]
+        }";
+
+        /// <summary>
+        /// Organization quota usage as returned to a requester without the permission to read the per-user breakdown:
+        /// every <c>runningCountsPerUser</c> of the response is null at once.
+        /// </summary>
+        public const string GetOrganizationComputingQuotasUsageWithoutUserDetails = @"{
+            ""flex"": {
+                ""maxInstances"": 300,
+                ""maxCores"": 301,
+                ""runningInstancesCount"": 302,
+                ""runningCoresCount"": 303,
+                ""runningCountsPerUser"": null
+            },
+            ""onDemand"": {
+                ""maxInstances"": 304,
+                ""maxCores"": 305,
+                ""runningInstancesCount"": 306,
+                ""runningCoresCount"": 307,
+                ""runningCountsPerUser"": null
+            },
+            ""reserved"": [
+                {
+                    ""machineKey"": ""org-machine"",
+                    ""reservationName"": ""org-reservation"",
+                    ""maxInstances"": 308,
+                    ""maxCores"": 309,
+                    ""runningInstancesCount"": 310,
+                    ""runningCoresCount"": 311,
+                    ""runningCountsPerUser"": null
                 }
-            }
+            ]
+        }";
+
+        /// <summary>
+        /// Organization quota usage of an organization with nothing running and no reservation: every
+        /// <c>runningCountsPerUser</c> is an empty dictionary and <c>reserved</c> is null.
+        /// </summary>
+        public const string GetOrganizationComputingQuotasUsageWithNoRunningUsers = @"{
+            ""flex"": {
+                ""maxInstances"": 300,
+                ""maxCores"": 301,
+                ""runningInstancesCount"": 0,
+                ""runningCoresCount"": 0,
+                ""runningCountsPerUser"": {}
+            },
+            ""onDemand"": {
+                ""maxInstances"": 304,
+                ""maxCores"": 305,
+                ""runningInstancesCount"": 0,
+                ""runningCoresCount"": 0,
+                ""runningCountsPerUser"": {}
+            },
+            ""reserved"": null
         }";
 
         public const string GetUserHardwareConstraints = @"{
