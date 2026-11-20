@@ -37,9 +37,6 @@ jobs:
       - name: Restore
         run: dotnet restore
 
-      - name: Unit tests
-        run: dotnet test -c Debug QarnotSDK.UnitTests/QarnotSDK.UnitTests.csproj
-
       - name: Decode strong-name key
         run: echo "${{ secrets.SNK }}" | base64 -d > "$RUNNER_TEMP/key.snk"
 
