@@ -1,0 +1,88 @@
+name: publish
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Push packages to NuGet.org'
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Unit tests
+        run: dotnet test -c Debug QarnotSDK.UnitTests/QarnotSDK.UnitTests.csproj
+
+      - name: Decode strong-name key
+        run: echo "${{ secrets.SNK }}" | base64 -d > "$RUNNER_TEMP/key.snk"
+
+      - name: Build (Release, signed)
+        run: dotnet build -c Release QarnotSDK/QarnotSDK.csproj -p:SignAssembly=true -p:AssemblyOriginatorKeyFile="$RUNNER_TEMP/key.snk"
+
+      - name: Pack (signed, with symbols)
+        run: dotnet pack -c Release QarnotSDK/QarnotSDK.csproj -p:SignAssembly=true -p:AssemblyOriginatorKeyFile="$RUNNER_TEMP/key.snk" -p:IncludeSymbols=true -o artifacts
+
+      - name: Guard package version matches tag
+        shell: bash
+        run: |
+          PKG=$(ls artifacts/QarnotSDK.*.nupkg 2>/dev/null | grep -v '\.symbols\.' | head -n1)
+          [ -n "$PKG" ] || { echo "No package found in artifacts/"; exit 1; }
+          VERSION=${PKG#artifacts/QarnotSDK.}
+          VERSION=${VERSION%.nupkg}
+          echo "Package version: $VERSION"
+          if [ "$GITHUB_REF_TYPE" = "tag" ]; then
+            TAG_VERSION=${GITHUB_REF_NAME#v}
+            [ "$VERSION" = "$TAG_VERSION" ] || { echo "Package version $VERSION does not match tag $GITHUB_REF_NAME"; exit 1; }
+          fi
+
+      - name: Upload packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget
+          path: artifacts/*.nupkg
+
+  publish:
+    needs: build
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.publish }}
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Download packages
+        uses: actions/download-artifact@v4
+        with:
+          name: nuget
+          path: artifacts
+
+      - name: NuGet login (OIDC -> temp API key)
+        uses: NuGet/login@v1
+        id: login
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
+      - name: NuGet push
+        run: dotnet nuget push artifacts/*.nupkg --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json

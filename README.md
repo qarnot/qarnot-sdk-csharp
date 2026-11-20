@@ -1,4 +1,4 @@
-# Qarnot computing C# SDK [![Build status](https://ci.appveyor.com/api/projects/status/pl5j147jmkc6fbor?svg=true)](https://ci.appveyor.com/project/qarnot/qarnot-sdk-csharp) [![NuGet Version](http://img.shields.io/nuget/v/QarnotSDK.svg?style=flat)](https://www.nuget.org/packages/QarnotSDK/)
+# Qarnot computing C# SDK [![publish](https://github.com/qarnot/qarnot-sdk-csharp/actions/workflows/publish.yml/badge.svg)](https://github.com/qarnot/qarnot-sdk-csharp/actions/workflows/publish.yml) [![NuGet Version](http://img.shields.io/nuget/v/QarnotSDK.svg?style=flat)](https://www.nuget.org/packages/QarnotSDK/)
 
 > QarnotSDK is a C# assembly designed to interact with Qarnot cloud computing service.
 > It allows users to launch, manage and monitor payloads running on distributed computing nodes deployed in Qarnot’s digital heaters.
