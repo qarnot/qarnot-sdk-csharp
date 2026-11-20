@@ -11,6 +11,11 @@ on:
         type: boolean
         required: false
         default: false
+      dry-run:
+        description: 'Validate OIDC trusted-publisher login, do not push'
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -65,7 +70,7 @@ jobs:
 
   publish:
     needs: build
-    if: ${{ github.event_name != 'workflow_dispatch' || inputs.publish }}
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.publish || inputs.dry-run }}
     runs-on: ubuntu-latest
     environment: release
     permissions:
@@ -84,5 +89,10 @@ jobs:
         with:
           user: ${{ secrets.NUGET_USER }}
 
+      - name: Dry-run success
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry-run }}
+        run: 'echo "OIDC trusted-publisher login OK: short-lived API key obtained. Push skipped (dry-run)."'
+
       - name: NuGet push
+        if: ${{ github.event_name != 'workflow_dispatch' || (inputs.publish && !inputs.dry-run) }}
         run: dotnet nuget push artifacts/*.nupkg --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json
